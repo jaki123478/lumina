@@ -30,12 +30,16 @@ if sys.platform == "win32":
 from modeling_lumina_next import LuminaNextForCausalLM, DEFAULT_CONFIG_135M
 
 
-def load_dataset_tokens(tokenizer: ByteLevelBPETokenizer, dataset_path: str = "data/distilled_dialogues_clean.jsonl", max_samples: int = 50000) -> list[torch.Tensor]:
+def load_dataset_tokens(tokenizer: ByteLevelBPETokenizer, dataset_path: str = "data/lumina_train_dataset_v3_cot.jsonl", max_samples: int = 50000) -> list[torch.Tensor]:
     """Carica i dati di coding e conversazione tokenizzati in tensori ID."""
     print("[*] Caricamento e tokenizzazione del dataset con BPE (32k vocab)...")
     tokenized_samples = []
 
     ds_file = Path(dataset_path)
+    if not ds_file.exists():
+        ds_file = Path("data/lumina_train_dataset_v2.jsonl")
+    if not ds_file.exists():
+        ds_file = Path("data/distilled_dialogues_clean.jsonl")
     if not ds_file.exists():
         ds_file = Path("data/distilled_dialogues.jsonl")
     print(f"[*] File dataset utilizzato: {ds_file}")
@@ -174,7 +178,7 @@ def train(
             elapsed = time.time() - start_time
             tok_per_sec = (step * batch_size * seq_len) / elapsed
             vram = torch.cuda.memory_allocated() / (1024**2) if torch.cuda.is_available() else 0
-            print(f"[Step {step:4d}/{steps}] Loss: {cur_loss:.4f} | Throughput: {tok_per_sec:,.0f} tok/s | VRAM: {vram:.1f} MB | Tempo: {elapsed:.1f}s")
+            print(f"[Step {step:4d}/{steps}] Loss: {cur_loss:.4f} | Throughput: {tok_per_sec:,.0f} tok/s | VRAM: {vram:.1f} MB | Tempo: {elapsed:.1f}s", flush=True)
             loss_history.append({"step": step, "loss": round(cur_loss, 4), "vram_mb": round(vram, 1), "tok_per_sec": round(tok_per_sec, 0), "elapsed_s": round(elapsed, 1)})
             accum_loss = 0.0
 
@@ -183,9 +187,17 @@ def train(
     print("=" * 75)
 
     # 6. Salva Checkpoint e aggiorna pacchetto HF
+    prev_steps = 0
+    try:
+        prev_data = json.loads(Path("data/training_history_cycle1.json").read_text(encoding="utf-8"))
+        prev_steps = prev_data.get("cumulative_steps", 0)
+    except Exception:
+        pass
+    cum_steps = prev_steps + steps
+
     model.save_pretrained(out_dir)
-    versioned_ckpt = out_dir / f"checkpoint_step{steps}.pt"
-    torch.save({"state_dict": model.state_dict(), "steps": steps, "config": config, "loss_history": loss_history}, versioned_ckpt)
+    versioned_ckpt = out_dir / f"checkpoint_step{cum_steps}.pt"
+    torch.save({"state_dict": model.state_dict(), "steps": cum_steps, "config": config, "loss_history": loss_history}, versioned_ckpt)
     print(f"[+] Pesi, configurazione e checkpoint versionato salvati in '{versioned_ckpt}'!")
 
     hf_dir = Path("hf_export_lumina_next")
@@ -199,19 +211,21 @@ def train(
         print(f"[!] Nota export safetensors: {e}")
 
     # Salva storico metriche di addestramento
-    history_file = Path("data/training_history_cycle1.json")
-    with open(history_file, "w", encoding="utf-8") as f:
-        json.dump({
-            "steps": steps,
-            "seq_len": seq_len,
-            "batch_size": batch_size,
-            "grad_accum_steps": grad_accum_steps,
-            "lr": lr,
-            "initial_loss": loss_history[0]["loss"] if loss_history else None,
-            "final_loss": loss_history[-1]["loss"] if loss_history else None,
-            "history": loss_history
-        }, f, indent=2)
-    print(f"[+] Storico metriche salvato in '{history_file}'!")
+    for h_path in [Path("data/training_history_cycle7.json"), Path("data/training_history_cycle1.json")]:
+        with open(h_path, "w", encoding="utf-8") as f:
+            json.dump({
+                "cycle": 7,
+                "cumulative_steps": cum_steps,
+                "steps": steps,
+                "seq_len": seq_len,
+                "batch_size": batch_size,
+                "grad_accum_steps": grad_accum_steps,
+                "lr": lr,
+                "initial_loss": loss_history[0]["loss"] if loss_history else None,
+                "final_loss": loss_history[-1]["loss"] if loss_history else None,
+                "history": loss_history
+            }, f, indent=2)
+    print(f"[+] Storico metriche aggiornato per il monitoraggio GitHub (Step cumulativi: {cum_steps})!")
 
     # 7. Test Generativo Finale
     test_prompt = "<|im_start|>user\nCome creo una funzione somma in Python?<|im_end|>\n<|im_start|>assistant\n"

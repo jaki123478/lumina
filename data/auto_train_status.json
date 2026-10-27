@@ -1,11 +1,11 @@
 {
   "status": "generazione_attiva",
-  "total_generated_this_session": 479,
-  "total_distilled_samples": 26461,
-  "training_cycles_completed": 19,
+  "total_generated_this_session": 1329,
+  "total_distilled_samples": 28338,
+  "training_cycles_completed": 53,
   "last_qa": {
-    "user": "Cosa deduciamo se tutti gli uomini sono mortali? Si deduciamo che Socrate è mortale.",
-    "assistant": "Socrate è sempre mortale."
+    "user": "Scrivi una funzione che calcoli la somma tra due numeri positivi. Inserisci i numeri. 10 + 20",
+    "assistant": "In Python scrivi: `def somma(num1, num2): return num1 + num2`. La chiami con `somma(10, 20)` e restituisce 30."
   },
-  "uptime_sec": 2451
+  "uptime_sec": 6950
 }

@@ -13,10 +13,13 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 import argparse
 import json
+import re
 import sys
 import time
 import uuid
 import webbrowser
+
+from lumina_network_policy import get_network_policy
 
 if sys.platform == "win32":
     sys.stdout.reconfigure(encoding="utf-8")
@@ -183,6 +186,17 @@ class Handler(SimpleHTTPRequestHandler):
             self.wfile.write(body)
             return
 
+        # 2c. API Politica di Rete ed Esplicito Consenso (/api/network_policy)
+        if self.path in ("/api/network_policy", "/api/v1/network_policy"):
+            pol = get_network_policy()
+            body = json.dumps(pol.policy, ensure_ascii=False).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+            return
+
         # 3. API Ufficiale OpenAI: Lista Modelli (/v1/models)
         if self.path in ("/v1/models", "/api/v1/models"):
             models_payload = {
@@ -270,6 +284,27 @@ class Handler(SimpleHTTPRequestHandler):
             self.wfile.write(body)
             return
 
+        # 1a. API Politica di Rete: Aggiorna Consenso (/api/network_policy)
+        if self.path in ("/api/network_policy", "/api/v1/network_policy"):
+            try:
+                data = json.loads(raw_body)
+                pol = get_network_policy()
+                if data.get("consent"):
+                    pol.grant_consent(scope=data.get("scope", "session"))
+                else:
+                    pol.revoke_consent()
+                resp = {"success": True, "policy": pol.policy}
+            except Exception as e:
+                resp = {"success": False, "error": str(e)}
+
+            body = json.dumps(resp, ensure_ascii=False).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+            return
+
         # 1b. API RAG: Parsing Documento (PDF, TXT, MD, Code)
         if self.path == "/api/parse_doc":
             try:
@@ -289,7 +324,6 @@ class Handler(SimpleHTTPRequestHandler):
                     else:
                         text_content = raw_bytes.decode("utf-8", errors="replace")
 
-                import re
                 text_content = re.sub(r"\s+", " ", text_content).strip()
                 words = text_content.split()
 
@@ -334,7 +368,6 @@ class Handler(SimpleHTTPRequestHandler):
                 filename = data.get("filename", "documento")
 
                 from collections import Counter
-                import re
 
                 def tok(t):
                     return re.findall(r"\b\w{2,}\b", t.lower())
@@ -401,15 +434,46 @@ class Handler(SimpleHTTPRequestHandler):
                 if not user_msg:
                     user_msg = "Ciao!"
 
-                # Step 0: Memoria a Lungo Termine
+                # Step 0a: Controllo Consenso Rete Esterna (Lumina Network Policy)
+                reply_text = ""
+                net_policy = get_network_policy()
+                user_msg_lower = user_msg.lower()
+
+                # Gestione comandi di consenso esplicito via chat/terminale/Visual Studio
+                if re.search(r"\b(consento|autorizzo|attiva|abilita)\s+(l'accesso\s+a\s+)?internet\b", user_msg_lower):
+                    net_policy.grant_consent(scope="session")
+                    reply_text = (
+                        "🛡️ [Lumina Sentinel]\n"
+                        "Consenso esplicito accordato: l'accesso a Internet è ora ABILITATO per questa sessione di lavoro."
+                    )
+                elif re.search(r"\b(revoca|disattiva|blocca|disabilita)\s+(l'accesso\s+a\s+)?internet\b", user_msg_lower):
+                    net_policy.revoke_consent()
+                    reply_text = (
+                        "🛡️ [Lumina Sentinel]\n"
+                        "Consenso revocato: l'accesso a Internet è ora DISABILITATO. Lumina è tornata in modalità 100% offline."
+                    )
+                else:
+                    requires_internet = bool(
+                        data.get("tools") or 
+                        data.get("allow_internet") or
+                        re.search(r"\b(cerca su internet|cerca sul web|scarica da internet|naviga su|fetch url|connettiti a internet)\b", user_msg_lower)
+                    )
+                    if requires_internet and not net_policy.is_internet_allowed():
+                        reply_text = (
+                            "🛡️ [Lumina Sentinel — Richiesta di Consenso]\n"
+                            "L'accesso a Internet esterno è attualmente DISATTIVATO per impostazione predefinita su Visual Studio e piattaforme collegate.\n\n"
+                            "Lumina opera interamente in locale e offline a tutela della tua privacy e sicurezza.\n"
+                            "Per autorizzare l'accesso a Internet, scrivi semplicemente: `Autorizzo l'accesso a internet` oppure imposta `set LUMINA_ALLOW_INTERNET=1` nel terminale."
+                        )
+
+                # Step 0b: Memoria a Lungo Termine
                 mem = get_memory()
-                if mem:
+                if mem and not reply_text:
                     mem.auto_extract_memories(user_msg)
 
                 # Step A: Controllo Sicurezza con Lumina Sentinel
                 sentinel = get_sentinel()
-                reply_text = ""
-                if sentinel:
+                if sentinel and not reply_text:
                     sec = sentinel.evaluate(user_msg)
                     if not sec.is_safe:
                         reply_text = sec.refusal_response

@@ -1,0 +1,29 @@
+{
+  "policy_version": "1.0.0",
+  "sovereign_name": "Lumina Sentinel Network Shield",
+  "internet_access_mode": "require_explicit_consent",
+  "default_internet_allowed": false,
+  "current_consent_granted": false,
+  "consent_scope": "none",
+  "visual_studio_integration": {
+    "mode": "strictly_offline_unless_consented",
+    "allow_local_lan": true,
+    "prompt_on_external_request": true
+  },
+  "terminal_integration": {
+    "mode": "strictly_offline_unless_consented",
+    "interactive_prompt_enabled": true
+  },
+  "telemetry_policy": {
+    "allow_telemetry": false,
+    "allow_external_logging": false
+  },
+  "allowed_local_networks": [
+    "127.0.0.1",
+    "localhost",
+    "0.0.0.0",
+    "::1",
+    "192.168.*",
+    "10.*"
+  ]
+}

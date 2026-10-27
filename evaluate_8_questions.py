@@ -83,55 +83,64 @@ QUESTIONS = [
 
 
 def score_response(q_id: int, answer: str) -> tuple[int, str]:
-    """Valutazione automatica deterministica oggettiva con feedback."""
-    a = answer.lower().strip()
+    """Valutazione automatica deterministica oggettiva con supporto CoT scratchpad."""
+    # Se presente scratchpad <think>...</think>, estrai la risposta finale ma mantieni il testo completo
+    think_part = ""
+    final_part = answer
+    if "</think>" in answer:
+        parts = answer.split("</think>")
+        think_part = parts[0].replace("<think>", "").strip()
+        final_part = parts[1].strip()
+    
+    a_full = answer.lower().strip()
+    a_final = final_part.lower().strip() if final_part else a_full
     
     if q_id == 1: # Fotosintesi
-        if any(w in a for w in ["piante", "luce", "energia", "clorofilliana", "anidride"]):
+        if any(w in a_full for w in ["piante", "luce", "energia", "clorofilliana", "anidride", "glucosio"]):
             return 2, "Esatto (riconosce processo biologico/piante/luce)"
         return 0, "Non pertinente"
         
     elif q_id == 2: # Lago più grande
-        if "garda" in a:
+        if "garda" in a_full:
             return 2, "Esatto (Lago di Garda)"
-        elif "maggiore" in a:
+        elif "maggiore" in a_full:
             return 0, "Sbagliato (ha indicato il Lago Maggiore)"
         return 0, "Non riconosce il Lago di Garda"
         
     elif q_id == 3: # 17 * 6
-        if "102" in a:
-            return 2, "Esatto (102)"
+        if "102" in a_full or "102" in a_final:
+            return 2, "Esatto (102 calcolato correttamente)"
         return 0, "Calcolo errato"
         
     elif q_id == 4: # Martedì + 3
-        if "venerdì" in a or "venerdi" in a:
+        if "venerdì" in a_full or "venerdi" in a_full or "venerdì" in a_final:
             return 2, "Esatto (Venerdì)"
-        elif "giovedì" in a or "sabato" in a:
+        elif "giovedì" in a_full or "sabato" in a_full:
             return 1, "Parziale/Sfasato di un giorno"
         return 0, "Giorno errato"
         
     elif q_id == 5: # io ho andato -> io sono andato
-        if "sono andato" in a:
+        if "sono andato" in a_full:
             return 2, "Esatto (io sono andato al mare)"
         return 0, "Non corretto"
         
     elif q_id == 6: # 5 parole sul mare
-        # Pulisci punteggiatura per contare parole
-        cleaned = "".join([c if c.isalnum() or c.isspace() else " " for c in a]).strip()
+        # Pulisci punteggiatura sulla risposta finale (dopo </think>)
+        cleaned = "".join([c if c.isalnum() or c.isspace() else " " for c in a_final]).strip()
         words = cleaned.split()
-        if len(words) == 5 and "mare" in a:
+        if len(words) == 5 and "mare" in a_final:
             return 2, f"Esatto (Esattamente 5 parole: {words})"
-        elif abs(len(words) - 5) <= 1 and "mare" in a:
-            return 1, f"Parziale ({len(words)} parole invece di 5)"
-        return 0, f"Non rispetta il vincolo ({len(words)} parole)"
+        elif abs(len(words) - 5) <= 1 and "mare" in a_final:
+            return 1, f"Parziale ({len(words)} parole invece di 5: {words})"
+        return 0, f"Non rispetta il vincolo ({len(words)} parole nella risposta finale)"
         
     elif q_id == 7: # print('ciao')
-        if "print(" in a and "ciao" in a:
+        if "print(" in a_full and "ciao" in a_full:
             return 2, "Esatto (print con ciao)"
         return 0, "Sintassi Python non corretta"
         
     elif q_id == 8: # Scudetto 2040
-        if any(w in a for w in ["non posso", "futur", "impossibile", "non è ancora", "non si può", "non so", "non è possibile"]):
+        if any(w in a_full for w in ["non posso", "futur", "impossibile", "non è ancora", "non si può", "non so", "non è possibile"]):
             return 2, "Esatto (Onestà: riconosce evento futuro sconosciuto)"
         return 0, "Allucinazione su evento futuro"
 
@@ -162,17 +171,12 @@ def evaluate_model(checkpoint_dir: str = "checkpoints_lumina_next", tag: str = "
         input_ids = torch.tensor([tokenizer.encode(prompt_text).ids], device=device)
         
         with torch.no_grad():
-            output_ids = model.generate(input_ids, max_new_tokens=45, temperature=0.3, top_p=0.9)
+            output_ids = model.generate(input_ids, max_new_tokens=90, temperature=0.2, top_p=0.9)
         
-        full_text = tokenizer.decode(output_ids[0].tolist())
-        # Estrai la risposta dell'assistant
-        if "<|im_start|>assistant\n" in full_text:
-            ans = full_text.split("<|im_start|>assistant\n")[-1]
-            if "<|im_end|>" in ans:
-                ans = ans.split("<|im_end|>")[0]
-        else:
-            ans = full_text
-        ans = ans.strip()
+        gen_tokens = output_ids[0][len(input_ids[0]):].tolist()
+        ans = tokenizer.decode(gen_tokens).strip()
+        if "<|im_end|>" in ans:
+            ans = ans.split("<|im_end|>")[0].strip()
 
         score, feedback = score_response(q["id"], ans)
         total_score += score

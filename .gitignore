@@ -25,3 +25,9 @@ hf_export_*/
 hf_space/
 dist/model/weights-*.json
 *.npy
+
+test/
+lumina_voice_pack/audio/
+lumina_voice_pack/*.wav
+audio_neurale/*.wav
+voices/*.onnx

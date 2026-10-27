@@ -108,6 +108,13 @@ def configure_continue():
     # Inserisci i modelli Lumina in cima alla lista
     config_data["models"] = lumina_models + filtered_models
 
+    # Direttiva Sovrana: Zero Telemetria, Offline-first ed Esplicito Consenso per Internet
+    config_data["allowAnonymousTelemetry"] = False
+    config_data["networkPolicy"] = {
+        "mode": "strictly_offline_unless_consented",
+        "description": "Lumina richiede l'accesso a Internet solo se l'utente esplicita il consenso da Visual Studio o terminali."
+    }
+
     with open(config_file, "w", encoding="utf-8") as f:
         yaml.dump(config_data, f, allow_unicode=True, sort_keys=False)
 
