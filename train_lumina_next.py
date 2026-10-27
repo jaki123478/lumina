@@ -30,12 +30,17 @@ if sys.platform == "win32":
 from modeling_lumina_next import LuminaNextForCausalLM, DEFAULT_CONFIG_135M
 
 
-def load_dataset_tokens(tokenizer: ByteLevelBPETokenizer, max_samples: int = 50000) -> list[torch.Tensor]:
+def load_dataset_tokens(tokenizer: ByteLevelBPETokenizer, dataset_path: str = "data/distilled_dialogues_clean.jsonl", max_samples: int = 50000) -> list[torch.Tensor]:
     """Carica i dati di coding e conversazione tokenizzati in tensori ID."""
     print("[*] Caricamento e tokenizzazione del dataset con BPE (32k vocab)...")
     tokenized_samples = []
 
-    for path in [Path("data/lumina_coding_curriculum.jsonl"), Path("data/distilled_dialogues.jsonl")]:
+    ds_file = Path(dataset_path)
+    if not ds_file.exists():
+        ds_file = Path("data/distilled_dialogues.jsonl")
+    print(f"[*] File dataset utilizzato: {ds_file}")
+
+    for path in [Path("data/lumina_coding_curriculum.jsonl"), ds_file]:
         if not path.exists():
             continue
         with open(path, "r", encoding="utf-8") as f:
@@ -141,12 +146,12 @@ def train(
     optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=0.01, betas=(0.9, 0.95))
 
     # 5. Loop di Addestramento
-
     print(f"\n[*] Avvio {steps} step di addestramento su GPU...")
     print("-" * 75)
     model.train()
     start_time = time.time()
     accum_loss = 0.0
+    loss_history = []
 
     for step in range(1, steps + 1):
         x, y = get_batch(dataset, seq_len=seq_len, batch_size=batch_size, device=device)
@@ -170,6 +175,7 @@ def train(
             tok_per_sec = (step * batch_size * seq_len) / elapsed
             vram = torch.cuda.memory_allocated() / (1024**2) if torch.cuda.is_available() else 0
             print(f"[Step {step:4d}/{steps}] Loss: {cur_loss:.4f} | Throughput: {tok_per_sec:,.0f} tok/s | VRAM: {vram:.1f} MB | Tempo: {elapsed:.1f}s")
+            loss_history.append({"step": step, "loss": round(cur_loss, 4), "vram_mb": round(vram, 1), "tok_per_sec": round(tok_per_sec, 0), "elapsed_s": round(elapsed, 1)})
             accum_loss = 0.0
 
     print("\n" + "=" * 75)
@@ -178,7 +184,9 @@ def train(
 
     # 6. Salva Checkpoint e aggiorna pacchetto HF
     model.save_pretrained(out_dir)
-    print(f"[+] Pesi e configurazione salvati in '{out_dir}'!")
+    versioned_ckpt = out_dir / f"checkpoint_step{steps}.pt"
+    torch.save({"state_dict": model.state_dict(), "steps": steps, "config": config, "loss_history": loss_history}, versioned_ckpt)
+    print(f"[+] Pesi, configurazione e checkpoint versionato salvati in '{versioned_ckpt}'!")
 
     hf_dir = Path("hf_export_lumina_next")
     hf_dir.mkdir(parents=True, exist_ok=True)
@@ -189,6 +197,21 @@ def train(
         print(f"[+] Model safetensors aggiornato in '{hf_dir / 'model.safetensors'}'!")
     except Exception as e:
         print(f"[!] Nota export safetensors: {e}")
+
+    # Salva storico metriche di addestramento
+    history_file = Path("data/training_history_cycle1.json")
+    with open(history_file, "w", encoding="utf-8") as f:
+        json.dump({
+            "steps": steps,
+            "seq_len": seq_len,
+            "batch_size": batch_size,
+            "grad_accum_steps": grad_accum_steps,
+            "lr": lr,
+            "initial_loss": loss_history[0]["loss"] if loss_history else None,
+            "final_loss": loss_history[-1]["loss"] if loss_history else None,
+            "history": loss_history
+        }, f, indent=2)
+    print(f"[+] Storico metriche salvato in '{history_file}'!")
 
     # 7. Test Generativo Finale
     test_prompt = "<|im_start|>user\nCome creo una funzione somma in Python?<|im_end|>\n<|im_start|>assistant\n"
@@ -203,7 +226,7 @@ def train(
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--seq-len", type=int, default=2048, help="Lunghezza sequenza di addestramento (es. 2048 o 4096)")
-    parser.add_argument("--steps", type=int, default=50, help="Numero di step")
+    parser.add_argument("--steps", type=int, default=500, help="Numero di step")
     parser.add_argument("--batch-size", type=int, default=2, help="Batch size per step")
     args = parser.parse_args()
 
