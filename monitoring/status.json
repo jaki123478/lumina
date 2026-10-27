@@ -1,14 +1,14 @@
 {
-  "timestamp": 1793125126.5165575,
-  "datetime_str": "2026-10-27 19:18:46 ",
+  "timestamp": 1793125154.0011065,
+  "datetime_str": "2026-10-27 19:19:13 ",
   "process_status": "In attesa / Pronto per nuovo ciclo",
   "is_training_active": false,
   "gpu": {
     "name": "NVIDIA GeForce RTX 5060 Laptop GPU",
-    "memory_used_mb": 1778.0,
+    "memory_used_mb": 1771.0,
     "memory_total_mb": 8151.0,
-    "utilization_pct": 53.0,
-    "temperature_c": 50.91,
+    "utilization_pct": 9.0,
+    "temperature_c": 49.44,
     "driver_version": "621.01",
     "status": "online"
   },
