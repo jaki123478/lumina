@@ -1,6 +1,6 @@
 {
-  "timestamp": 1793138190.8357697,
-  "datetime_str": "2026-10-27 22:56:29 ",
+  "timestamp": 1793138374.5727305,
+  "datetime_str": "2026-10-27 22:59:33 ",
   "process_status": "In attesa / Pronto per nuovo ciclo",
   "is_training_active": false,
   "gpu": {
@@ -8,7 +8,7 @@
     "memory_used_mb": 658.0,
     "memory_total_mb": 8151.0,
     "utilization_pct": 0.0,
-    "temperature_c": 45.22,
+    "temperature_c": 44.16,
     "driver_version": "621.01",
     "status": "online"
   },
