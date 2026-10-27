@@ -1,7 +1,7 @@
 # 📡 Lumina — Dashboard di Monitoraggio Remoto (PC Principale)
-> **Ultimo Aggiornamento**: `2026-10-27 18:33:21 `  
+> **Ultimo Aggiornamento**: `2026-10-27 18:36:25 `  
 > **Stato Sistema**: **`In attesa / Pronto per nuovo ciclo`**  
-> **Hardware**: `NVIDIA GeForce RTX 5060 Laptop GPU` | VRAM: `3038.0 / 8151.0 MB` | Temp: `58.25 °C`
+> **Hardware**: `NVIDIA GeForce RTX 5060 Laptop GPU` | VRAM: `3061.0 / 8151.0 MB` | Temp: `59.28 °C`
 ---
 ## 1. 🚀 Stato del Modello & Addestramento (Lumina-Next 135M)
 * **Step Completati**: `500 / 500` (Fase 1 completata)
@@ -24,7 +24,7 @@
 ## 2. 📚 Stato dei Dataset Locali
 | Dataset | File Locale | Campioni Validi | Dimensione | Stato |
 | :--- | :--- | :---: | :---: | :--- |
-| **Dataset Originale Grezzo** | `data\distilled_dialogues.jsonl` | **26,582** | 8.41 MB | Preservato intatto |
+| **Dataset Originale Grezzo** | `data\distilled_dialogues.jsonl` | **26,619** | 8.42 MB | Preservato intatto |
 | **Dataset Curato & Deduplicato (v1)** | `data\distilled_dialogues_clean.jsonl` | **11,363** | 3.73 MB | 100% Unico (No dupl.) |
 | **Nuovo Batch 2 (Grounded)** | `data\distilled_dialogues_batch2_5k.jsonl` | **5,000** | 1.03 MB | 100% Unico (No dupl.) |
 | **Curriculum Specialistico Python** | `data\lumina_coding_curriculum.jsonl` | **71** | 0.01 MB | Preservato intatto |
