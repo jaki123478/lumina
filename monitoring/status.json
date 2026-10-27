@@ -1,14 +1,14 @@
 {
-  "timestamp": 1793136355.001487,
-  "datetime_str": "2026-10-27 22:25:54 ",
+  "timestamp": 1793136538.2218409,
+  "datetime_str": "2026-10-27 22:28:57 ",
   "process_status": "In attesa / Pronto per nuovo ciclo",
   "is_training_active": false,
   "gpu": {
     "name": "NVIDIA GeForce RTX 5060 Laptop GPU",
-    "memory_used_mb": 819.0,
+    "memory_used_mb": 2478.0,
     "memory_total_mb": 8151.0,
-    "utilization_pct": 53.0,
-    "temperature_c": 51.34,
+    "utilization_pct": 51.0,
+    "temperature_c": 55.97,
     "driver_version": "621.01",
     "status": "online"
   },
@@ -616,7 +616,7 @@
       "file": "checkpoints_lumina_next/pytorch_model.bin",
       "description": "Pesi PyTorch ufficiali Lumina-Next 135M",
       "size_mb": 197.29,
-      "last_modified": "2026-10-27 22:24:03"
+      "last_modified": "2026-10-27 22:26:18"
     },
     {
       "file": "hf_export_lumina_next/model.safetensors",
