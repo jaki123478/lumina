@@ -1,447 +1,447 @@
 {
-  "timestamp": 1793136171.600021,
-  "datetime_str": "2026-10-27 22:22:51 ",
+  "timestamp": 1793136355.001487,
+  "datetime_str": "2026-10-27 22:25:54 ",
   "process_status": "In attesa / Pronto per nuovo ciclo",
   "is_training_active": false,
   "gpu": {
     "name": "NVIDIA GeForce RTX 5060 Laptop GPU",
-    "memory_used_mb": 3554.0,
+    "memory_used_mb": 819.0,
     "memory_total_mb": 8151.0,
-    "utilization_pct": 98.0,
-    "temperature_c": 79.34,
+    "utilization_pct": 53.0,
+    "temperature_c": 51.34,
     "driver_version": "621.01",
     "status": "online"
   },
   "training": {
-    "cycle": 3,
-    "cumulative_steps": 6500,
+    "cycle": 7,
+    "cumulative_steps": 8000,
     "steps": 1500,
     "seq_len": 2048,
     "batch_size": 2,
     "grad_accum_steps": 8,
     "lr": 0.0004,
-    "initial_loss": 1.4612,
-    "final_loss": 0.4548,
+    "initial_loss": 1.2932,
+    "final_loss": 0.3181,
     "history": [
       {
         "step": 25,
-        "loss": 1.4612,
+        "loss": 1.2932,
         "vram_mb": 1068.6,
-        "tok_per_sec": 11831.0,
-        "elapsed_s": 8.7
+        "tok_per_sec": 11295.0,
+        "elapsed_s": 9.1
       },
       {
         "step": 50,
-        "loss": 1.2312,
+        "loss": 0.8919,
         "vram_mb": 1068.6,
-        "tok_per_sec": 12670.0,
-        "elapsed_s": 16.2
+        "tok_per_sec": 12405.0,
+        "elapsed_s": 16.5
       },
       {
         "step": 75,
-        "loss": 0.9703,
+        "loss": 0.7304,
         "vram_mb": 1068.6,
-        "tok_per_sec": 12995.0,
-        "elapsed_s": 23.6
+        "tok_per_sec": 12809.0,
+        "elapsed_s": 24.0
       },
       {
         "step": 100,
-        "loss": 0.9048,
+        "loss": 0.6395,
         "vram_mb": 1068.6,
-        "tok_per_sec": 13160.0,
-        "elapsed_s": 31.1
+        "tok_per_sec": 13007.0,
+        "elapsed_s": 31.5
       },
       {
         "step": 125,
-        "loss": 0.8769,
+        "loss": 0.5961,
         "vram_mb": 1068.6,
-        "tok_per_sec": 13276.0,
-        "elapsed_s": 38.6
+        "tok_per_sec": 13143.0,
+        "elapsed_s": 39.0
       },
       {
         "step": 150,
-        "loss": 0.8827,
+        "loss": 0.59,
         "vram_mb": 1068.6,
-        "tok_per_sec": 13332.0,
-        "elapsed_s": 46.1
+        "tok_per_sec": 13234.0,
+        "elapsed_s": 46.4
       },
       {
         "step": 175,
-        "loss": 0.8276,
+        "loss": 0.515,
         "vram_mb": 1068.6,
-        "tok_per_sec": 13376.0,
-        "elapsed_s": 53.6
+        "tok_per_sec": 13301.0,
+        "elapsed_s": 53.9
       },
       {
         "step": 200,
-        "loss": 0.7962,
+        "loss": 0.5402,
         "vram_mb": 861.1,
-        "tok_per_sec": 13414.0,
-        "elapsed_s": 61.1
+        "tok_per_sec": 13342.0,
+        "elapsed_s": 61.4
       },
       {
         "step": 225,
-        "loss": 0.7546,
+        "loss": 0.5246,
         "vram_mb": 1068.6,
-        "tok_per_sec": 13433.0,
-        "elapsed_s": 68.6
+        "tok_per_sec": 13371.0,
+        "elapsed_s": 68.9
       },
       {
         "step": 250,
-        "loss": 0.7483,
+        "loss": 0.5224,
         "vram_mb": 1068.6,
-        "tok_per_sec": 13458.0,
-        "elapsed_s": 76.1
+        "tok_per_sec": 13401.0,
+        "elapsed_s": 76.4
       },
       {
         "step": 275,
-        "loss": 0.7664,
+        "loss": 0.4866,
         "vram_mb": 1068.6,
-        "tok_per_sec": 13479.0,
-        "elapsed_s": 83.6
+        "tok_per_sec": 13425.0,
+        "elapsed_s": 83.9
       },
       {
         "step": 300,
-        "loss": 0.7571,
+        "loss": 0.5083,
         "vram_mb": 1068.6,
-        "tok_per_sec": 13489.0,
-        "elapsed_s": 91.1
+        "tok_per_sec": 13441.0,
+        "elapsed_s": 91.4
       },
       {
         "step": 325,
-        "loss": 0.717,
+        "loss": 0.4923,
         "vram_mb": 1068.6,
-        "tok_per_sec": 13503.0,
-        "elapsed_s": 98.6
+        "tok_per_sec": 13461.0,
+        "elapsed_s": 98.9
       },
       {
         "step": 350,
-        "loss": 0.7282,
+        "loss": 0.4763,
         "vram_mb": 1068.6,
-        "tok_per_sec": 13516.0,
-        "elapsed_s": 106.1
+        "tok_per_sec": 13475.0,
+        "elapsed_s": 106.4
       },
       {
         "step": 375,
-        "loss": 0.733,
+        "loss": 0.5131,
         "vram_mb": 1068.6,
-        "tok_per_sec": 13522.0,
-        "elapsed_s": 113.6
+        "tok_per_sec": 13485.0,
+        "elapsed_s": 113.9
       },
       {
         "step": 400,
-        "loss": 0.7015,
+        "loss": 0.4702,
         "vram_mb": 861.1,
-        "tok_per_sec": 13533.0,
-        "elapsed_s": 121.1
+        "tok_per_sec": 13497.0,
+        "elapsed_s": 121.4
       },
       {
         "step": 425,
-        "loss": 0.7086,
+        "loss": 0.4893,
         "vram_mb": 1068.6,
-        "tok_per_sec": 13539.0,
-        "elapsed_s": 128.6
+        "tok_per_sec": 13502.0,
+        "elapsed_s": 128.9
       },
       {
         "step": 450,
-        "loss": 0.6974,
+        "loss": 0.4945,
         "vram_mb": 1068.6,
-        "tok_per_sec": 13543.0,
-        "elapsed_s": 136.1
+        "tok_per_sec": 13509.0,
+        "elapsed_s": 136.4
       },
       {
         "step": 475,
-        "loss": 0.6941,
+        "loss": 0.4643,
         "vram_mb": 1068.6,
-        "tok_per_sec": 13552.0,
-        "elapsed_s": 143.6
+        "tok_per_sec": 13522.0,
+        "elapsed_s": 143.9
       },
       {
         "step": 500,
-        "loss": 0.706,
+        "loss": 0.4274,
         "vram_mb": 1068.6,
-        "tok_per_sec": 13557.0,
-        "elapsed_s": 151.1
+        "tok_per_sec": 13547.0,
+        "elapsed_s": 151.2
       },
       {
         "step": 525,
-        "loss": 0.6559,
+        "loss": 0.4542,
         "vram_mb": 1068.6,
-        "tok_per_sec": 13562.0,
-        "elapsed_s": 158.6
+        "tok_per_sec": 13570.0,
+        "elapsed_s": 158.5
       },
       {
         "step": 550,
-        "loss": 0.6497,
+        "loss": 0.4544,
         "vram_mb": 1068.6,
-        "tok_per_sec": 13567.0,
-        "elapsed_s": 166.1
+        "tok_per_sec": 13587.0,
+        "elapsed_s": 165.8
       },
       {
         "step": 575,
-        "loss": 0.6559,
+        "loss": 0.4207,
         "vram_mb": 1068.6,
-        "tok_per_sec": 13570.0,
-        "elapsed_s": 173.6
+        "tok_per_sec": 13591.0,
+        "elapsed_s": 173.3
       },
       {
         "step": 600,
-        "loss": 0.6509,
+        "loss": 0.4427,
         "vram_mb": 861.1,
-        "tok_per_sec": 13576.0,
-        "elapsed_s": 181.0
+        "tok_per_sec": 13596.0,
+        "elapsed_s": 180.8
       },
       {
         "step": 625,
-        "loss": 0.6367,
+        "loss": 0.431,
         "vram_mb": 1068.6,
-        "tok_per_sec": 13579.0,
-        "elapsed_s": 188.5
+        "tok_per_sec": 13599.0,
+        "elapsed_s": 188.3
       },
       {
         "step": 650,
-        "loss": 0.623,
+        "loss": 0.4169,
         "vram_mb": 1068.6,
-        "tok_per_sec": 13582.0,
-        "elapsed_s": 196.0
+        "tok_per_sec": 13600.0,
+        "elapsed_s": 195.8
       },
       {
         "step": 675,
-        "loss": 0.6038,
+        "loss": 0.4277,
         "vram_mb": 1068.6,
-        "tok_per_sec": 13587.0,
-        "elapsed_s": 203.5
+        "tok_per_sec": 13604.0,
+        "elapsed_s": 203.2
       },
       {
         "step": 700,
-        "loss": 0.6152,
+        "loss": 0.4131,
         "vram_mb": 1068.6,
-        "tok_per_sec": 13588.0,
-        "elapsed_s": 211.0
+        "tok_per_sec": 13605.0,
+        "elapsed_s": 210.8
       },
       {
         "step": 725,
-        "loss": 0.626,
+        "loss": 0.3921,
         "vram_mb": 1068.6,
-        "tok_per_sec": 13590.0,
-        "elapsed_s": 218.5
+        "tok_per_sec": 13607.0,
+        "elapsed_s": 218.2
       },
       {
         "step": 750,
-        "loss": 0.6263,
+        "loss": 0.4176,
         "vram_mb": 1068.6,
-        "tok_per_sec": 13593.0,
-        "elapsed_s": 226.0
+        "tok_per_sec": 13608.0,
+        "elapsed_s": 225.8
       },
       {
         "step": 775,
-        "loss": 0.589,
+        "loss": 0.4051,
         "vram_mb": 1068.6,
-        "tok_per_sec": 13597.0,
-        "elapsed_s": 233.5
+        "tok_per_sec": 13607.0,
+        "elapsed_s": 233.3
       },
       {
         "step": 800,
-        "loss": 0.5703,
+        "loss": 0.3871,
         "vram_mb": 861.1,
-        "tok_per_sec": 13621.0,
-        "elapsed_s": 240.6
+        "tok_per_sec": 13608.0,
+        "elapsed_s": 240.8
       },
       {
         "step": 825,
-        "loss": 0.5854,
+        "loss": 0.3908,
         "vram_mb": 1068.6,
-        "tok_per_sec": 13647.0,
-        "elapsed_s": 247.6
+        "tok_per_sec": 13610.0,
+        "elapsed_s": 248.3
       },
       {
         "step": 850,
-        "loss": 0.554,
+        "loss": 0.3843,
         "vram_mb": 1068.6,
-        "tok_per_sec": 13672.0,
-        "elapsed_s": 254.7
+        "tok_per_sec": 13612.0,
+        "elapsed_s": 255.8
       },
       {
         "step": 875,
-        "loss": 0.56,
+        "loss": 0.3816,
         "vram_mb": 1068.6,
-        "tok_per_sec": 13696.0,
-        "elapsed_s": 261.7
+        "tok_per_sec": 13615.0,
+        "elapsed_s": 263.2
       },
       {
         "step": 900,
-        "loss": 0.5542,
+        "loss": 0.3724,
         "vram_mb": 1068.6,
-        "tok_per_sec": 13719.0,
-        "elapsed_s": 268.7
+        "tok_per_sec": 13616.0,
+        "elapsed_s": 270.7
       },
       {
         "step": 925,
-        "loss": 0.532,
+        "loss": 0.3822,
         "vram_mb": 1068.6,
-        "tok_per_sec": 13741.0,
-        "elapsed_s": 275.7
+        "tok_per_sec": 13618.0,
+        "elapsed_s": 278.2
       },
       {
         "step": 950,
-        "loss": 0.5709,
+        "loss": 0.3887,
         "vram_mb": 1068.6,
-        "tok_per_sec": 13762.0,
-        "elapsed_s": 282.8
+        "tok_per_sec": 13618.0,
+        "elapsed_s": 285.7
       },
       {
         "step": 975,
-        "loss": 0.541,
+        "loss": 0.3789,
         "vram_mb": 1068.6,
-        "tok_per_sec": 13781.0,
-        "elapsed_s": 289.8
+        "tok_per_sec": 13618.0,
+        "elapsed_s": 293.3
       },
       {
         "step": 1000,
-        "loss": 0.5489,
+        "loss": 0.3707,
         "vram_mb": 861.1,
-        "tok_per_sec": 13800.0,
-        "elapsed_s": 296.8
+        "tok_per_sec": 13619.0,
+        "elapsed_s": 300.8
       },
       {
         "step": 1025,
-        "loss": 0.5283,
+        "loss": 0.3585,
         "vram_mb": 1068.6,
-        "tok_per_sec": 13817.0,
-        "elapsed_s": 303.9
+        "tok_per_sec": 13618.0,
+        "elapsed_s": 308.3
       },
       {
         "step": 1050,
-        "loss": 0.5213,
+        "loss": 0.3657,
         "vram_mb": 1068.6,
-        "tok_per_sec": 13833.0,
-        "elapsed_s": 310.9
+        "tok_per_sec": 13619.0,
+        "elapsed_s": 315.8
       },
       {
         "step": 1075,
-        "loss": 0.5194,
+        "loss": 0.3708,
         "vram_mb": 1068.6,
-        "tok_per_sec": 13850.0,
-        "elapsed_s": 317.9
+        "tok_per_sec": 13619.0,
+        "elapsed_s": 323.3
       },
       {
         "step": 1100,
-        "loss": 0.499,
+        "loss": 0.3461,
         "vram_mb": 1068.6,
-        "tok_per_sec": 13866.0,
-        "elapsed_s": 324.9
+        "tok_per_sec": 13618.0,
+        "elapsed_s": 330.8
       },
       {
         "step": 1125,
-        "loss": 0.5064,
+        "loss": 0.37,
         "vram_mb": 1068.6,
-        "tok_per_sec": 13881.0,
-        "elapsed_s": 332.0
+        "tok_per_sec": 13621.0,
+        "elapsed_s": 338.3
       },
       {
         "step": 1150,
-        "loss": 0.5009,
+        "loss": 0.3607,
         "vram_mb": 1068.6,
-        "tok_per_sec": 13895.0,
-        "elapsed_s": 339.0
+        "tok_per_sec": 13621.0,
+        "elapsed_s": 345.8
       },
       {
         "step": 1175,
-        "loss": 0.5196,
+        "loss": 0.3556,
         "vram_mb": 1068.6,
-        "tok_per_sec": 13909.0,
-        "elapsed_s": 346.0
+        "tok_per_sec": 13623.0,
+        "elapsed_s": 353.3
       },
       {
         "step": 1200,
-        "loss": 0.497,
+        "loss": 0.3385,
         "vram_mb": 861.1,
-        "tok_per_sec": 13922.0,
-        "elapsed_s": 353.1
+        "tok_per_sec": 13625.0,
+        "elapsed_s": 360.8
       },
       {
         "step": 1225,
-        "loss": 0.4922,
+        "loss": 0.3499,
         "vram_mb": 1068.6,
-        "tok_per_sec": 13934.0,
-        "elapsed_s": 360.1
+        "tok_per_sec": 13626.0,
+        "elapsed_s": 368.2
       },
       {
         "step": 1250,
-        "loss": 0.4759,
+        "loss": 0.3419,
         "vram_mb": 1068.6,
-        "tok_per_sec": 13930.0,
-        "elapsed_s": 367.5
+        "tok_per_sec": 13628.0,
+        "elapsed_s": 375.7
       },
       {
         "step": 1275,
-        "loss": 0.4789,
+        "loss": 0.3367,
         "vram_mb": 1068.6,
-        "tok_per_sec": 13930.0,
-        "elapsed_s": 374.9
+        "tok_per_sec": 13631.0,
+        "elapsed_s": 383.1
       },
       {
         "step": 1300,
-        "loss": 0.4796,
+        "loss": 0.3304,
         "vram_mb": 1068.6,
-        "tok_per_sec": 13928.0,
-        "elapsed_s": 382.3
+        "tok_per_sec": 13631.0,
+        "elapsed_s": 390.7
       },
       {
         "step": 1325,
-        "loss": 0.4653,
+        "loss": 0.3254,
         "vram_mb": 1068.6,
-        "tok_per_sec": 13927.0,
-        "elapsed_s": 389.7
+        "tok_per_sec": 13632.0,
+        "elapsed_s": 398.1
       },
       {
         "step": 1350,
-        "loss": 0.465,
+        "loss": 0.3169,
         "vram_mb": 1068.6,
-        "tok_per_sec": 13925.0,
-        "elapsed_s": 397.1
+        "tok_per_sec": 13632.0,
+        "elapsed_s": 405.6
       },
       {
         "step": 1375,
-        "loss": 0.4492,
+        "loss": 0.3196,
         "vram_mb": 1068.6,
-        "tok_per_sec": 13925.0,
-        "elapsed_s": 404.5
+        "tok_per_sec": 13633.0,
+        "elapsed_s": 413.1
       },
       {
         "step": 1400,
-        "loss": 0.4756,
+        "loss": 0.3324,
         "vram_mb": 861.1,
-        "tok_per_sec": 13925.0,
-        "elapsed_s": 411.8
+        "tok_per_sec": 13635.0,
+        "elapsed_s": 420.6
       },
       {
         "step": 1425,
-        "loss": 0.4511,
+        "loss": 0.3169,
         "vram_mb": 1068.6,
-        "tok_per_sec": 13924.0,
-        "elapsed_s": 419.2
+        "tok_per_sec": 13635.0,
+        "elapsed_s": 428.1
       },
       {
         "step": 1450,
-        "loss": 0.4504,
+        "loss": 0.3215,
         "vram_mb": 1068.6,
-        "tok_per_sec": 13924.0,
-        "elapsed_s": 426.6
+        "tok_per_sec": 13635.0,
+        "elapsed_s": 435.6
       },
       {
         "step": 1475,
-        "loss": 0.4426,
+        "loss": 0.3338,
         "vram_mb": 1068.6,
-        "tok_per_sec": 13924.0,
-        "elapsed_s": 433.9
+        "tok_per_sec": 13637.0,
+        "elapsed_s": 443.0
       },
       {
         "step": 1500,
-        "loss": 0.4548,
+        "loss": 0.3181,
         "vram_mb": 1068.6,
-        "tok_per_sec": 13923.0,
-        "elapsed_s": 441.3
+        "tok_per_sec": 13639.0,
+        "elapsed_s": 450.5
       }
     ]
   },
@@ -616,13 +616,13 @@
       "file": "checkpoints_lumina_next/pytorch_model.bin",
       "description": "Pesi PyTorch ufficiali Lumina-Next 135M",
       "size_mb": 197.29,
-      "last_modified": "2026-10-27 20:03:21"
+      "last_modified": "2026-10-27 22:24:03"
     },
     {
       "file": "hf_export_lumina_next/model.safetensors",
       "description": "Pesi Hugging Face Safetensors bfloat16",
-      "size_mb": 394.44,
-      "last_modified": "2026-10-27 20:03:58"
+      "size_mb": 197.23,
+      "last_modified": "2026-10-27 22:24:03"
     },
     {
       "file": "hf_export_lumina_xlarge/model.safetensors",
