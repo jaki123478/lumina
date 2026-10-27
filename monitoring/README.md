@@ -1,7 +1,7 @@
 # 📡 Lumina — Dashboard di Monitoraggio Remoto (PC Principale)
-> **Ultimo Aggiornamento**: `2026-10-27 19:31:27 `  
+> **Ultimo Aggiornamento**: `2026-10-27 19:34:30 `  
 > **Stato Sistema**: **`In attesa / Pronto per nuovo ciclo`**  
-> **Hardware**: `NVIDIA GeForce RTX 5060 Laptop GPU` | VRAM: `1819.0 / 8151.0 MB` | Temp: `50.59 °C`
+> **Hardware**: `NVIDIA GeForce RTX 5060 Laptop GPU` | VRAM: `1819.0 / 8151.0 MB` | Temp: `48.81 °C`
 ---
 ## 1. 🚀 Stato del Modello & Addestramento (Lumina-Next 135M)
 * **Step Completati**: `1500 / 1500` (Fase 1 completata)
@@ -46,7 +46,7 @@
 | `checkpoints_lumina_next/checkpoint_step500.pt` | Checkpoint incrementale Step 500 (Loss 3.6652) | **197.3 MB** | `2026-10-27 17:58:26` |
 | `checkpoints_lumina_next/checkpoint_step500_safe_backup.pt` | Copia di sicurezza blindata Step 500 | **197.3 MB** | `2026-10-27 17:58:26` |
 | `checkpoints_lumina_next/pytorch_model.bin` | Pesi PyTorch ufficiali Lumina-Next 135M | **197.29 MB** | `2026-10-27 19:29:42` |
-| `hf_export_lumina_next/model.safetensors` | Pesi Hugging Face Safetensors bfloat16 | **197.23 MB** | `2026-10-27 19:29:43` |
+| `hf_export_lumina_next/model.safetensors` | Pesi Hugging Face Safetensors bfloat16 | **394.44 MB** | `2026-10-27 19:31:33` |
 | `hf_export_lumina_xlarge/model.safetensors` | Lumina 14M Med (Checkpoint consolidato) | **54.92 MB** | `2026-10-26 19:12:11` |
 | `hf_export_lumina_large/model.safetensors` | Lumina 2.75M Nano (Checkpoint consolidato) | **10.5 MB** | `2026-10-26 19:12:11` |
 

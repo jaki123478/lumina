@@ -1,6 +1,6 @@
 {
-  "timestamp": 1793125887.4037173,
-  "datetime_str": "2026-10-27 19:31:27 ",
+  "timestamp": 1793126070.6424272,
+  "datetime_str": "2026-10-27 19:34:30 ",
   "process_status": "In attesa / Pronto per nuovo ciclo",
   "is_training_active": false,
   "gpu": {
@@ -8,7 +8,7 @@
     "memory_used_mb": 1819.0,
     "memory_total_mb": 8151.0,
     "utilization_pct": 0.0,
-    "temperature_c": 50.59,
+    "temperature_c": 48.81,
     "driver_version": "621.01",
     "status": "online"
   },
@@ -621,8 +621,8 @@
     {
       "file": "hf_export_lumina_next/model.safetensors",
       "description": "Pesi Hugging Face Safetensors bfloat16",
-      "size_mb": 197.23,
-      "last_modified": "2026-10-27 19:29:43"
+      "size_mb": 394.44,
+      "last_modified": "2026-10-27 19:31:33"
     },
     {
       "file": "hf_export_lumina_xlarge/model.safetensors",
