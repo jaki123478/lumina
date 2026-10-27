@@ -1,0 +1,11 @@
+{
+  "status": "generazione_attiva",
+  "total_generated_this_session": 479,
+  "total_distilled_samples": 26461,
+  "training_cycles_completed": 19,
+  "last_qa": {
+    "user": "Cosa deduciamo se tutti gli uomini sono mortali? Si deduciamo che Socrate è mortale.",
+    "assistant": "Socrate è sempre mortale."
+  },
+  "uptime_sec": 2451
+}

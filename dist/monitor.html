@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Lumina & Qwen - Monitor Addestramento in Tempo Reale</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0f172a;
+      color: #e2e8f0;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      padding: 24px;
+      line-height: 1.5;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #334155;
+      margin-bottom: 20px;
+    }
+    .title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #38bdf8;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .status-badge {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #22c55e;
+      box-shadow: 0 0 10px #22c55e;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .card {
+      background: #1e293b;
+      padding: 16px;
+      border-radius: 12px;
+      border: 1px solid #334155;
+    }
+    .card-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      color: #94a3b8;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+    .card-val {
+      font-size: 26px;
+      font-weight: 800;
+      color: #f8fafc;
+    }
+    .terminal {
+      background: #020617;
+      border: 1px solid #1e293b;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
+    }
+    .term-head {
+      font-size: 13px;
+      color: #64748b;
+      margin-bottom: 14px;
+      border-bottom: 1px solid #1e293b;
+      padding-bottom: 8px;
+    }
+    .log-stream {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-height: 480px;
+      overflow-y: auto;
+    }
+    .log-item {
+      padding: 10px 14px;
+      background: rgba(30, 41, 59, 0.4);
+      border-left: 3px solid #38bdf8;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+    .log-user { color: #facc15; font-weight: 600; margin-bottom: 4px; }
+    .log-bot { color: #a7f3d0; }
+    .log-meta { font-size: 11px; color: #64748b; margin-top: 4px; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="title">
+      <span class="status-badge"></span>
+      <span>Addestramento Continuo: Qwen (Maestro) ➔ Lumina (Studente)</span>
+    </div>
+    <div id="uptime" style="color:#94a3b8; font-size:13px;">In esecuzione</div>
+  </div>
+
+  <div class="stats-grid">
+    <div class="card">
+      <div class="card-label">Dialoghi Generati</div>
+      <div class="card-val" id="total-samples" style="color:#38bdf8;">--</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Cicli Addestramento Lumina</div>
+      <div class="card-val" id="total-cycles" style="color:#4ade80;">--</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Loss Ultimo Addestramento</div>
+      <div class="card-val" id="last-loss" style="color:#f43f5e;">--</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Hardware</div>
+      <div class="card-val" style="font-size:16px; margin-top:6px; color:#cbd5e1;">NVIDIA RTX 5060</div>
+    </div>
+  </div>
+
+  <div class="terminal">
+    <div class="term-head">LIVE FEED · Gli ultimi dialoghi generati da Qwen che Lumina sta imparando:</div>
+    <div class="log-stream" id="logs">Caricamento in corso...</div>
+  </div>
+
+  <script>
+    let seenPrompts = new Set();
+    async function update() {
+      try {
+        const res = await fetch('/api/auto_status');
+        const data = await res.json();
+        document.getElementById('total-samples').textContent = data.total_distilled_samples || data.total_generated_this_session || '--';
+        document.getElementById('total-cycles').textContent = data.training_cycles_completed || '0';
+        document.getElementById('last-loss').textContent = data.last_train_loss !== undefined ? `${data.last_train_loss}` : 'In corso';
+        if (data.uptime_sec) {
+          const m = Math.floor(data.uptime_sec / 60);
+          const s = data.uptime_sec % 60;
+          document.getElementById('uptime').textContent = `Uptime: ${m}m ${s}s`;
+        }
+
+        // Fetch recent dialogues
+        const dRes = await fetch('/api/recent_dialogues');
+        const dData = await dRes.json();
+        if (Array.isArray(dData) && dData.length) {
+          const container = document.getElementById('logs');
+          container.replaceChildren();
+          dData.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'log-item';
+            div.innerHTML = `
+              <div class="log-user">Tu: ${item.user || item.prompt}</div>
+              <div class="log-bot">Lumina: ${item.assistant || item.response}</div>
+              <div class="log-meta">[Categoria: ${item.category || 'generale'}] · ${new Date((item.timestamp || Date.now()/1000) * 1000).toLocaleTimeString()}</div>
+            `;
+            container.append(div);
+          });
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    update();
+    setInterval(update, 1500);
+  </script>
+</body>
+</html>

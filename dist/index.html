@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#355dda">
+  <meta name="description" content="Lumina AI: Modello linguistico italiano compatto, privato e sicuro. Chat, coding ed analisi documenti PDF 100% offline.">
+  <title>Lumina AI — Intelligenza Sovrana & Privata</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%23355dda'/%3E%3Cpath d='M32 12v40M12 32h40M18 18l28 28M18 46l28-28' stroke='white' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="manifest" href="./manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Lumina AI">
+  <link rel="apple-touch-icon" href="./icon-192.png">
+  <link rel="stylesheet" href="./styles.css">
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW:', err));
+      });
+    }
+  </script>
+  <script src="./voice-recognizer.js" defer></script>
+  <script type="module" src="./app.js"></script>
+</head>
+<body>
+  <div class="mobile-scrim" id="mobile-scrim" hidden></div>
+  <aside class="sidebar" id="sidebar" aria-label="Conversazioni">
+    <a class="brand" href="./" aria-label="Lumina, pagina iniziale">
+      <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M24 6v36M6 24h36M11.3 11.3l25.4 25.4M11.3 36.7l25.4-25.4"/></svg></span>
+      <span>Lumina<span class="brand-dot">.</span></span>
+    </a>
+    <button id="new-chat" class="new-chat"><span class="icon" data-icon="plus"></span> Nuova conversazione <span class="key-hint">N</span></button>
+    <div class="history-heading"><span>Le tue conversazioni</span><span id="history-count">0</span></div>
+    <nav class="chat-history" id="chat-history" aria-label="Cronologia delle chat"></nav>
+    <div class="history-empty" id="history-empty"><span class="icon" data-icon="chat"></span><p>Una nuova idea comincia<br>da una conversazione.</p></div>
+    <div class="sidebar-bottom">
+      <a class="hf-link" href="https://huggingface.co/jacopof/lumina-2.75m" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:8px;padding:8px 12px;margin:4px 0 10px 0;background:#f0f7ff;color:#2563eb;border:1px solid #bfdbfe;border-radius:10px;text-decoration:none;font-size:12px;font-weight:600;">
+        <span>🤗</span><span>Modelli su Hugging Face</span>
+      </a>
+      <button class="model-card" id="model-details"><span class="model-chip" aria-hidden="true"><span class="icon" data-icon="chip"></span></span><span><strong>Lumina Sovereign</strong><small>Modello neurale italiano</small></span><span class="icon small" data-icon="chevron"></span></button>
+      <div class="sidebar-footer"><span class="local-indicator"></span><span>100% Locale e Privato</span></div>
+    </div>
+  </aside>
+  <main class="workspace">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="icon-button mobile-menu" id="mobile-menu" aria-label="Apri conversazioni" aria-expanded="false"><span class="icon" data-icon="menu"></span></button>
+        <span class="workspace-name">Lumina Workspace</span>
+      </div>
+      <div class="topbar-actions">
+        <select id="model-selector" class="model-select" aria-label="Seleziona motore neurale">
+          <option value="auto" selected>✨ Lumina Smart (Automatico)</option>
+          <option value="lumina-coder">💻 Lumina Coder (Python & Tech)</option>
+          <option value="lumina-next">🧠 Lumina Next (135M Long Context)</option>
+          <option value="lumina-2.75m">⚡ Lumina Nano (2.75M Locale)</option>
+        </select>
+        <a href="https://huggingface.co/spaces/jacopof/lumina-chat" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;padding:5px 12px;border-radius:20px;background:#f8fafc;color:#1e293b;text-decoration:none;border:1px solid #cbd5e1;"><span>✨ Demo Space</span></a>
+        <span class="model-status" id="model-status" role="status"><span class="status-light"></span><span id="status-text">Caricamento…</span></span>
+        <button class="icon-button" id="settings-button" aria-label="Impostazioni e informazioni"><span class="icon" data-icon="sliders"></span></button>
+      </div>
+    </header>
+    <div class="conversation-scroll" id="conversation-scroll">
+      <section class="welcome" id="welcome" aria-labelledby="welcome-title">
+        <div class="welcome-symbol" aria-hidden="true"><svg viewBox="0 0 80 80"><path d="M40 8v64M8 40h64M17.4 17.4l45.2 45.2M17.4 62.6l45.2-45.2"/></svg><span></span></div>
+        <p class="welcome-intro">Ciao, sono Lumina AI.</p>
+        <h1 id="welcome-title">La tua AI privata,<br>locale e sovrana.</h1>
+        <p class="welcome-description">Chatta in italiano, chiedi codice Python o allega un documento PDF per analizzarlo con zero allucinazioni.</p>
+        <div class="suggestions" aria-label="Messaggi da provare">
+          <button class="suggestion" data-prompt="Come creo una funzione che filtra numeri pari in Python?"><span class="suggestion-symbol">💻</span><strong>Coding Python</strong><span>Come creo una funzione pari?</span></button>
+          <button class="suggestion" data-prompt="A cosa serve lo SPID e come si richiede?"><span class="icon suggestion-symbol" data-icon="spark"></span><strong>Burocrazia Pratica</strong><span>A cosa serve lo SPID?</span></button>
+          <button class="suggestion" data-prompt="Spiegami cos'è la fotosintesi in breve."><span class="icon suggestion-symbol" data-icon="book"></span><strong>Scienza & Cultura</strong><span>Cos'è la fotosintesi?</span></button>
+        </div>
+      </section>
+      <section class="messages" id="messages" aria-label="Messaggi della conversazione" aria-live="polite" aria-relevant="additions" hidden></section>
+    </div>
+    <div class="composer-area">
+      <div class="notice" id="notice" role="status" hidden></div>
+      <div id="doc-chip-container" style="display:none; padding: 0 4px;"></div>
+      <form class="composer" id="chat-form">
+        <label class="sr-only" for="prompt">Messaggio a Lumina</label>
+        <textarea id="prompt" placeholder="Scrivi a Lumina o trascina qui un PDF…" rows="1" maxlength="2000" enterkeyhint="send"></textarea>
+        <div class="composer-bottom">
+          <span class="composer-hint">Invio per inviare <span>·</span> Trascina un file PDF/TXT</span>
+          <div class="composer-actions">
+            <input type="file" id="doc-input" accept=".pdf,.txt,.md,.py,.json,.csv,.log" style="display:none">
+            <button class="upload-btn" type="button" id="upload-doc-btn" title="Allega documento PDF o testo (RAG)"><span class="icon" data-icon="paperclip"></span></button>
+            <button class="voice-button" type="button" id="voice-button" title="Apri conversazione vocale"><span class="icon" data-icon="wave"></span><span>Voce</span></button>
+            <button class="send-button" type="submit" id="send-button" disabled aria-label="Invia messaggio"><span class="icon" data-icon="arrow-up"></span></button>
+          </div>
+        </div>
+      </form>
+      <p class="disclaimer">Lumina è un'AI privata e sicura: le tue conversazioni e i tuoi documenti restano al 100% sul tuo dispositivo.</p>
+    </div>
+  </main>
+  <dialog id="settings-dialog" class="settings-dialog" aria-labelledby="settings-title">
+    <div class="dialog-heading"><h2 id="settings-title">Informazioni su Lumina</h2><button class="icon-button" id="close-settings" aria-label="Chiudi impostazioni"><span class="icon" data-icon="close"></span></button></div>
+    <div class="model-intro"><span class="brand-mark"><svg viewBox="0 0 48 48"><path d="M24 6v36M6 24h36M11.3 11.3l25.4 25.4M11.3 36.7l25.4-25.4"/></svg></span><div><h3>Lumina Sovereign</h3><p>AI Italiana Open Source & Indipendente</p></div></div>
+    <p class="settings-copy">Lumina è una famiglia di modelli linguistici sviluppata in Italia per garantire totale privacy, sovranità dei dati e assenza di tracciamento o abbonamenti a pagamento. Include motori ultra-leggeri per browser, RAG per documenti e modelli di coding con RoPE e YaRN.</p>
+    <dl class="model-facts"><div><dt>Ecosistema</dt><dd id="parameter-count">2.75M - 135M</dd></div><div><dt>Esecuzione</dt><dd>100% Locale</dd></div><div><dt>Stato</dt><dd id="model-state-detail">Pronto</dd></div></dl>
+    <div class="settings-controls">
+      <label for="temperature">Creatività <output id="temperature-output" for="temperature">0,20</output></label>
+      <input type="range" id="temperature" min="0.0" max="1.0" step="0.05" value="0.20">
+      <div class="range-labels"><span>Deterministico (Coding)</span><span>Creativo (Storie)</span></div>
+      <label class="length-label" for="response-length">Lunghezza massima</label>
+      <select id="response-length">
+        <option value="128">Breve · 128 token</option>
+        <option value="256" selected>Media · 256 token</option>
+        <option value="512">Estesa · 512 token</option>
+      </select>
+    </div>
+    <p class="settings-footnote">Documenti allegati e cronologia chat vengono salvati esclusivamente nella memoria locale del tuo dispositivo.</p>
+    <button id="clear-history" class="clear-history">Elimina tutte le conversazioni</button>
+    <div id="clear-confirm" class="clear-confirm" hidden>
+      <p>Eliminare tutte le chat salvate in questo browser?</p>
+      <button id="confirm-clear" class="danger-button">Elimina chat</button>
+      <button id="cancel-clear" class="secondary-button">Annulla</button>
+    </div>
+  </dialog>
+  <dialog id="voice-dialog" class="voice-dialog" aria-labelledby="voice-title">
+    <div class="dialog-heading"><span class="voice-heading"><span class="icon" data-icon="wave"></span> Conversazione vocale</span><button class="icon-button" id="close-voice" aria-label="Chiudi conversazione vocale"><span class="icon" data-icon="close"></span></button></div>
+    <div class="voice-orb" id="voice-orb" aria-hidden="true"><span></span><svg viewBox="0 0 80 80"><path d="M40 14v52M14 40h52M21.6 21.6l36.8 36.8M21.6 58.4l36.8-36.8"/></svg></div>
+    <h2 id="voice-title">La parola a te.</h2><p class="voice-state" id="voice-state" role="status">Avvia il microfono e parla con Lumina.</p>
+    <div class="voice-transcript" id="voice-transcript" aria-live="polite">La voce artificiale risponderà in italiano.</div>
+    <button id="voice-preview" class="voice-preview"><span class="icon" data-icon="wave"></span><span>Ascolta la voce</span></button>
+    <div class="voice-controls"><button id="voice-control" class="voice-control" aria-label="Avvia microfono"><span class="icon" data-icon="mic"></span></button><button id="end-voice" class="end-voice" aria-label="Termina conversazione vocale"><span class="icon" data-icon="phone"></span></button></div>
+  </dialog>
+</body>
+</html>

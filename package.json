@@ -1,0 +1,10 @@
+{
+  "name": "lumina-50k",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Modello da 50.000 parametri e voce sperimentale da zero",
+  "scripts": {
+    "start": "python serve.py",
+    "test": "node tests/verify.mjs"
+  }
+}

@@ -1,0 +1,46 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import { createRequire } from 'node:module';
+import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
+
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const require = createRequire(import.meta.url);
+const { LuminaEngine, sample, updateUtf8 } = require('../dist/inference-worker.js');
+const source = fs.readFileSync(path.join(root,'dist/voice-synth.js'),'utf8');
+const { phonemize, synthesize } = await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
+const weights = JSON.parse(fs.readFileSync(path.join(root,'dist/model/weights.json'),'utf8'));
+const engine = new LuminaEngine(weights);
+assert.equal(engine.parameterCount,50000);
+assert.ok(weights.training.steps > 0, 'must ship actual trained weights');
+const prompt=engine.prompt([{role:'user',content:'Ciao'}]);
+const logits=engine.prefill(prompt.tokens);
+assert.equal(logits.length,259);
+assert.ok(Array.from(logits).every(Number.isFinite));
+assert.ok(phonemize('Ciao!').includes('ch'));
+assert.deepEqual(phonemize(''),[]);
+assert.equal(synthesize('').length,0);
+const spoken=synthesize('Ciao, sono Lumina.');
+assert.ok(spoken.length > 22050 && spoken.length < 22050*8);
+assert.ok(spoken.every(Number.isFinite));
+const rms=Math.sqrt(spoken.reduce((v,x)=>v+x*x,0)/spoken.length);
+assert.ok(rms>0.01 && rms<0.5, 'voice must have audible unclipped energy');
+assert.ok(spoken.every(x=>Math.abs(x)<0.99));
+assert.deepEqual(spoken,synthesize('Ciao, sono Lumina.'),'synthesis deterministic');
+const utf8={remaining:0,minimum:128,maximum:191};
+updateUtf8(utf8,195); assert.equal(utf8.remaining,1);
+const byteLogits=new Float32Array(259).fill(-100);byteLogits[169]=2;byteLogits[65]=20;
+assert.equal(sample(byteLogits,0,utf8,[],weights.config),169,'respect UTF8 continuation');
+updateUtf8(utf8,169);assert.equal(utf8.remaining,0);
+for(const name of ['app.js','styles.css','voice-recognizer.js','voice-synth.js','inference-worker.js','index.html'])assert.ok(fs.statSync(path.join(root,'dist',name)).size>0);
+for(const name of ['app.js','voice-recognizer.js','voice-synth.js']) {
+  const text=fs.readFileSync(path.join(root,'dist',name),'utf8');
+  assert.ok(!/\b(?:webkitSpeechRecognition|SpeechRecognition|speechSynthesis|SpeechSynthesisUtterance)\b/.test(text),`${name} must not use browser speech services`);
+  const syntax=spawnSync(process.execPath,['--check',path.join(root,'dist',name)],{encoding:'utf8'});
+  assert.equal(syntax.status,0,syntax.stderr);
+}
+const voiceTest=spawnSync(process.execPath,[path.join(root,'tests/test_voice.cjs')],{encoding:'utf8'});
+assert.equal(voiceTest.status,0,voiceTest.stdout+voiceTest.stderr);
+console.log(voiceTest.stdout.trim());
+console.log(JSON.stringify({ok:true,parameters:engine.parameterCount,trainedSteps:weights.training.steps,voiceSeconds:spoken.length/22050,voiceRms:rms,networkSpeechServices:false}));

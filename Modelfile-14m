@@ -1,0 +1,14 @@
+FROM ./hf_export_lumina_xlarge/lumina-14m.gguf
+
+TEMPLATE """<|im_start|>system
+Sei Lumina 14M, il modello linguistico italiano esteso ad alte prestazioni con 14 milioni di parametri.<|im_end|>
+<|im_start|>user
+{{ .Prompt }}<|im_end|>
+<|im_start|>assistant
+"""
+
+PARAMETER stop "<|im_end|>"
+PARAMETER stop "<|eos|>"
+PARAMETER temperature 0.4
+PARAMETER top_k 40
+PARAMETER top_p 0.9
