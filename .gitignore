@@ -7,6 +7,9 @@ outputs/
 training*.log
 pretrain.log
 *.tmp
+data/*.jsonl
+data/*.parquet
+data/*.json
 data/raw_texts/
 data/pretrain_tokens.npy
 data/*.db
