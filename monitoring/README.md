@@ -1,11 +1,11 @@
 # 📡 Lumina — Dashboard di Monitoraggio Remoto (PC Principale)
-> **Ultimo Aggiornamento**: `2026-10-27 19:28:23 `  
+> **Ultimo Aggiornamento**: `2026-10-27 19:31:27 `  
 > **Stato Sistema**: **`In attesa / Pronto per nuovo ciclo`**  
-> **Hardware**: `NVIDIA GeForce RTX 5060 Laptop GPU` | VRAM: `4558.0 / 8151.0 MB` | Temp: `82.69 °C`
+> **Hardware**: `NVIDIA GeForce RTX 5060 Laptop GPU` | VRAM: `1819.0 / 8151.0 MB` | Temp: `50.59 °C`
 ---
 ## 1. 🚀 Stato del Modello & Addestramento (Lumina-Next 135M)
-* **Step Completati**: `1000 / 1000` (Fase 1 completata)
-* **Loss Iniziale**: `2.6973` ➔ **Loss Attuale**: **`1.1533`**
+* **Step Completati**: `1500 / 1500` (Fase 1 completata)
+* **Loss Iniziale**: `2.2448` ➔ **Loss Attuale**: **`0.7269`**
 * **Finestra di Contesto**: `2,048 token` (RoPE + YaRN)
 * **Throughput**: `~13.500 token/s` su precisione mista `bfloat16`
 * **Tempo Fase 1**: `151 secondi` (2.5 minuti per 500 step)
@@ -13,12 +13,12 @@
 ### Andamento della Loss (Ultimi Step Registrati):
 | Step | Loss | Throughput | VRAM Allocata |
 | :---: | :---: | :---: | :---: |
-| 875 | **1.2488** | 13,607 tok/s | 1068.6 MB |
-| 900 | **1.274** | 13,618 tok/s | 1068.6 MB |
-| 925 | **1.2556** | 13,630 tok/s | 1068.6 MB |
-| 950 | **1.2449** | 13,640 tok/s | 1068.6 MB |
-| 975 | **1.2167** | 13,649 tok/s | 1068.6 MB |
-| 1000 | **1.1533** | 13,660 tok/s | 861.1 MB |
+| 1375 | **0.7644** | 13,892 tok/s | 1068.6 MB |
+| 1400 | **0.7699** | 13,904 tok/s | 861.1 MB |
+| 1425 | **0.7318** | 13,915 tok/s | 1068.6 MB |
+| 1450 | **0.7415** | 13,926 tok/s | 1068.6 MB |
+| 1475 | **0.7351** | 13,936 tok/s | 1068.6 MB |
+| 1500 | **0.7269** | 13,947 tok/s | 1068.6 MB |
 
 ---
 ## 2. 📚 Stato dei Dataset Locali
@@ -45,8 +45,8 @@
 | :--- | :--- | :---: | :---: |
 | `checkpoints_lumina_next/checkpoint_step500.pt` | Checkpoint incrementale Step 500 (Loss 3.6652) | **197.3 MB** | `2026-10-27 17:58:26` |
 | `checkpoints_lumina_next/checkpoint_step500_safe_backup.pt` | Copia di sicurezza blindata Step 500 | **197.3 MB** | `2026-10-27 17:58:26` |
-| `checkpoints_lumina_next/pytorch_model.bin` | Pesi PyTorch ufficiali Lumina-Next 135M | **197.29 MB** | `2026-10-27 19:17:43` |
-| `hf_export_lumina_next/model.safetensors` | Pesi Hugging Face Safetensors bfloat16 | **197.23 MB** | `2026-10-27 19:17:44` |
+| `checkpoints_lumina_next/pytorch_model.bin` | Pesi PyTorch ufficiali Lumina-Next 135M | **197.29 MB** | `2026-10-27 19:29:42` |
+| `hf_export_lumina_next/model.safetensors` | Pesi Hugging Face Safetensors bfloat16 | **197.23 MB** | `2026-10-27 19:29:43` |
 | `hf_export_lumina_xlarge/model.safetensors` | Lumina 14M Med (Checkpoint consolidato) | **54.92 MB** | `2026-10-26 19:12:11` |
 | `hf_export_lumina_large/model.safetensors` | Lumina 2.75M Nano (Checkpoint consolidato) | **10.5 MB** | `2026-10-26 19:12:11` |
 
