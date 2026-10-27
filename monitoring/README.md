@@ -1,7 +1,7 @@
 # 📡 Lumina — Dashboard di Monitoraggio Remoto (PC Principale)
-> **Ultimo Aggiornamento**: `2026-10-27 19:10:02 `  
+> **Ultimo Aggiornamento**: `2026-10-27 19:13:05 `  
 > **Stato Sistema**: **`In attesa / Pronto per nuovo ciclo`**  
-> **Hardware**: `NVIDIA GeForce RTX 5060 Laptop GPU` | VRAM: `1772.0 / 8151.0 MB` | Temp: `52.59 °C`
+> **Hardware**: `NVIDIA GeForce RTX 5060 Laptop GPU` | VRAM: `4536.0 / 8151.0 MB` | Temp: `72.19 °C`
 ---
 ## 1. 🚀 Stato del Modello & Addestramento (Lumina-Next 135M)
 * **Step Completati**: `1000 / 1000` (Fase 1 completata)
