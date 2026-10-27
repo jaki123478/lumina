@@ -53,12 +53,12 @@ def upload_distilled_dataset(api: HfApi):
     create_repo(repo_id=repo_id, repo_type="dataset", exist_ok=True)
 
     folder = Path("hf_export_dataset")
-    print(f"[*] Caricamento 17.057 campioni curati da {folder} -> {repo_id}...")
+    print(f"[*] Caricamento 28.807 campioni curati da {folder} -> {repo_id}...")
     api.upload_folder(
         folder_path=str(folder),
         repo_id=repo_id,
         repo_type="dataset",
-        commit_message="Update Lumina Dataset v3 CoT (17,057 curated samples with multi-step reasoning)",
+        commit_message="Update Lumina Dataset v4 CoT (28,807 curated samples with multi-step reasoning)",
     )
     print(f"[+] Dataset aggiornato con successo: https://huggingface.co/datasets/{repo_id}")
 
