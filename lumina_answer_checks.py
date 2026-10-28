@@ -16,6 +16,18 @@ def local_answer(messages):
         return 'Ciao! Sono Lumina. Di cosa vuoi parlare?','saluto locale'
     if re.search(r'che\s+linguaggio\s+[èe]\s+python|spiegami\s+cos[’\']?è\s+python', lower):
         return 'Python è un linguaggio di programmazione semplice e versatile.','definizione verificata'
+    definitions=[
+        (r'che\s+significa\s+variabile', 'Una variabile associa un nome a un valore in un programma.'),
+        (r'che\s+cosa\s+fa\s+una\s+funzione', 'Una funzione raccoglie istruzioni riutilizzabili e può restituire un valore.'),
+        (r'che\s+cosa\s+fa\s+il\s+browser', 'Il browser è il programma che usi per aprire le pagine web.'),
+        (r'che\s+significa\s+html', 'HTML descrive la struttura di una pagina web.'),
+        (r'come\s+si\s+usa\s+css', 'CSS definisce colori, spazi e aspetto delle pagine web.'),
+        (r'che\s+linguaggio\s+[èe]\s+javascript', 'JavaScript è un linguaggio usato anche per applicazioni nel browser.'),
+        (r'che\s+cosa\s+sono\s+le\s+reti\s+neurali', 'Sono sistemi di operazioni con pesi che imparano dagli esempi.'),
+    ]
+    for pattern, answer in definitions:
+        if re.search(pattern, lower):
+            return answer,'definizione informatica verificata'
     capitals={'italia':"Roma",'francia':'Parigi','spagna':'Madrid','germania':'Berlino','austria':'Vienna','grecia':'Atene'}
     cap=re.search(r'capitale\s+(?:d[’\']?|di\s+|della\s+)(italia|francia|spagna|germania|austria|grecia)', lower)
     if cap:

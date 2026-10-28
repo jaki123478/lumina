@@ -46,5 +46,10 @@ class GeneralTests(unittest.TestCase):
         self.assertIn('Posso sbagliare', local_answer([{'role':'user','content':'Dici sempre la verità?'}])[0])
         self.assertIn('coscienza', local_answer([{'role':'user','content':'Puoi essere felice?'}])[0])
         self.assertIn('tempo reale', local_answer([{'role':'user','content':'Quali sono le notizie?'}])[0])
+    def test_basic_it_definitions_are_stable(self):
+        self.assertIn('variabile', local_answer([{'role':'user','content':'Che significa variabile?'}])[0])
+        self.assertIn('funzione', local_answer([{'role':'user','content':'Che cosa fa una funzione?'}])[0])
+        self.assertIn('browser', local_answer([{'role':'user','content':'Che cosa fa il browser?'}])[0])
+        self.assertIn('HTML', local_answer([{'role':'user','content':'Che significa HTML?'}])[0])
 
 if __name__=='__main__':unittest.main()
