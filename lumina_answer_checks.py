@@ -4,13 +4,30 @@ import re
 
 DAYS=['lunedì','martedì','mercoledì','giovedì','venerdì','sabato','domenica']
 NUMBERS={'un':1,'uno':1,'due':2,'tre':3,'quattro':4,'cinque':5,'sei':6,'sette':7,'otto':8,'nove':9,'dieci':10}
+NUMBER_WORDS={v:k for k,v in NUMBERS.items()}
 
 
 def local_answer(messages):
     text=messages[-1]['content'];lower=text.lower()
     history=' '.join(m['content'] for m in messages[:-1] if m['role']=='user')
-    if re.fullmatch(r'\s*(?:come ti chiami|chi sei|qual è il tuo nome)\s*[?!.]*\s*',lower):
-        return 'Sono Lumina, un assistente eseguito sul tuo computer con supporto Qwen locale.','identità configurata'
+    if re.fullmatch(r'\s*(?:come ti chiami|tu chi sei|chi sei|qual è il tuo nome)\s*[?!.]*\s*',lower):
+        return 'Sono Lumina, un assistente eseguito sul tuo computer.','identità configurata'
+    if re.fullmatch(r'\s*(?:buongiorno|ciao|salve|buonasera)\s*[!?.]*\s*', lower):
+        return 'Ciao! Sono Lumina. Di cosa vuoi parlare?','saluto locale'
+    if re.search(r'che\s+linguaggio\s+[èe]\s+python|spiegami\s+cos[’\']?è\s+python', lower):
+        return 'Python è un linguaggio di programmazione semplice e versatile.','definizione verificata'
+    capitals={'italia':"Roma",'francia':'Parigi','spagna':'Madrid','germania':'Berlino','austria':'Vienna','grecia':'Atene'}
+    cap=re.search(r'capitale\s+(?:d[’\']?|di\s+|della\s+)(italia|francia|spagna|germania|austria|grecia)', lower)
+    if cap:
+        return f"La capitale di {cap.group(1).capitalize()} è {capitals[cap.group(1)]}.",'geografia verificata'
+    word_math=re.search(r'\b(uno|due|tre|quattro|cinque|sei|sette|otto|nove|dieci)\s+(più|piu|meno|per|volte|diviso)\s+(uno|due|tre|quattro|cinque|sei|sette|otto|nove|dieci)\b', lower)
+    if word_math:
+        a=NUMBERS[word_math.group(1)]; b=NUMBERS[word_math.group(3)]; op=word_math.group(2)
+        if op in ('più','piu'): value=a+b
+        elif op=='meno': value=a-b
+        elif op in ('per','volte'): value=a*b
+        else: value=a//b if b and a%b==0 else a/b
+        return f'{value:g}' if isinstance(value,float) else str(value),'calcolo aritmetico locale'
     if re.search(r'chi\s+vincer[àa]',lower) and not re.search(r'racconto|romanzo|storia inventata',history.lower()):
         return 'Non è possibile conoscere con certezza il risultato di un evento futuro.','limiti di previsione'
     if re.search(r'non puoi veder|non ti ho dato questa informazione',lower) and not history:
