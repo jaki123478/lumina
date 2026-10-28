@@ -6,7 +6,7 @@
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10+-3776AB.svg?logo=python&logoColor=white)](https://python.org)
 [![Privacy First](https://img.shields.io/badge/Privacy-100%25%20Offline-success)](https://github.com/jaki123478/lumina)
 
-> **Lumina** è un ecosistema completo di modelli linguistici e strumenti open-source in lingua italiana, progettato per garantire **totale privacy, sovranità dei dati e funzionamento 100% offline** su qualsiasi dispositivo (da laptop consumer a vecchi PC e smartphone), senza abbonamenti e senza inviare informazioni all'esterno.
+> **Lumina** è un ecosistema completo di modelli linguistici e strumenti open-source in lingua italiana. Il modello, la memoria e la voce restano locali; la ricerca web è una funzione esplicita e controllabile, disattivabile con `offline: true`.
 
 ---
 
@@ -18,6 +18,18 @@
 * **💻 Specializzazione nel Coding**: Assistente Python esperto in grado di generare funzioni, spiegare algoritmi, debuggare errori e operare dentro **VS Code** via Copilot/Continue.
 * **🦙 Integrazione Ollama a 1-Click**: Pacchetti GGUF pronti all'uso per Ollama, LM Studio e Jan.ai.
 * **🛡️ Lumina Sentinel**: Sistema di guardrails integrato a difesa contro attacchi di prompt injection, jailbreak ed esfiltrazione di dati privati.
+
+## 🧭 App professionale consigliata: Odysseus + Lumina
+
+Per usare Lumina come prodotto completo (chat, agenti, documenti, memoria, ricerca e impostazioni), si usa l'interfaccia professionale open-source [Odysseus](https://github.com/odysseus-dev/odysseus). Lumina rimane il modello locale collegato all'endpoint OpenAI-compatible:
+
+```text
+Base URL: http://127.0.0.1:8000/v1
+Modello: lumina-assisted
+Voce locale: POST http://127.0.0.1:8000/api/tts
+```
+
+Dopo aver scaricato entrambi i repository, seguire [la guida di integrazione](odysseus/LUMINA_INTEGRATION.md). Qwen è usato solo come teacher durante l'addestramento e non viene esposto agli utenti.
 
 ---
 
