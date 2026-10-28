@@ -472,7 +472,10 @@ class Handler(SimpleHTTPRequestHandler):
                 public_web_requested=bool(re.search(r'^\s*(?:cerca\b|ricerca\b)',user_msg_lower) or re.search(r'https?://',user_msg_lower) or data.get('web_search'))
                 research_requested=bool(data.get('research') or re.search(r'\b(ricerca approfondita|fai una ricerca)\b',user_msg_lower))
                 weather_requested=bool(re.search(r'\b(meteo|tempo|previsioni|piove|temperatura)\b', user_msg_lower))
-                web_requested=web_requested or public_web_requested or research_requested or weather_requested
+                # La chat live usa Internet per impostazione predefinita; `offline: true`
+                # mantiene disponibile una risposta locale senza inviare la domanda online.
+                always_web_requested = not bool(data.get('offline', False))
+                web_requested=web_requested or public_web_requested or research_requested or weather_requested or always_web_requested
                 from lumina_web_sources import enabled as web_enabled, set_enabled as set_web_enabled
 
                 # Gestione comandi di consenso esplicito via chat/terminale/Visual Studio
@@ -527,7 +530,7 @@ class Handler(SimpleHTTPRequestHandler):
                             from lumina_weather import answer
                         elif research_requested:
                             from lumina_research import research as answer
-                        elif public_web_requested:
+                        elif public_web_requested or always_web_requested:
                             from lumina_public_web import answer
                         else:
                             from lumina_web_sources import answer
