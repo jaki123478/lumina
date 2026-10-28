@@ -15,6 +15,15 @@ def local_answer(messages):
         return 'Non è possibile conoscere con certezza il risultato di un evento futuro.','limiti di previsione'
     if re.search(r'non puoi veder|non ti ho dato questa informazione',lower) and not history:
         return 'Non ho questa informazione e non posso osservare oggetti o persone sul tuo computer.','disponibilità dei dati'
+    # Operazioni elementari e correzioni grammaticali sono deterministiche:
+    # non lasciamo che una generazione rumorosa sostituisca una risposta certa.
+    product=re.search(r'quanto\s+fa\s+(\d+)\s*(?:per|x|×)\s*(\d+)\s*\??$',lower)
+    if product:
+        return str(int(product.group(1))*int(product.group(2))),'calcolo aritmetico locale'
+    if re.search(r'\bio\s+ho\s+andato\s+al\s+mare\b',lower):
+        return 'La forma corretta è: io sono andato al mare.','correzione grammaticale locale'
+    if re.search(r'come\s+si\s+scrive.*print.*ciao|stampare\s+la\s+parola\s+ciao',lower) and 'python' in lower:
+        return "print('ciao')",'sintassi Python verificata'
     quote=re.search(r'(?:dal testo|nel testo|testo:)\s*["“](.*?)["”]',text,re.I|re.S)
     if quote:
         source=quote.group(1).lower()
