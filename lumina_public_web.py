@@ -53,6 +53,8 @@ class Extractor(HTMLParser):
 
 def search(query):
     # Solo le parole dell'ultima ricerca vanno al motore, mai la cronologia o l'audio.
+    query=re.sub(r"\b(?:dimmi|spiegami|che\s+cos(?:['’`]è|\s+è)|cos(?:['’`]è|\s+è)|cosa\s+è)\b", " ", query, flags=re.I)
+    query=re.sub(r"\s+", " ", query).strip()
     query=re.sub(r'\b[\w.+-]+@[\w.-]+\.[a-z]{2,}\b','[email rimossa]',query,flags=re.I)
     query=re.sub(r'\b\d{8,}\b','[numero rimosso]',query).strip()[:180]
     if not query:raise ValueError('Inserisci le parole da cercare')
