@@ -19,9 +19,9 @@
 * **🦙 Integrazione Ollama a 1-Click**: Pacchetti GGUF pronti all'uso per Ollama, LM Studio e Jan.ai.
 * **🛡️ Lumina Sentinel**: Sistema di guardrails integrato a difesa contro attacchi di prompt injection, jailbreak ed esfiltrazione di dati privati.
 
-## 🧭 App professionale consigliata: Odysseus + Lumina
+## 🧭 Progetto separato: Odysseus
 
-Per usare Lumina come prodotto completo (chat, agenti, documenti, memoria, ricerca e impostazioni), si usa l'interfaccia professionale open-source [Odysseus](https://github.com/odysseus-dev/odysseus). Lumina rimane il modello locale collegato all'endpoint OpenAI-compatible:
+Odysseus è un programma professionale indipendente, sviluppato separatamente da Lumina. Lumina funziona da sola con la propria chat, voce e ricerca; chi vuole può collegare facoltativamente Odysseus come client OpenAI-compatible:
 
 ```text
 Base URL: http://127.0.0.1:8000/v1
@@ -29,7 +29,7 @@ Modello: lumina-assisted
 Voce locale: POST http://127.0.0.1:8000/api/tts
 ```
 
-Dopo aver scaricato entrambi i repository, seguire [la guida di integrazione](odysseus/LUMINA_INTEGRATION.md). Qwen è usato solo come teacher durante l'addestramento e non viene esposto agli utenti.
+La guida facoltativa è in [LUMINA_INTEGRATION.md](odysseus/LUMINA_INTEGRATION.md). Qwen è usato solo come teacher durante l'addestramento e non viene esposto agli utenti.
 
 ---
 
