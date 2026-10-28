@@ -42,5 +42,9 @@ class GeneralTests(unittest.TestCase):
             self.assertEqual(local_answer([{'role':'user','content':prompt}])[0], expected)
         self.assertIn('fotosintesi', local_answer([{'role':'user','content':'Cos’è la fotosintesi?'}])[0].lower())
         self.assertIn('Garda', local_answer([{'role':'user','content':'Qual è il lago più grande d’Italia?'}])[0])
+    def test_honest_limits_are_stable(self):
+        self.assertIn('Posso sbagliare', local_answer([{'role':'user','content':'Dici sempre la verità?'}])[0])
+        self.assertIn('coscienza', local_answer([{'role':'user','content':'Puoi essere felice?'}])[0])
+        self.assertIn('tempo reale', local_answer([{'role':'user','content':'Quali sono le notizie?'}])[0])
 
 if __name__=='__main__':unittest.main()
