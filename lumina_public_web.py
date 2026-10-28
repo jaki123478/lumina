@@ -26,7 +26,10 @@ def fetch(url):
         r.raise_for_status();parts=[];size=0
         for chunk in r.iter_content(32768):
             size+=len(chunk)
-            if size>1_000_000:raise ValueError('Pagina troppo grande')
+            if size>8_000_000:
+                if 'html' in r.headers.get('Content-Type',''):
+                    break  # Estratto HTML limitato, non scartare tutte le pagine grandi.
+                raise ValueError('Documento oltre il limite di 8 MB')
             parts.append(chunk)
         return b''.join(parts),r.headers.get('Content-Type',''),url
     raise ValueError('Troppi reindirizzamenti')
@@ -54,19 +57,22 @@ def search(query):
     query=re.sub(r'\b\d{8,}\b','[numero rimosso]',query).strip()[:180]
     if not query:raise ValueError('Inserisci le parole da cercare')
     raw,_,_=fetch('https://www.bing.com/search?format=rss&q='+quote(query))
-    root=ET.fromstring(raw);results=[];domains=set()
+    root=ET.fromstring(raw);results=[];domains=set();candidates=[]
     sites=re.findall(r'\bsite:([a-z0-9.-]+)',query.lower())
     for node in root.findall('.//item'):
         link=node.findtext('link','');host=urlparse(link).hostname
-        if not host or host in domains or urlparse(link).scheme!='https':continue
+        if not host or urlparse(link).scheme not in ('http','https'):continue
+        if urlparse(link).scheme=='http':link=urlparse(link)._replace(scheme='https').geturl()
         if sites and not any(host==site or host.endswith('.'+site) for site in sites):continue
+        if len(candidates)<10:candidates.append({'url':link,'title':''})
+        if host in domains:continue
         domains.add(host)
         results.append({'title':' '.join(node.findtext('title','').split()[:8]),'excerpt':' '.join(re.sub('<[^>]+>',' ',node.findtext('description','')).split()[:17]),'url':link})
-        if len(results)==4:break
+        if len(results)>4:results=results[:4]
     if not results:raise ValueError('Il motore di ricerca non ha restituito risultati leggibili')
     lines=['Risultati di ricerca, non fatti già verificati. Controlla le pagine indicate per data e dettagli.']
     for row in results:lines.append(f"{row['title']}. {row['excerpt']}\nFonte: {row['url']}")
-    return '\n\n'.join(lines),{'engine':'ricerca web pubblica','external_retrieval':True,'query_sent':True,'query':query,'sources':results,'audio_processing':'local','retrieved_at':datetime.now(timezone.utc).isoformat()}
+    return '\n\n'.join(lines),{'engine':'ricerca web pubblica','external_retrieval':True,'query_sent':True,'query':query,'sources':results,'candidates':candidates,'audio_processing':'local','retrieved_at':datetime.now(timezone.utc).isoformat()}
 
 def read_page(url):
     raw,kind,final=fetch(url)

@@ -7,7 +7,7 @@ from lumina_voice_neural import synthesize,play
 ROOT=Path(__file__).resolve().parent
 _recognizer_model=None
 
-def transcribe(samples,rate):
+def transcribe(samples,rate,with_info=False):
     global _recognizer_model
     from vosk import Model,KaldiRecognizer,SetLogLevel
     from scipy.signal import resample_poly
@@ -18,8 +18,18 @@ def transcribe(samples,rate):
     samples=np.clip(samples,-32768,32767).astype('<i2')
     if _recognizer_model is None:_recognizer_model=Model(str(ROOT/'voices/vosk-it'))
     recognizer=KaldiRecognizer(_recognizer_model,16000)
-    for i in range(0,len(samples),4000):recognizer.AcceptWaveform(samples[i:i+4000].tobytes())
-    return json.loads(recognizer.FinalResult()).get('text','').strip()
+    recognizer.SetWords(True);segments=[]
+    for i in range(0,len(samples),4000):
+        if recognizer.AcceptWaveform(samples[i:i+4000].tobytes()):segments.append(json.loads(recognizer.Result()))
+    segments.append(json.loads(recognizer.FinalResult()))
+    text=' '.join(s.get('text','') for s in segments).strip()
+    confidences=[w['conf'] for s in segments for w in s.get('result',[]) if 'conf' in w]
+    info={'text':text,'confidence':sum(confidences)/len(confidences) if confidences else 0.,'segments':len(segments)}
+    return info if with_info else text
+
+def needs_confirmation(text,confidence):
+    has_intent=any(w in text.lower().split() for w in ['cerca','cercami','trova','notizie','ricerca','spiegami','come','chi','quali','quando','dove','perché'])
+    return confidence<.8 or len(text.split())<2 or (len(text.split())>=10 and not has_intent)
 
 def speak(text,path):
     synthesize(text,path);play(path)
@@ -45,7 +55,13 @@ def main():
             import sounddevice as sd
             print('MICROFONO ATTIVO: fai la tua domanda adesso.',flush=True)
             samples=sd.rec(160000,samplerate=16000,channels=1,dtype='int16');sd.wait()
-            query=transcribe(samples.reshape(-1),16000)
+            info=transcribe(samples.reshape(-1),16000,with_info=True);query=info['text']
+            print('Trascrizione:',query,'| affidabilità:',round(info['confidence'],2),flush=True)
+            if query and needs_confirmation(query,info['confidence']):
+                speak('La domanda riconosciuta non è abbastanza chiara. Controlla il testo nella console, poi conferma o ripeti.',folder/'conferma.wav')
+                confirm=input('INVIO per confermare, r per ripetere, oppure digita la domanda corretta > ').strip()
+                if confirm.lower()=='r':continue
+                if confirm:query=confirm
         print('Domanda riconosciuta:',query,flush=True)
         if query.lower() in ('esci','fermati','basta'):break
         if not query:
@@ -57,7 +73,7 @@ def main():
         print(data['choices'][0]['message']['content'],flush=True)
         meta=data.get('backend',{});summary=meta.get('spoken_summary',data['choices'][0]['message']['content'])
         sources=meta.get('sources',[])
-        text=summary+f' Ho consultato {len(sources)} pagine online; i collegamenti sono nel registro locale.'
+        text=summary+(f' Le pagine consultate sono {len(sources)}; i collegamenti sono nel registro locale.' if sources else '')
         path=synthesize(text,folder/'risposta.wav')
         (folder/'ricerca.json').write_text(json.dumps({'query':query,'result':data},ensure_ascii=False,indent=2),encoding='utf-8')
         print('Audio:',path,flush=True)
