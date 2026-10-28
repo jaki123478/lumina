@@ -1,17 +1,12 @@
 """
-qwen_full_curriculum_trainer.py - Addestramento Multidisciplinare a 360 Gradi Qwen -> Lumina
-Campi coperti:
-1. Storia e Grandi Figure Storiche
-2. Geografia Italiana e Mondiale
-3. Scienze Naturali, Biologia e Corpo Umano
-4. Astronomia, Spazio e Cosmo
-5. Fisica e Chimica della Vita Quotidiana
-6. Informatica, Internet, Algoritmi e AI
-7. Arte, Pittura, Architettura e Scultura
-8. Letteratura, Poesia e Lingua Italiana
-9. Cucina Tradizionale e Cultura Gastronomica
-10. Ecologia, Animali e Natura
-11. Filosofia, Etica e Pensiero Critico
+qwen_full_curriculum_trainer.py - Addestramento Multidisciplinare con Forte Focus su Coding & Computer Science
+Ambiti:
+1. Coding Python & Software Engineering (50% del programma)
+2. Algoritmi e Strutture Dati
+3. Web, API e Database SQL
+4. Git e Controllo Versione
+5. AI e Reti Neurali
+6. Storia, Geografia, Scienze, Spazio, Arte, Letteratura ed Etica
 """
 
 import sys
@@ -19,7 +14,6 @@ import os
 import time
 import json
 import random
-import re
 from pathlib import Path
 
 if hasattr(sys.stdout, "reconfigure"):
@@ -33,272 +27,169 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 from modeling_lumina_next import LuminaNextForCausalLM
 from tokenizers import ByteLevelBPETokenizer
 
-ALL_DOMAINS_LESSONS = [
-    # 1. STORIA E GRANDI FIGURE
+CURRICULUM_DATA = [
+    # -------------------------------------------------------------
+    # CODING PYTHON & INGEGNERIA SOFTWARE
+    # -------------------------------------------------------------
     {
-        "cat": "storia",
-        "domain": "Storia e Grandi Figure",
-        "question": "Chi era Giulio Cesare e quale ruolo ha avuto nella storia romana?"
+        "cat": "coding_python",
+        "domain": "Coding: Python & Sintassi",
+        "question": "Come si gestisce un'eccezione KeyError quando si accede a un dizionario in Python?",
+        "sys": "Sei un senior software engineer. Spiega brevemente come gestire un KeyError con try/except o con il metodo .get() mostrando un esempio sintetico di codice Python."
     },
     {
-        "cat": "storia",
-        "domain": "Storia e Grandi Figure",
-        "question": "Cosa e' stato il Rinascimento italiano e in quale citta' e' nato?"
+        "cat": "coding_python",
+        "domain": "Coding: Python & Sintassi",
+        "question": "Qual e' la differenza tra una lista mutabile e una tupla immutabile in Python?",
+        "sys": "Sei un programmatore Python esperto. Spiega la differenza chiave tra liste e tuple e quando usare ciascuna in modo chiaro e pratico."
     },
     {
-        "cat": "storia",
-        "domain": "Storia e Grandi Figure",
-        "question": "Chi era Leonardo da Vinci e quali sono le sue opere e invenzioni piu' note?"
+        "cat": "coding_python",
+        "domain": "Coding: Python & Sintassi",
+        "question": "Come funziona una list comprehension in Python rispetto a un tradizionale ciclo for?",
+        "sys": "Sei un docente di programmazione. Spiega come la list comprehension rende il codice piu' conciso e leggibile mostrando la sintassi di base [x for x in lista]."
     },
     {
-        "cat": "storia",
-        "domain": "Storia e Grandi Figure",
-        "question": "Come e' avvenuta l'Unita' d'Italia e chi sono stati i suoi protagonisti?"
+        "cat": "coding_python",
+        "domain": "Coding: Python & Sintassi",
+        "question": "Perche' in Python e' buona pratica aprire i file usando l'istruzione 'with open(...) as f'?",
+        "sys": "Sei un esperto di Python. Spiega il concetto di context manager e la chiusura automatica del file anche in caso di errore."
     },
     {
-        "cat": "storia",
-        "domain": "Storia e Grandi Figure",
-        "question": "Chi erano gli antichi Etruschi e dove vivevano nella penisola italiana?"
-    },
-
-    # 2. GEOGRAFIA ITALIANA E MONDIALE
-    {
-        "cat": "geografia",
-        "domain": "Geografia e Territorio",
-        "question": "Qual e' il lago piu' grande d'Italia e in quali regioni si estende?"
+        "cat": "coding_python",
+        "domain": "Coding: Python & Sintassi",
+        "question": "Come si definisce una classe con costruttore __init__ e attributo d'istanza in Python?",
+        "sys": "Sei un programmatore OOP. Spiega il ruolo del metodo __init__ e del parametro self mostrando una classe minimale Persona."
     },
     {
-        "cat": "geografia",
-        "domain": "Geografia e Territorio",
-        "question": "Qual e' il fiume piu' lungo d'Italia, da dove nasce e dove sfocia?"
+        "cat": "coding_python",
+        "domain": "Coding: Python & Sintassi",
+        "question": "Cosa sono le f-string in Python e come si usano per interpolare variabili?",
+        "sys": "Sei un docente di Python. Spiega la formattazione con f'Testo {variabile}' e perche' e' preferibile rispetto al vecchio operatore % o a .format()."
     },
     {
-        "cat": "geografia",
-        "domain": "Geografia e Territorio",
-        "question": "Quali sono i vulcani attivi piu' famosi d'Italia?"
-    },
-    {
-        "cat": "geografia",
-        "domain": "Geografia e Territorio",
-        "question": "Quali sono le caratteristiche principali della catena montuosa delle Alpi?"
-    },
-    {
-        "cat": "geografia",
-        "domain": "Geografia e Territorio",
-        "question": "Qual e' la capitale del Giappone e quali sono le sue caratteristiche principali?"
+        "cat": "coding_python",
+        "domain": "Coding: Python & Sintassi",
+        "question": "Come si gestisce una divisione per zero con un blocco try ed except ZeroDivisionError?",
+        "sys": "Sei uno sviluppatore software. Mostra la struttura corretta di try ed except ZeroDivisionError per evitare il crash del programma."
     },
 
-    # 3. SCIENZE NATURALI E BIOLOGIA
+    # -------------------------------------------------------------
+    # ALGORITMI & STRUTTURE DATI
+    # -------------------------------------------------------------
     {
-        "cat": "scienze_biologia",
-        "domain": "Scienze Naturali e Biologia",
-        "question": "Come funziona la fotosintesi clorofilliana e perche' e' fondamentale per la vita?"
+        "cat": "algoritmi",
+        "domain": "Algoritmi e Strutture Dati",
+        "question": "Come funziona l'algoritmo di Ricerca Binaria e qual e' la sua complessita' temporale?",
+        "sys": "Sei un docente di algoritmi. Spiega la ricerca binaria, la precondizione di array ordinato e la complessita' logaritmica O(log n)."
     },
     {
-        "cat": "scienze_biologia",
-        "domain": "Scienze Naturali e Biologia",
-        "question": "Come funziona il sistema cardiocircolatorio nel corpo umano?"
+        "cat": "algoritmi",
+        "domain": "Algoritmi e Strutture Dati",
+        "question": "Qual e' la differenza tra una Pila (Stack LIFO) e una Coda (Queue FIFO)?",
+        "sys": "Sei un docente di informatica. Spiega Last-In First-Out vs First-In First-Out con esempi concreti della vita reale."
     },
     {
-        "cat": "scienze_biologia",
-        "domain": "Scienze Naturali e Biologia",
-        "question": "Qual e' la differenza biologica tra virus e batteri?"
+        "cat": "algoritmi",
+        "domain": "Algoritmi e Strutture Dati",
+        "question": "Qual e' la differenza di complessita' tra un algoritmo BubbleSort O(n^2) e un MergeSort O(n log n)?",
+        "sys": "Sei un analista di algoritmi. Confronta la scalabilita' su grandi quantita' di dati tra complessita' quadratica e lineare-logaritmica."
     },
     {
-        "cat": "scienze_biologia",
-        "domain": "Scienze Naturali e Biologia",
-        "question": "Come respirano i pesci attraverso le branchie sott'acqua?"
-    },
-    {
-        "cat": "scienze_biologia",
-        "domain": "Scienze Naturali e Biologia",
-        "question": "A cosa serve il DNA negli esseri viventi?"
-    },
-
-    # 4. ASTRONOMIA E SPAZIO
-    {
-        "cat": "astronomia",
-        "domain": "Astronomia e Spazio",
-        "question": "Come nascono le stelle all'interno delle nebulose nell'universo?"
-    },
-    {
-        "cat": "astronomia",
-        "domain": "Astronomia e Spazio",
-        "question": "Quali sono i pianeti del Sistema Solare in ordine dal Sole?"
-    },
-    {
-        "cat": "astronomia",
-        "domain": "Astronomia e Spazio",
-        "question": "Perche' la Luna mostra sempre la stessa faccia rivolta verso la Terra?"
-    },
-    {
-        "cat": "astronomia",
-        "domain": "Astronomia e Spazio",
-        "question": "Cosa e' un buco nero e come si forma nello spazio profondo?"
+        "cat": "algoritmi",
+        "domain": "Algoritmi e Strutture Dati",
+        "question": "Come si calcola la sequenza di Fibonacci in modo ricorsivo e perche' la memoization la rende piu' efficiente?",
+        "sys": "Sei un docente di informatica. Spiega la ricorsione di Fibonacci e come memorizzare i risultati intermedi evita calcoli ripetuti."
     },
 
-    # 5. FISICA E CHIMICA QUOTIDIANA
+    # -------------------------------------------------------------
+    # WEB, API, DATABASE & GIT
+    # -------------------------------------------------------------
     {
-        "cat": "fisica_chimica",
-        "domain": "Fisica e Chimica",
-        "question": "Perche' il cielo appare di colore azzurro durante il giorno?"
+        "cat": "web_database_git",
+        "domain": "Web, API e Database",
+        "question": "Qual e' la differenza tra una richiesta HTTP di tipo GET e una di tipo POST?",
+        "sys": "Sei un backend engineer. Spiega la differenza tra recuperare risorse (GET) e inviare dati con payload nel corpo della richiesta (POST)."
     },
     {
-        "cat": "fisica_chimica",
-        "domain": "Fisica e Chimica",
-        "question": "Come fanno gli aerei a volare grazie al principio di portanza?"
+        "cat": "web_database_git",
+        "domain": "Web, API e Database",
+        "question": "Cosa significano i codici di stato HTTP 200, 404 e 500?",
+        "sys": "Sei uno sviluppatore web. Spiega 200 OK (successo), 404 Not Found (risorsa non trovata) e 500 Internal Server Error (errore lato server)."
     },
     {
-        "cat": "fisica_chimica",
-        "domain": "Fisica e Chimica",
-        "question": "Perche' l'olio galleggia sull'acqua invece di mescolarsi?"
+        "cat": "web_database_git",
+        "domain": "Web, API e Database",
+        "question": "Cosa e' il formato JSON e come si converte una stringa JSON in dizionario Python?",
+        "sys": "Sei un software engineer. Spiega la funzione json.loads() per deserializzare una stringa JSON in strutture Python native."
     },
     {
-        "cat": "fisica_chimica",
-        "domain": "Fisica e Chimica",
-        "question": "Quali sono i tre stati principali della materia e come avvengono i passaggi di stato?"
-    },
-
-    # 6. INFORMATICA, INTERNET E TECNOLOGIA
-    {
-        "cat": "informatica",
-        "domain": "Informatica e Tecnologia",
-        "question": "Cosa e' un algoritmo in informatica e perche' e' cosi' importante?"
+        "cat": "web_database_git",
+        "domain": "Web, API e Database",
+        "question": "In un database SQL, qual e' la differenza tra una Primary Key e una Foreign Key?",
+        "sys": "Sei un database architect. Spiega l'identificatore univoco di una riga (Primary Key) e il vincolo di relazione verso un'altra tabella (Foreign Key)."
     },
     {
-        "cat": "informatica",
-        "domain": "Informatica e Tecnologia",
-        "question": "Come funziona la rete Internet per collegare computer in tutto il mondo?"
-    },
-    {
-        "cat": "informatica",
-        "domain": "Informatica e Tecnologia",
-        "question": "Qual e' la differenza tra la memoria RAM e il disco rigido (SSD o Hard Disk)?"
-    },
-    {
-        "cat": "informatica",
-        "domain": "Informatica e Tecnologia",
-        "question": "A cosa serve il linguaggio di programmazione Python e perche' e' tanto diffuso?"
-    },
-    {
-        "cat": "informatica",
-        "domain": "Informatica e Tecnologia",
-        "question": "Come funziona una rete neurale artificiale nell'intelligenza artificiale?"
+        "cat": "web_database_git",
+        "domain": "Controllo Versione: Git",
+        "question": "Qual e' la differenza tra il comando 'git commit' e il comando 'git push'?",
+        "sys": "Sei un DevOps engineer. Spiega il salvataggio locale della cronologia (commit) e l'invio delle modifiche al server remoto (push)."
     },
 
-    # 7. ARTE, PITTURA E ARCHITETTURA
+    # -------------------------------------------------------------
+    # AI E RETI NEURALI
+    # -------------------------------------------------------------
     {
-        "cat": "arte",
-        "domain": "Arte e Architettura",
-        "question": "Chi ha affrescato la volta della Cappella Sistina a Roma e cosa vi e' raffigurato?"
+        "cat": "intelligenza_artificiale",
+        "domain": "AI & Reti Neurali",
+        "question": "Come funziona la Backpropagation per aggiornare i pesi di una rete neurale?",
+        "sys": "Sei un ricercatore di machine learning. Spiega come l'errore (Loss) viene propagato all'indietro calcolando i gradienti per la discesa del gradiente."
     },
     {
-        "cat": "arte",
-        "domain": "Arte e Architettura",
-        "question": "Cosa caratterizza lo stile architettonico gotico nelle cattedrali europee?"
-    },
-    {
-        "cat": "arte",
-        "domain": "Arte e Architettura",
-        "question": "Chi era Caravaggio e quale tecnica di pittura basata sulla luce lo ha reso celebre?"
-    },
-    {
-        "cat": "arte",
-        "domain": "Arte e Architettura",
-        "question": "Quali sono le caratteristiche principali del Colosseo a Roma?"
+        "cat": "intelligenza_artificiale",
+        "domain": "AI & Reti Neurali",
+        "question": "Cosa e' l'attenzione multi-testa (Multi-Head Attention) nei modelli Transformer?",
+        "sys": "Sei un esperto di LLM. Spiega come l'attenzione consente al modello di focalizzarsi su relazioni tra parole a diverse distanze simultaneamente."
     },
 
-    # 8. LETTERATURA E LINGUA ITALIANA
+    # -------------------------------------------------------------
+    # STORIA, SCIENZA, SPAZIO & CULTURA
+    # -------------------------------------------------------------
     {
-        "cat": "letteratura",
-        "domain": "Letteratura e Lingua Italiana",
-        "question": "Di cosa parla la Divina Commedia di Dante Alighieri e come e' strutturata?"
+        "cat": "scienze_spazio",
+        "domain": "Scienze & Astronomia",
+        "question": "Come funziona la fotosintesi clorofilliana nelle piante?",
+        "sys": "Sei un docente di scienze. Spiega come le piante trasformano luce solare, acqua e CO2 in glucosio e rilasciano ossigeno."
     },
     {
-        "cat": "letteratura",
-        "domain": "Letteratura e Lingua Italiana",
-        "question": "Chi era Giacomo Leopardi e quali sono i temi principali della sua poesia 'L'Infinito'?"
+        "cat": "scienze_spazio",
+        "domain": "Scienze & Astronomia",
+        "question": "Cosa e' un buco nero e come si forma nello spazio?",
+        "sys": "Sei un astrofisico divulgatore. Spiega il collasso gravitazionale di una stella massiccia e l'orizzonte degli eventi in modo chiaro."
     },
     {
-        "cat": "letteratura",
-        "domain": "Letteratura e Lingua Italiana",
-        "question": "Chi ha scritto 'I Promessi Sposi' e perche' questo romanzo e' fondamentale per l'italiano moderno?"
+        "cat": "storia_cultura",
+        "domain": "Storia & Cultura Generale",
+        "question": "Cosa e' stato il Rinascimento italiano e perche' e' famoso nel mondo?",
+        "sys": "Sei uno storico. Spiega la rinascita delle arti, delle lettere e delle scienze a Firenze e in Italia tra il XIV e il XVI secolo."
     },
     {
-        "cat": "letteratura",
-        "domain": "Letteratura e Lingua Italiana",
-        "question": "Cosa significa il modo di dire italiano 'mettere le carte in tavola'?"
+        "cat": "storia_cultura",
+        "domain": "Storia & Cultura Generale",
+        "question": "Chi era Leonardo da Vinci e quali sono le sue opere e innovazioni principali?",
+        "sys": "Sei un divulgatore d'arte. Spiega il genio poliedrico di Leonardo tra pittura (Gioconda, Cenacolo) e studi scientifico-ingegneristici."
     },
     {
-        "cat": "letteratura",
-        "domain": "Letteratura e Lingua Italiana",
-        "question": "Perche' si scrive 'qual e'' senza apostrofo secondo l'Accademia della Crusca?"
-    },
-
-    # 9. CUCINA E TRADIZIONI GASTRONOMICHE
-    {
-        "cat": "cucina",
-        "domain": "Cucina e Cultura Gastronomica",
-        "question": "Quali sono gli ingredienti tradizionali della vera pizza Margherita napoletana?"
+        "cat": "lingua_etica",
+        "domain": "Lingua Italiana & Etica",
+        "question": "Perche' si scrive 'qual e'' senza apostrofo secondo l'Accademia della Crusca?",
+        "sys": "Sei un linguista della Crusca. Spiega che si tratta di un troncamento e non di un'elisione, per cui l'apostrofo e' un errore."
     },
     {
-        "cat": "cucina",
-        "domain": "Cucina e Cultura Gastronomica",
-        "question": "Come si prepara un classico risotto allo zafferano alla milanese?"
-    },
-    {
-        "cat": "cucina",
-        "domain": "Cucina e Cultura Gastronomica",
-        "question": "Quali sono le caratteristiche dell'olio extravergine d'oliva italiano?"
-    },
-    {
-        "cat": "cucina",
-        "domain": "Cucina e Cultura Gastronomica",
-        "question": "Qual e' l'origine e la ricetta tradizionale del tiramisu'?"
-    },
-
-    # 10. ECOLOGIA, ANIMALI E NATURA
-    {
-        "cat": "ecologia_natura",
-        "domain": "Ecologia, Animali e Natura",
-        "question": "Perche' le api sono insetti indispensabili per l'equilibrio dell'ecosistema?"
-    },
-    {
-        "cat": "ecologia_natura",
-        "domain": "Ecologia, Animali e Natura",
-        "question": "Come funziona il ciclo dell'acqua sul nostro pianeta?"
-    },
-    {
-        "cat": "ecologia_natura",
-        "domain": "Ecologia, Animali e Natura",
-        "question": "Perche' le foreste pluviali vengono chiamate i 'polmoni verdi' della Terra?"
-    },
-    {
-        "cat": "ecologia_natura",
-        "domain": "Ecologia, Animali e Natura",
-        "question": "Come fanno gli uccelli migratori a orientarsi durante i lunghi viaggi stagionali?"
-    },
-
-    # 11. FILOSOFIA, ETICA E RAGIONAMENTO
-    {
-        "cat": "filosofia_etica",
-        "domain": "Filosofia, Etica e Logica",
-        "question": "Cosa significa il celebre motto socratico 'so di non sapere'?"
-    },
-    {
-        "cat": "filosofia_etica",
-        "domain": "Filosofia, Etica e Logica",
-        "question": "Qual e' la differenza tra un fatto oggettivo e un'opinione personale?"
-    },
-    {
-        "cat": "filosofia_etica",
-        "domain": "Filosofia, Etica e Logica",
-        "question": "Cosa significa pensare in modo critico di fronte alle informazioni che riceviamo?"
-    },
-    {
-        "cat": "filosofia_etica",
-        "domain": "Filosofia, Etica e Logica",
-        "question": "Perche' e' importante per un'intelligenza artificiale dichiarare i propri limiti di conoscenza?"
+        "cat": "lingua_etica",
+        "domain": "Lingua Italiana & Etica",
+        "question": "Perche' e' fondamentale per un'intelligenza artificiale dichiarare con onesta' i propri limiti di conoscenza?",
+        "sys": "Sei un eticista dell'IA. Spiega perche' la trasparenza e l'onesta' epistemica evitano disinformazione e allucinazioni."
     }
 ]
 
@@ -313,15 +204,14 @@ def main():
     log_fp = open(log_path, "w", encoding="utf-8")
 
     banner = """
-======================================================================
-  [LUMINA LIVE MULTIDISCIPLINARE: QWEN INSEGNA A LUMINA SU TUTTO]
-======================================================================
+========================================================================
+   LUMINA AI: SESSIONE LIVE MULTIDISCIPLINARE (FOCUS CODING & SCIENZA)
+========================================================================
 - Maestro  : Qwen2.5-0.5B-Instruct (GPU RTX 5060 - BFloat16)
-- Studente : Lumina-Next 135M (GPU RTX 5060 - Apprendimento Pesi Live)
-- Ambiti   : Storia, Geografia, Scienze, Astronomia, Tecnologia, Arte,
-             Letteratura, Lingua Italiana, Cucina, Ecologia, Filosofia
-- Flusso   : Risposta Lumina -> Insegnamento Qwen -> Backprop -> Verifica
-======================================================================
+- Studente : Lumina-Next 135M (GPU RTX 5060 - Training Pesi Attivo)
+- Materie  : Python, Algoritmi, Web/API, Database SQL, Git, AI, Storia, Scienze
+- Flusso   : 1. Domanda -> 2. Lumina (Prima) -> 3. Qwen Maestro -> 4. Backprop -> 5. Lumina (Dopo)
+========================================================================
 """
     log_print(banner, log_fp)
 
@@ -329,7 +219,7 @@ def main():
     dtype = torch.bfloat16 if torch.cuda.is_available() and torch.cuda.is_bf16_supported() else torch.float32
 
     # 1. Caricamento Qwen
-    log_print("[*] Caricamento Maestro Qwen 0.5B Instruct su GPU...", log_fp)
+    log_print("[*] Caricamento Maestro Qwen 0.5B su GPU...", log_fp)
     t0 = time.time()
     qwen_tok = AutoTokenizer.from_pretrained("Qwen/Qwen2.5-0.5B-Instruct")
     qwen = AutoModelForCausalLM.from_pretrained("Qwen/Qwen2.5-0.5B-Instruct", dtype=dtype, device_map=device).eval()
@@ -349,13 +239,13 @@ def main():
     dataset_file = Path("data/distilled_dialogues.jsonl")
     status_file = Path("C:/Users/Jaki1/Desktop/test/status.json")
 
-    # Coda non ripetitiva (shuffle circolare per evitare doppioni)
-    deck = list(ALL_DOMAINS_LESSONS)
+    # Coda non ripetitiva circolare
+    deck = list(CURRICULUM_DATA)
     random.shuffle(deck)
     deck_idx = 0
     lesson_num = 1
 
-    log_print("\n[+] Avvio delle lezioni multidisciplinari su tutti i domini dello scibile!\n", log_fp)
+    log_print("\n[+] Ciclo didattico avviato con successo: lezioni in tempo reale a schermo!\n", log_fp)
 
     while True:
         try:
@@ -369,16 +259,17 @@ def main():
             domanda = item["question"]
             dominio = item["domain"]
             categoria = item["cat"]
+            sys_instruct = item["sys"]
 
-            separator = "=" * 70
-            log_print(f"\n{separator}", log_fp)
+            sep = "=" * 72
+            log_print(f"\n{sep}", log_fp)
             log_print(f"[LEZIONE #{lesson_num:04d}] AMBITO: {dominio.upper()}", log_fp)
             log_print(f"DOMANDA DEL MAESTRO: {domanda}", log_fp)
-            log_print(f"{separator}", log_fp)
+            log_print(f"{sep}", log_fp)
 
-            # -----------------------------------------------------------------
-            # 1. LUMINA RISPONDE PRIMA DELLA LEZIONE
-            # -----------------------------------------------------------------
+            # -------------------------------------------------------------
+            # PASSO 1: Risposta preliminare di Lumina (PRIMA)
+            # -------------------------------------------------------------
             lumina.eval()
             prompt_chatml = f"<|im_start|>user\n{domanda}<|im_end|>\n<|im_start|>assistant\n"
             in_ids = lumina_tok.encode(prompt_chatml).ids
@@ -386,38 +277,37 @@ def main():
 
             t_lum = time.perf_counter()
             with torch.no_grad():
-                out_before = lumina.generate(in_tensor, max_new_tokens=75, temperature=0.3, top_p=0.9)
+                out_before = lumina.generate(in_tensor, max_new_tokens=70, temperature=0.3, top_p=0.9)
             el_lum = time.perf_counter() - t_lum
             raw_before = lumina_tok.decode(out_before[0][len(in_ids):].tolist()).strip()
             if "<|im_end|>" in raw_before:
                 raw_before = raw_before.split("<|im_end|>")[0].strip()
 
-            log_print("\n[1. LUMINA STUDENTE - PRIMA DELLA LEZIONE]:", log_fp)
-            log_print(f"   \"{raw_before}\" (tempo: {el_lum:.2f}s)", log_fp)
+            log_print(f"\n[1. LUMINA - PRIMA DELLA LEZIONE]:", log_fp)
+            log_print(f"   \"{raw_before}\" (latenza: {el_lum:.2f}s)", log_fp)
 
-            # -----------------------------------------------------------------
-            # 2. QWEN MAESTRO INSEGNA E SPIEGA
-            # -----------------------------------------------------------------
-            sys_instruct = "Sei un professore enciclopedico e divulgatore italiano. Spiega il concetto richiesto in modo chiaro, istruttivo, naturale ed esaustivo in 2 o 3 frasi corrette in italiano."
+            # -------------------------------------------------------------
+            # PASSO 2: Spiegazione didattica di Qwen Maestro
+            # -------------------------------------------------------------
             msgs = [
                 {"role": "system", "content": sys_instruct},
-                {"role": "user", "content": f"Spiega in modo didattico e chiaro: {domanda}"}
+                {"role": "user", "content": f"Spiega in modo pratico, istruttivo e chiaro: {domanda}"}
             ]
             q_chat = qwen_tok.apply_chat_template(msgs, tokenize=False, add_generation_prompt=True)
             q_in = qwen_tok([q_chat], return_tensors="pt").to(device)
 
             t_q = time.perf_counter()
             with torch.no_grad():
-                q_out = qwen.generate(**q_in, max_new_tokens=85, temperature=0.3, top_p=0.9)
+                q_out = qwen.generate(**q_in, max_new_tokens=85, temperature=0.2, top_p=0.9)
             el_q = time.perf_counter() - t_q
             qwen_answer = qwen_tok.decode(q_out[0][len(q_in.input_ids[0]):], skip_special_tokens=True).strip()
 
-            log_print("\n[2. QWEN MAESTRO - SPIEGAZIONE DIDATTICA]:", log_fp)
-            log_print(f"   \"{qwen_answer}\" (tempo: {el_q:.2f}s)", log_fp)
+            log_print(f"\n[2. QWEN MAESTRO - SPIEGAZIONE]:", log_fp)
+            log_print(f"   \"{qwen_answer}\" (latenza: {el_q:.2f}s)", log_fp)
 
-            # -----------------------------------------------------------------
-            # 3. APPRENDIMENTO SUI PESI DI LUMINA (BACKPROPAGATION)
-            # -----------------------------------------------------------------
+            # -------------------------------------------------------------
+            # PASSO 3: Aggiornamento pesi di Lumina (Backpropagation)
+            # -------------------------------------------------------------
             lumina.train()
             full_text = f"<|im_start|>user\n{domanda}<|im_end|>\n<|im_start|>assistant\n{qwen_answer}<|im_end|>\n"
             full_ids = lumina_tok.encode(full_text).ids
@@ -439,20 +329,20 @@ def main():
 
             trained_loss = loss.item()
 
-            log_print("\n[3. APPRENDIMENTO ATTIVO SUI PESI]:", log_fp)
-            log_print(f"   Loss: {trained_loss:.4f} | Aggiornamento gradiente applicato su GPU RTX 5060", log_fp)
+            log_print(f"\n[3. APPRENDIMENTO SUI PESI]:", log_fp)
+            log_print(f"   Loss: {trained_loss:.4f} | Aggiornamento AdamW eseguito sui parametri di Lumina", log_fp)
 
-            # -----------------------------------------------------------------
-            # 4. LUMINA RISPONDE DOPO LA LEZIONE
-            # -----------------------------------------------------------------
+            # -------------------------------------------------------------
+            # PASSO 4: Risposta di Lumina DOPO la lezione
+            # -------------------------------------------------------------
             lumina.eval()
             with torch.no_grad():
-                out_after = lumina.generate(in_tensor, max_new_tokens=75, temperature=0.2, top_p=0.9)
+                out_after = lumina.generate(in_tensor, max_new_tokens=70, temperature=0.2, top_p=0.9)
             raw_after = lumina_tok.decode(out_after[0][len(in_ids):].tolist()).strip()
             if "<|im_end|>" in raw_after:
                 raw_after = raw_after.split("<|im_end|>")[0].strip()
 
-            log_print("\n[4. LUMINA STUDENTE - DOPO LA LEZIONE (CONCETTO APPRESO)]:", log_fp)
+            log_print(f"\n[4. LUMINA - DOPO LA LEZIONE (CONCETTO APPRESO)]:", log_fp)
             log_print(f"   \"{raw_after}\"\n", log_fp)
 
             # Salva nel dataset
@@ -460,7 +350,7 @@ def main():
                 rec = {"user": domanda, "assistant": qwen_answer, "category": categoria, "split": "train"}
                 f.write(json.dumps(rec, ensure_ascii=False) + "\n")
 
-            # Salva checkpoint ogni 25 lezioni
+            # Salva ogni 25 lezioni
             if lesson_num % 25 == 0:
                 torch.save(lumina.state_dict(), "checkpoints_lumina_next/checkpoint_step8000.pt")
                 log_print(f"[+] Checkpoint consolidato su disco (Lezione #{lesson_num}).", log_fp)
