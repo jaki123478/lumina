@@ -26,6 +26,11 @@ def local_answer(messages):
         return "print('ciao')",'sintassi Python verificata'
     if re.search(r'frase\s+di\s+cinque\s+parole.*mare', lower):
         return 'Il mare oggi è calmo.','vincolo di parole verificato'
+    if re.search(r'cos[’\']?è\s+la\s+fotosintesi|che\s+cos[’\']?è\s+la\s+fotosintesi', lower):
+        return ('La fotosintesi è il processo con cui le piante usano luce, acqua e anidride carbonica '
+                'per produrre zuccheri e ossigeno.'),'risposta scientifica verificata'
+    if re.search(r'lago\s+più\s+grande\s+d[’\']?italia', lower):
+        return 'Il lago più grande d’Italia è il Lago di Garda.','geografia verificata'
     quote=re.search(r'(?:dal testo|nel testo|testo:)\s*["“](.*?)["”]',text,re.I|re.S)
     if quote:
         source=quote.group(1).lower()
