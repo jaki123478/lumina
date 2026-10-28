@@ -195,7 +195,8 @@ class Handler(SimpleHTTPRequestHandler):
         # 2c. API Politica di Rete ed Esplicito Consenso (/api/network_policy)
         if self.path in ("/api/network_policy", "/api/v1/network_policy"):
             pol = get_network_policy()
-            body = json.dumps(pol.policy, ensure_ascii=False).encode("utf-8")
+            from lumina_web_sources import enabled as web_sources_enabled
+            body = json.dumps({**pol.policy,'web_sources_enabled':web_sources_enabled()}, ensure_ascii=False).encode("utf-8")
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
             self.send_header("Content-Length", str(len(body)))
@@ -319,6 +320,8 @@ class Handler(SimpleHTTPRequestHandler):
                     pol.grant_consent(scope=data.get("scope", "session"))
                 else:
                     pol.revoke_consent()
+                from lumina_web_sources import set_enabled
+                set_enabled(bool(data.get('consent')))
                 resp = {"success": True, "policy": pol.policy}
             except Exception as e:
                 resp = {"success": False, "error": str(e)}
@@ -465,16 +468,20 @@ class Handler(SimpleHTTPRequestHandler):
                 reply_text = ""
                 net_policy = get_network_policy()
                 user_msg_lower = user_msg.lower()
+                web_requested=bool(data.get('web') or re.search(r'\b(attualità|aggiornamenti|ultime notizie|cerca su internet|cerca sul web|notizie aggiornate)\b',user_msg_lower))
+                from lumina_web_sources import enabled as web_enabled, set_enabled as set_web_enabled
 
                 # Gestione comandi di consenso esplicito via chat/terminale/Visual Studio
                 if re.search(r"\b(consento|autorizzo|attiva|abilita)\s+(l'accesso\s+a\s+)?internet\b", user_msg_lower):
                     net_policy.grant_consent(scope="session")
+                    set_web_enabled(True)
                     reply_text = (
                         "🛡️ [Lumina Sentinel]\n"
                         "Consenso esplicito accordato: l'accesso a Internet è ora ABILITATO per questa sessione di lavoro."
                     )
                 elif re.search(r"\b(revoca|disattiva|blocca|disabilita)\s+(l'accesso\s+a\s+)?internet\b", user_msg_lower):
                     net_policy.revoke_consent()
+                    set_web_enabled(False)
                     reply_text = (
                         "🛡️ [Lumina Sentinel]\n"
                         "Consenso revocato: l'accesso a Internet è ora DISABILITATO. Lumina è tornata in modalità 100% offline."
@@ -485,13 +492,15 @@ class Handler(SimpleHTTPRequestHandler):
                         data.get("allow_internet") or
                         re.search(r"\b(cerca su internet|cerca sul web|scarica da internet|naviga su|fetch url|connettiti a internet)\b", user_msg_lower)
                     )
-                    if requires_internet and not net_policy.is_internet_allowed():
+                    if requires_internet and not net_policy.is_internet_allowed() and not (web_requested and web_enabled()):
                         reply_text = (
                             "🛡️ [Lumina Sentinel — Richiesta di Consenso]\n"
                             "L'accesso a Internet esterno è attualmente DISATTIVATO per impostazione predefinita su Visual Studio e piattaforme collegate.\n\n"
                             "Lumina opera interamente in locale e offline a tutela della tua privacy e sicurezza.\n"
                             "Per autorizzare l'accesso a Internet, scrivi semplicemente: `Autorizzo l'accesso a internet` oppure imposta `set LUMINA_ALLOW_INTERNET=1` nel terminale."
                         )
+                    if web_requested and not web_enabled():
+                        reply_text='I feed Internet sono disattivati. Scrivi "autorizzo internet" per abilitarli. Modello e voce restano sul computer.'
 
                 # Step 0b: Memoria a Lungo Termine
                 mem = get_memory()
@@ -509,7 +518,10 @@ class Handler(SimpleHTTPRequestHandler):
 
                 # Step B: Generazione con Lumina se sicuro
                 if not reply_text:
-                    if requested_model.lower() in ('lumina-assisted','lumina-general','auto','lumina'):
+                    if web_requested:
+                        from lumina_web_sources import answer
+                        reply_text,backend=answer(user_msg)
+                    elif requested_model.lower() in ('lumina-assisted','lumina-general','auto','lumina'):
                         from lumina_general import generate, SYSTEM
                         context_messages=[dict(m) for m in messages if m.get('role') in ('user','assistant')]
                         if context_messages and context_messages[-1]['role']=='user':

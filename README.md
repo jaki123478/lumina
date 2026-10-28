@@ -128,6 +128,21 @@ resta limitato alle frasi registrate dall'utente.
 
 ## 📜 Licenza
 
+### Attualità con calcolo e voce sul PC
+
+Con consenso esplicito, “ultime notizie”, “aggiornamenti ambiente” o un messaggio
+API con `web: true` consultano i feed ufficiali ISPRA, Protezione Civile ed ESA.
+Il recupero richiede Internet: modelli e sintesi Piper continuano a funzionare
+sul PC. Ai siti vengono richiesti soltanto i feed fissi; non vengono inviati
+audio, file o conversazioni. Non è una ricerca generale su tutto il web.
+“Autorizzo internet” abilita i feed; “disattiva internet” li disabilita. Il consenso
+è salvato in una configurazione locale esclusa dal repository.
+`python lumina_attualita_voce.py` scarica e legge i titoli con data e fonte;
+`--tema ambiente` limita la selezione. Le copie restano in `data/web_sources/`.
+Le notizie non aggiornano automaticamente i pesi e richiedono revisione prima
+di diventare lezioni. Il modello vocale ONNX viene usato e calibrato, non
+riaddestrato senza il materiale di training necessario.
+
 ### Adattatore locale e prove riproducibili
 
 L'adattatore sperimentale è incluso in `releases/local-training-20261028/`, insieme
