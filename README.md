@@ -143,6 +143,23 @@ Le notizie non aggiornano automaticamente i pesi e richiedono revisione prima
 di diventare lezioni. Il modello vocale ONNX viene usato e calibrato, non
 riaddestrato senza il materiale di training necessario.
 
+Con accesso Internet autorizzato, “cerca sul web …” avvia una ricerca pubblica
+tramite Bing RSS: invia soltanto le parole dell'ultima ricerca (non audio o
+cronologia), con rimozione di email e lunghe sequenze numeriche. Un indirizzo
+HTTPS consente la lettura di un breve estratto della pagina. Sono esclusi
+indirizzi privati, credenziali negli URL, script e download non testuali; i risultati
+mantengono i collegamenti alle fonti e non vengono considerati fatti già verificati.
+La generazione del modello e della voce resta locale; la consultazione web usa
+necessariamente connessioni esterne. “Disattiva internet” revoca l'accesso.
+
+`RICERCHE_ONLINE_CON_LA_VOCE.bat` apre la console vocale: premi INVIO per registrare
+dieci secondi, pronuncia la ricerca e ascolta il riepilogo delle pagine consultate.
+Vosk trascrive sul PC dal modello italiano in `voices/vosk-it`; Piper legge sul PC.
+Occorrono `vosk` e il modello italiano ufficiale già installati. La prima prova
+è stata effettuata con audio sintetico; l'accuratezza sul microfono dipende da
+voce e rumore. I risultati mantengono fonti e data di consultazione e non sono
+inseriti automaticamente nei pesi. La modalità API usa `research: true`.
+
 ### Adattatore locale e prove riproducibili
 
 L'adattatore sperimentale è incluso in `releases/local-training-20261028/`, insieme

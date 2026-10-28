@@ -34,3 +34,5 @@ voices/*.onnx
 /config/lumina_web_sources.json
 /data/web_sources/
 /audio_neurale/attualita_locale/
+/audio_neurale/ricerche_online/
+/voices/vosk-it/
