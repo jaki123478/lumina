@@ -90,7 +90,10 @@ def curriculum(seed):
         for form in ['Come si chiama il mio {}?', 'Sai il nome del mio {}?', 'Qual è il nome del mio {}?']:
             train.append(example(form.format(animal),'Non lo so: non mi hai ancora detto il suo nome.','identita'))
     # Replay di contenuti corretti, senza sovracampionare il benchmark.
-    with (ROOT/'data/distilled_dialogues.jsonl').open(encoding='utf-8') as source:
+    replay_path = ROOT/'data/distilled_dialogues_clean.jsonl'
+    if not replay_path.exists():
+        replay_path = ROOT/'data/distilled_dialogues.jsonl'
+    with replay_path.open(encoding='utf-8') as source:
         for line in source:
             try:
                 r=json.loads(line)
