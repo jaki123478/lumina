@@ -90,15 +90,16 @@ def curriculum(seed):
         for form in ['Come si chiama il mio {}?', 'Sai il nome del mio {}?', 'Qual è il nome del mio {}?']:
             train.append(example(form.format(animal),'Non lo so: non mi hai ancora detto il suo nome.','identita'))
     # Replay di contenuti corretti, senza sovracampionare il benchmark.
-    for line in (ROOT/'data/distilled_dialogues.jsonl').open(encoding='utf-8'):
-        try:
-            r=json.loads(line)
-            q,a=r.get('user',''),r.get('assistant','')
-            if len(a)<450 and len(q)<350 and validate_teacher(a) and '```' not in a:
-                if rng.random()<0.004:
-                    train.append(example(q,a,'replay'))
-        except (ValueError,TypeError):
-            continue
+    with (ROOT/'data/distilled_dialogues.jsonl').open(encoding='utf-8') as source:
+        for line in source:
+            try:
+                r=json.loads(line)
+                q,a=r.get('user',''),r.get('assistant','')
+                if len(a)<450 and len(q)<350 and validate_teacher(a) and '```' not in a:
+                    if rng.random()<0.004:
+                        train.append(example(q,a,'replay'))
+            except (ValueError,TypeError):
+                continue
     # Impedisce che i campioni casuali identici contaminino la validazione.
     fingerprint = lambda x: json.dumps(x['messages'],sort_keys=True,ensure_ascii=False)
     held = {fingerprint(x) for x in valid}
