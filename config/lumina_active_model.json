@@ -1,4 +1,4 @@
 {
-  "path": "outputs\\qwen_repair_20261028_balanced\\candidate",
+  "path": "hf_export_lumina_next",
   "validation_report": "outputs\\qwen_repair_20261028_balanced\\report.json"
 }

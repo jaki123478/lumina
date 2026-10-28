@@ -319,30 +319,48 @@ function setVoiceState(state, text) {
   $('voice-control').setAttribute('aria-label', state === 'listening' ? 'Ferma microfono' : state === 'speaking' ? 'Interrompi voce' : 'Avvia microfono'); setIcon($('voice-control').querySelector('.icon'), state === 'speaking' ? 'stop' : 'mic');
 }
 function updateTemplates(list) {
-  const current = $('calibration-phrase').value || voice.phrases[0]; for (const template of list) if (!voice.phrases.includes(template.label)) voice.phrases.push(template.label);
-  const total = list.reduce((n, t) => n + t.examples, 0); $('sample-count').textContent = `${total} ${total === 1 ? 'esempio' : 'esempi'}`; $('calibration-phrase').replaceChildren();
-  voice.phrases.forEach(label => { const count = list.filter(t => t.label === label).reduce((n, t) => n + t.examples, 0); const option = document.createElement('option'); option.value = label; option.textContent = `${label} · ${count} ${count === 1 ? 'esempio' : 'esempi'}`; $('calibration-phrase').append(option); });
-  $('calibration-phrase').value = current; $('remove-samples').disabled = !list.some(t => t.label === $('calibration-phrase').value);
+  const phraseSelect = $('calibration-phrase');
+  if (!phraseSelect) return;
+  const current = phraseSelect.value || voice.phrases[0]; for (const template of list) if (!voice.phrases.includes(template.label)) voice.phrases.push(template.label);
+  const total = list.reduce((n, t) => n + t.examples, 0); if ($('sample-count')) $('sample-count').textContent = `${total} ${total === 1 ? 'esempio' : 'esempi'}`; phraseSelect.replaceChildren();
+  voice.phrases.forEach(label => { const count = list.filter(t => t.label === label).reduce((n, t) => n + t.examples, 0); const option = document.createElement('option'); option.value = label; option.textContent = `${label} · ${count} ${count === 1 ? 'esempio' : 'esempi'}`; phraseSelect.append(option); });
+  phraseSelect.value = current; if ($('remove-samples')) $('remove-samples').disabled = !list.some(t => t.label === phraseSelect.value);
 }
 function setupRecognizer() {
   if (voice.recognizer) return true;
   if (!window.LuminaRecognizer) { setVoiceState('idle', 'Il modulo vocale non è disponibile. Ricarica la pagina.'); return false; }
   voice.recognizer = new window.LuminaRecognizer({
-    onStatus: ({ state, message }) => { if (!$('voice-dialog').open) return; if (voice.recording) { $('calibration-status').textContent = message; setVoiceState(state === 'processing' ? 'thinking' : 'recording', message); } else if (voice.live && !active && !voice.speaking) setVoiceState(state === 'processing' ? 'thinking' : state === 'listening' ? 'listening' : 'idle', message); },
+    onStatus: ({ state, message }) => { if (!$('voice-dialog').open) return; if (voice.recording) { if ($('calibration-status')) $('calibration-status').textContent = message; setVoiceState(state === 'processing' ? 'thinking' : 'recording', message); } else if (voice.live && !active && !voice.speaking) setVoiceState(state === 'processing' ? 'thinking' : state === 'listening' ? 'listening' : 'idle', message); },
     onResult: result => { if (!voice.live || voice.recording || active || voice.speaking || !$('voice-dialog').open) return; voice.recognizer.stop(); $('voice-transcript').textContent = `Riconosciuto: ${result.text}`; sendMessage(result.text, true); },
-    onError: message => { voice.live = false; setVoiceState('idle', message); $('calibration-status').textContent = message; },
+    onError: message => { voice.live = false; setVoiceState('idle', message); if ($('calibration-status')) $('calibration-status').textContent = message; },
     onTemplates: list => updateTemplates(list)
   }); updateTemplates(voice.recognizer.listTemplates()); return true;
 }
 function microphoneAvailable() { if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) { setVoiceState('idle', 'Il microfono richiede HTTPS oppure localhost e un browser recente.'); return false; } return true; }
 async function unlockAudio() { if (typeof voice.synth.unlock === 'function') await voice.synth.unlock(); }
 async function startListening() {
-  if (!loaded) { setVoiceState('idle', 'Attendi che il modello sia pronto.'); return; }
+  // La voce deve poter partire anche mentre il modello testuale completa il caricamento.
+  // Il riconoscimento è locale e indipendente dal worker di chat.
   if (!setupRecognizer() || !microphoneAvailable()) return;
-  if (!voice.recognizer.listTemplates().length) { $('voice-calibration').open = true; setVoiceState('idle', 'Prima registra una delle frasi qui sotto.'); return; }
   if (active) { setVoiceState('thinking', 'Attendi che Lumina termini la risposta in chat.'); return; }
   const epoch = ++voice.epoch; voice.live = true; voice.speaking = false;
-  try { await unlockAudio(); if (!voice.live || voice.epoch !== epoch) return; $('voice-calibration').open = false; await voice.recognizer.start(); if (voice.epoch === epoch && voice.live) setVoiceState('listening', 'Pronuncia una delle frasi che hai registrato.'); }
+  // Fallback immediato: se non sono ancora presenti campioni personali,
+  // usa il riconoscimento italiano integrato nel browser per permettere la
+  // prima conversazione senza una schermata tecnica di addestramento.
+  if (!voice.recognizer.listTemplates().length) {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) { voice.live = false; setVoiceState('idle', 'Riconoscimento vocale non disponibile in questo browser.'); return; }
+    const speech = new SpeechRecognition();
+    speech.lang = 'it-IT'; speech.interimResults = false; speech.continuous = false;
+    speech.onstart = () => setVoiceState('listening', 'Ti ascolto… parla con Lumina.');
+    speech.onerror = event => { if (voice.epoch !== epoch) return; voice.live = false; setVoiceState('idle', event.error === 'not-allowed' ? 'Microfono bloccato: autorizza l’accesso nel browser.' : 'Non ho sentito nulla. Riprova.'); };
+    speech.onresult = event => { const text = event.results?.[0]?.[0]?.transcript?.trim(); if (!text || voice.epoch !== epoch) return; voice.live = false; $('voice-transcript').textContent = `Riconosciuto: ${text}`; sendMessage(text, true); };
+    speech.onend = () => { if (voice.live && voice.epoch === epoch) { voice.live = false; setVoiceState('idle', 'Premi il microfono per riprovare.'); } };
+    voice.browserSpeech = speech;
+    try { await unlockAudio(); speech.start(); } catch (error) { voice.live = false; setVoiceState('idle', error.message || 'Microfono non disponibile.'); }
+    return;
+  }
+  try { await unlockAudio(); if (!voice.live || voice.epoch !== epoch) return; await voice.recognizer.start(); if (voice.epoch === epoch && voice.live) setVoiceState('listening', 'Ti ascolto… parla con Lumina.'); }
   catch (error) { if (voice.epoch === epoch) { voice.live = false; setVoiceState('idle', error.message || 'Microfono non disponibile. Controlla il permesso nel browser.'); } }
 }
 async function speakReply(text) {
@@ -352,11 +370,11 @@ async function speakReply(text) {
   if (voice.live && voice.epoch === epoch && $('voice-dialog').open) await startListening();
 }
 function stopVoice() {
-  voice.live = false; voice.recording = false; voice.speaking = false; voice.preview = false; voice.epoch += 1; voice.recognizer?.stop(); voice.synth.stop(); if (active?.fromVoice) stopGeneration();
+  voice.live = false; voice.recording = false; voice.speaking = false; voice.preview = false; voice.epoch += 1; voice.recognizer?.stop(); try { voice.browserSpeech?.abort(); } catch {} voice.browserSpeech = null; voice.synth.stop(); if (active?.fromVoice) stopGeneration();
   $('voice-preview').querySelector('span:last-child').textContent = 'Ascolta la voce';
   $('record-sample').querySelector('span:last-child').textContent = 'Registra esempio'; $('record-sample').classList.remove('recording'); $('voice-control').disabled = false; setVoiceState('idle', 'Premi il microfono per iniziare.');
 }
-function openVoice() { $('voice-dialog').showModal(); setupRecognizer(); setVoiceState('idle', voice.recognizer?.listTemplates().length ? 'Premi il microfono e pronuncia una frase registrata.' : 'Prima registra le frasi che vuoi usare.'); }
+function openVoice() { $('voice-dialog').showModal(); setupRecognizer(); setVoiceState('idle', 'Premi il microfono e parla con Lumina.'); }
 function closeVoice() { stopVoice(); $('voice-dialog').close(); }
 
 $('chat-form').addEventListener('submit', event => { event.preventDefault(); if (active) stopGeneration(); else sendMessage($('prompt').value); });

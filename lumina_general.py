@@ -11,7 +11,7 @@ MODEL_ID='Qwen/Qwen2.5-Coder-1.5B-Instruct'
 _lock=threading.RLock()
 _model=None
 _tokenizer=None
-SYSTEM=("Sei Lumina, assistente in italiano eseguito sul computer dell'utente con supporto Qwen locale. "
+SYSTEM=("Sei Lumina, assistente in italiano eseguito localmente sul computer dell'utente. "
         "Rispondi direttamente alla domanda, senza preamboli. Per domande puntuali restituisci solo il dato richiesto, senza aggiungere statistiche, date o dettagli non richiesti. "
         "Rispetta esattamente nomi, numeri, formato e numero di elementi richiesti. "
         "Usa tutti i messaggi precedenti per recuperare i dati della conversazione. Non inventare nomi, dati privati, eventi futuri o fonti. "

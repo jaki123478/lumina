@@ -220,7 +220,7 @@ class Handler(SimpleHTTPRequestHandler):
                 "object": "list",
                 "data": [
                     {"id":"lumina-assisted","object":"model","owned_by":"lumina",
-                     "backend":"Qwen/Qwen2.5-Coder-1.5B-Instruct locale e calcolatrice locale"},
+                     "backend":"modello locale Lumina e calcolatrice locale"},
                     {
                         "id": "lumina-2.75m",
                         "object": "model",
@@ -484,9 +484,12 @@ class Handler(SimpleHTTPRequestHandler):
                 weather_requested=bool(re.search(r'\b(meteo|tempo|previsioni|piove|temperatura)\b', user_msg_lower))
                 # La chat live usa Internet per impostazione predefinita; `offline: true`
                 # mantiene disponibile una risposta locale senza inviare la domanda online.
-                casual_chat = bool(re.match(r'^\s*(?:ciao|salve|buongiorno|buonasera|grazie|prego|come stai|chiacchieriamo)\s*[!.?]*\s*$', user_msg_lower))
-                always_web_requested = not bool(data.get('offline', False)) and not casual_chat
-                web_requested=web_requested or public_web_requested or research_requested or weather_requested or always_web_requested
+                casual_chat = bool(re.match(r'^\s*(?:ciao|salve|buongiorno|buonasera|grazie|prego|come stai|chiacchieriamo)(?:\s+lumina)?\s*[!.?]*\s*$', user_msg_lower))
+                local_task = casual_chat or bool(re.search(r'\b(?:quanto fa|calcola|scrivi una funzione|scrivi codice|python|programma)\b', user_msg_lower))
+                # La chat generale non deve diventare una ricerca web implicita:
+                # attiviamo il web solo per una richiesta esplicita o per meteo/attualità.
+                always_web_requested = False
+                web_requested=web_requested or public_web_requested or research_requested or weather_requested
                 from lumina_web_sources import enabled as web_enabled, set_enabled as set_web_enabled
 
                 # Gestione comandi di consenso esplicito via chat/terminale/Visual Studio
@@ -600,6 +603,11 @@ class Handler(SimpleHTTPRequestHandler):
                         else:
                             reply_text = "Lumina: Modello non disponibile sul server locale."
 
+                # Identità pubblica: il nome del modello interno non viene mai esposto
+                # all'utente, nella chat, nella voce o nelle risposte API.
+                reply_text = re.sub(r"\bqwen(?:\s*2(?:\.5)?(?:-coder)?(?:-instruct)?)?\b", "modello locale", str(reply_text), flags=re.IGNORECASE)
+                reply_text = re.sub(r"\bqwen\b", "modello locale", reply_text, flags=re.IGNORECASE)
+
                 # Costruzione Risposta Specifica Standard OpenAI
                 cmpl_id = f"chatcmpl-{uuid.uuid4().hex[:12]}"
                 openai_response = {
@@ -623,8 +631,7 @@ class Handler(SimpleHTTPRequestHandler):
                         "total_tokens": max(2, len(user_msg.split()) + len(reply_text.split()))
                     }
                 }
-                if backend is not None:
-                    openai_response['backend'] = backend
+                # I dettagli del backend restano interni: non fanno parte dell'identità pubblica di Lumina.
                 body = json.dumps(openai_response, ensure_ascii=False).encode("utf-8")
                 self.send_response(200)
                 self.send_header("Content-Type", "application/json")

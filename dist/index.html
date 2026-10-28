@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#355dda">
   <meta name="description" content="Lumina AI: Modello linguistico italiano compatto, privato e sicuro. Chat, coding ed analisi documenti PDF 100% offline.">
-  <title>Lumina AI — Intelligenza Sovrana & Privata</title>
+  <title>Lumina · Assistente locale</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%23355dda'/%3E%3Cpath d='M32 12v40M12 32h40M18 18l28 28M18 46l28-28' stroke='white' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E">
   <link rel="manifest" href="./manifest.json">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -13,6 +13,7 @@
   <meta name="apple-mobile-web-app-title" content="Lumina AI">
   <link rel="apple-touch-icon" href="./icon-192.png">
   <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./dark-overrides.css?v=10">
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
@@ -21,7 +22,7 @@
     }
   </script>
   <script src="./voice-recognizer.js" defer></script>
-  <script type="module" src="./app.js"></script>
+  <script type="module" src="./app.js?v=4"></script>
 </head>
 <body>
   <div class="mobile-scrim" id="mobile-scrim" hidden></div>
@@ -50,13 +51,13 @@
       </div>
       <div class="topbar-actions">
         <select id="model-selector" class="model-select" aria-label="Seleziona motore neurale">
-          <option value="auto" selected>Lumina · supporto Qwen locale</option>
+          <option value="auto" selected>Lumina · locale</option>
           <option value="lumina-coder">💻 Lumina Coder (Python & Tech)</option>
           <option value="lumina-next">Lumina Next · nativo sperimentale</option>
           <option value="lumina-2.75m">⚡ Lumina Nano (2.75M Locale)</option>
           <option value="lumina-50k">Lumina Mini (50K, nel browser)</option>
         </select>
-        <a href="https://huggingface.co/spaces/jacopof/lumina-chat" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;padding:5px 12px;border-radius:20px;background:#f8fafc;color:#1e293b;text-decoration:none;border:1px solid #cbd5e1;"><span>✨ Demo Space</span></a>
+        <button id="live-voice-header" class="product-badge" type="button" onclick="document.querySelector('#voice-button').click()">◉ Voce live</button>
         <span class="model-status" id="model-status" role="status"><span class="status-light"></span><span id="status-text">Caricamento…</span></span>
         <button class="icon-button" id="settings-button" aria-label="Impostazioni e informazioni"><span class="icon" data-icon="sliders"></span></button>
       </div>
@@ -65,12 +66,13 @@
       <section class="welcome" id="welcome" aria-labelledby="welcome-title">
         <div class="welcome-symbol" aria-hidden="true"><svg viewBox="0 0 80 80"><path d="M40 8v64M8 40h64M17.4 17.4l45.2 45.2M17.4 62.6l45.2-45.2"/></svg><span></span></div>
         <p class="welcome-intro">Ciao, sono Lumina AI.</p>
-        <h1 id="welcome-title">La tua AI privata,<br>locale e sovrana.</h1>
-        <p class="welcome-description">Chatta in italiano, chiedi codice Python o allega un documento PDF per fare domande sui suoi contenuti.</p>
+        <h1 id="welcome-title">Da dove iniziamo?</h1>
+        <p class="welcome-description">Scrivi a Lumina, allega un’immagine o attiva la voce live.</p>
         <div class="suggestions" aria-label="Messaggi da provare">
-          <button class="suggestion" data-prompt="Come creo una funzione che filtra numeri pari in Python?"><span class="suggestion-symbol">💻</span><strong>Coding Python</strong><span>Come creo una funzione pari?</span></button>
-          <button class="suggestion" data-prompt="A cosa serve lo SPID e come si richiede?"><span class="icon suggestion-symbol" data-icon="spark"></span><strong>Burocrazia Pratica</strong><span>A cosa serve lo SPID?</span></button>
-          <button class="suggestion" data-prompt="Spiegami cos'è la fotosintesi in breve."><span class="icon suggestion-symbol" data-icon="book"></span><strong>Scienza & Cultura</strong><span>Cos'è la fotosintesi?</span></button>
+          <button class="suggestion" data-prompt="Aiutami a scrivere e verificare del codice."><span class="suggestion-symbol">⌘</span><strong>Coding</strong><span>Scrivi e verifica codice</span></button>
+          <button class="suggestion" data-prompt="Analizza l’immagine allegata."><span class="icon suggestion-symbol" data-icon="spark"></span><strong>Immagini</strong><span>Analizza un allegato</span></button>
+          <button class="suggestion" data-prompt="Cerca sul web informazioni aggiornate."><span class="icon suggestion-symbol" data-icon="book"></span><strong>Ricerca online</strong><span>Informazioni aggiornate</span></button>
+          <button class="suggestion" data-prompt="__VOICE__"><span class="suggestion-symbol">◉</span><strong>Voce live</strong><span>Parla con Lumina</span></button>
         </div>
       </section>
       <section class="messages" id="messages" aria-label="Messaggi della conversazione" aria-live="polite" aria-relevant="additions" hidden></section>

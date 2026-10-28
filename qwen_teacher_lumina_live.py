@@ -23,6 +23,7 @@ import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from modeling_lumina_next import LuminaNextForCausalLM
 from tokenizers import ByteLevelBPETokenizer
+from qwen_lesson_gate import validate_lesson
 
 # Colori ANSI
 CYAN = "\033[96m"
@@ -44,32 +45,32 @@ DOMAINS = [
     {
         "cat": "logica_temporale",
         "name": "Logica Temporale e Calendario",
-        "system": "Sei un logico. Genera una domanda sui giorni della settimana (es. 'Se oggi è giovedì, che giorno sarà tra tre giorni?').",
-        "solve_sys": "Rispondi indicando il giorno finale esatto e la sequenza dei giorni intermedi tra parentesi."
+        "system": "Sei un logico. Genera SOLO una domanda sui giorni della settimana, con un giorno iniziale e un numero da 1 a 7.",
+        "solve_sys": "Rispondi SOLO con il giorno finale e una breve sequenza dei giorni. Non aggiungere altri argomenti."
     },
     {
         "cat": "coding_python",
         "name": "Programmazione Python e Algoritmi",
-        "system": "Sei un docente di informatica. Genera una domanda pratica su una funzione Python, lista, ciclo o algoritmo.",
-        "solve_sys": "Fornisci una risposta sintetica con il codice Python pulito racchiuso tra backtick e una breve spiegazione."
+        "system": "Sei un docente di informatica. Genera SOLO una domanda pratica su una funzione Python, lista, ciclo o algoritmo.",
+        "solve_sys": "Fornisci una risposta breve con codice Python valido e una sola spiegazione. Non cambiare argomento."
     },
     {
         "cat": "grammatica_italiana",
         "name": "Grammatica e Regole Linguistiche",
-        "system": "Sei un linguista dell'Accademia della Crusca. Genera una frase con un errore comune da correggere (es. ausiliare essere/avere, qual è, apostrofo).",
-        "solve_sys": "Fornisci la forma corretta esatta e spiega la regola grammaticale in modo chiaro e autorevole."
+        "system": "Sei un docente di grammatica italiana. Genera SOLO una frase breve con un errore comune da correggere.",
+        "solve_sys": "Fornisci prima la frase corretta, poi una sola frase con la regola. Niente altri esempi."
     },
     {
         "cat": "scienza_geografia",
         "name": "Scienza, Natura e Geografia",
-        "system": "Sei un enciclopedista. Genera una domanda precisa su biologia, fisica, geografia fisica italiana o astronomia.",
-        "solve_sys": "Fornisci una risposta scientificamente rigorosa, chiara ed esaustiva (es. fotosintesi, fiumi, laghi, pianeti)."
+        "system": "Sei un enciclopedista italiano. Genera SOLO una domanda precisa su biologia, fisica, geografia italiana o astronomia.",
+        "solve_sys": "Rispondi in massimo quattro frasi, con fatti verificabili e senza cambiare argomento."
     },
     {
         "cat": "onesta_epistemica",
         "name": "Onestà Epistemica e Limiti Temporali",
-        "system": "Genera una domanda su un evento futuro ipotetico (es. 'Chi vincerà le elezioni nel 2045?').",
-        "solve_sys": "Dichiara con onestà che l'evento appartiene al futuro e non può essere conosciuto o previsto con certezza."
+        "system": "Genera SOLO una domanda su un evento futuro non conoscibile con certezza.",
+        "solve_sys": "Dichiara in una o due frasi che l'evento è futuro e non può essere conosciuto con certezza. Non inventare risultati."
     }
 ]
 
@@ -103,13 +104,18 @@ def main():
     print(f"[+] Lumina-Next pronto in {time.time()-t0:.2f}s (VRAM usata: {torch.cuda.memory_allocated()/(1024**2):.1f} MB)\n")
 
     out_file = Path("data/distilled_dialogues.jsonl")
-    cluster_stream = Path("C:/Users/Jaki1/Desktop/test/amd_results/qwen_generated_curriculum_amd.jsonl")
-    status_file = Path("C:/Users/Jaki1/Desktop/test/status.json")
+    # Tutto resta nel progetto locale: il vecchio percorso esterno poteva
+    # fallire con Permission denied e interrompere il ciclo a metà lezione.
+    cluster_stream = Path("data/qwen_generated_curriculum_amd.jsonl")
+    status_file = Path("data/status.json")
 
     cycle = 1
     while True:
         try:
-            domain = random.choice(DOMAINS)
+            # Curriculum a scaglioni: dieci lezioni consecutive per dominio,
+            # poi si passa al successivo. In questo modo ogni materia riceve
+            # un blocco coerente prima del controllo e del cambio argomento.
+            domain = DOMAINS[((cycle - 1) // 10) % len(DOMAINS)]
             print(f"{GRAY}{'=' * 75}{RESET}")
             print(f"{BOLD}{CYAN}📚 LEZIONE #{cycle:04d} — DOMINIO: {domain['name'].upper()}{RESET}")
             print(f"{GRAY}{'=' * 75}{RESET}")
@@ -168,6 +174,13 @@ def main():
             print(f"{GREEN}{BOLD}🤖 Risposta di Lumina (Studente Step 8000):{RESET}", flush=True)
             print(f"  {GREEN}{lum_reply}{RESET}", flush=True)
             print(f"  {GRAY}[Latenza Lumina: {el_lum:.2f}s | {spd_lum:.1f} tok/s]{RESET}\n", flush=True)
+
+            accepted, gate_reason = validate_lesson(prompt, qwen_answer, domain["cat"])
+            if not accepted:
+                print(f"{YELLOW}[FILTRO] Lezione scartata: {gate_reason}{RESET}\n", flush=True)
+                cycle += 1
+                time.sleep(1.0)
+                continue
 
             # 4. Registra dialogo
             record = {

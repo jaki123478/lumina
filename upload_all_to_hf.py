@@ -51,6 +51,35 @@ def upload_lumina_next_model(api: HfApi):
     print(f"[+] Modello Lumina-Next 135M aggiornato con successo: https://huggingface.co/{repo_id}")
 
 
+def sync_dataset_files():
+    src = Path("data/distilled_dialogues.jsonl")
+    dst_dir = Path("hf_export_dataset")
+    dst_dir.mkdir(exist_ok=True)
+    if src.exists():
+        shutil.copy2(src, dst_dir / "train.jsonl")
+        shutil.copy2(src, dst_dir / "lumina_distilled_dialogues.jsonl")
+        with open(src, "r", encoding="utf-8") as f:
+            count = sum(1 for line in f if line.strip())
+        return count
+    return 32663
+
+
+def sync_space_files():
+    src_dir = Path("dist")
+    dst_dir = Path("hf_space")
+    dst_dir.mkdir(exist_ok=True)
+    if src_dir.exists():
+        for item in src_dir.iterdir():
+            if item.is_file():
+                shutil.copy2(item, dst_dir / item.name)
+            elif item.is_dir() and item.name != "model":
+                dest_sub = dst_dir / item.name
+                dest_sub.mkdir(exist_ok=True)
+                for subitem in item.iterdir():
+                    if subitem.is_file():
+                        shutil.copy2(subitem, dest_sub / subitem.name)
+
+
 def upload_distilled_dataset(api: HfApi):
     repo_id = "jacopof/lumina-italian-distilled-qa"
     print(f"\n" + "=" * 65)
@@ -59,13 +88,14 @@ def upload_distilled_dataset(api: HfApi):
 
     create_repo(repo_id=repo_id, repo_type="dataset", exist_ok=True)
 
+    count = sync_dataset_files()
     folder = Path("hf_export_dataset")
-    print(f"[*] Caricamento 32.663 campioni curati da {folder} -> {repo_id}...")
+    print(f"[*] Caricamento {count:,} campioni curati da {folder} -> {repo_id}...")
     api.upload_folder(
         folder_path=str(folder),
         repo_id=repo_id,
         repo_type="dataset",
-        commit_message="Update Lumina Dataset v6 CoT (32,663 curated samples with Python coding and multi-step reasoning)",
+        commit_message=f"Update Lumina Dataset v6 CoT ({count:,} curated samples with Python coding and multi-step reasoning)",
     )
     print(f"[+] Dataset aggiornato con successo: https://huggingface.co/datasets/{repo_id}")
 
@@ -78,13 +108,14 @@ def upload_chat_space(api: HfApi):
 
     create_repo(repo_id=repo_id, repo_type="space", space_sdk="static", exist_ok=True)
 
+    sync_space_files()
     folder = Path("hf_space")
     print(f"[*] Caricamento Web App da {folder} -> {repo_id}...")
     api.upload_folder(
         folder_path=str(folder),
         repo_id=repo_id,
         repo_type="space",
-        commit_message="Sync Lumina Chat Space with latest assets and configurations",
+        commit_message="Sync Lumina Chat Space with latest PWA assets and voice scripts",
     )
     print(f"[+] Space aggiornato con successo: https://huggingface.co/spaces/{repo_id}")
 

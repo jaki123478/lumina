@@ -44,7 +44,18 @@ def clean(text: str) -> str:
     text = re.sub(r'(?m)^\s*(?:#{1,6}|[-*])\s+', '', text)
     text = text.replace('**', '').replace('`', '').replace('km²', 'chilometri quadrati')
     text = text.replace('×', ' per ').replace('CO2', 'anidride carbonica')
+    # Espansioni fonetiche per evitare che sigle e simboli vengano letti male.
+    text = re.sub(r'\bLLM\b', 'modello linguistico', text, flags=re.I)
+    text = re.sub(r'\bAI\b', 'intelligenza artificiale', text, flags=re.I)
+    text = re.sub(r'\bURL\b', 'indirizzo web', text, flags=re.I)
+    text = text.replace('%', ' percento ')
     text = ' '.join(text.split())
+    # Ritmo conversazionale: pause brevi tra le frasi e dopo i due punti,
+    # così la voce non recita tutto in un unico blocco uniforme.
+    text = re.sub(r'\s*:\s*', ', ', text)
+    text = re.sub(r'([.!?])\s+', r'\1  ', text)
+    if text and text[-1] not in '.!?':
+        text += '.'
     if len(text) > 1000:
         text = text[:1000].rsplit(' ', 1)[0] + '.'
     return text

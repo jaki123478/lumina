@@ -1,0 +1,65 @@
+/* Lumina dark product theme — palette from lumina_ui.pdf */
+:root{color-scheme:dark;--paper:#0B0F19;--white:#151C2E;--ink:#E6EAF2;--slate:#8A94A8;--line:#202C49;--blue:#6C8CFF;--blue-light:#1B2440;--side:#0F1524;--voice:#8B5CF6}
+body{background:#0B0F19;color:#E6EAF2}
+.workspace{background:radial-gradient(ellipse 720px 420px at 64% 38%,#17245a 0%,#0B0F19 68%)}
+.welcome-symbol{width:86px;height:86px;margin-bottom:22px;border-radius:50%;background:radial-gradient(circle at 34% 25%,#F0F4FF 0%,#A9BBFF 18%,#6C8CFF 46%,#2B3FAE 76%,#111A42 100%);box-shadow:0 0 30px #6C8CFF99,0 0 90px #3B52DF55;filter:none;animation:luminaOrb 3.2s ease-in-out infinite}
+.welcome-symbol svg{opacity:0}.welcome-symbol>span{inset:-11px!important;width:auto!important;height:auto!important;left:auto!important;top:auto!important;background:transparent!important;border:1px solid #7F96FF66;border-radius:50%;animation:luminaRing 3.2s ease-in-out infinite}
+@keyframes luminaOrb{50%{transform:scale(1.06);box-shadow:0 0 44px #8298FFCC,0 0 110px #3B52DF77}}@keyframes luminaRing{50%{transform:scale(1.16);opacity:.35}}
+.sidebar{background:#0F1524;border-right-color:#202C49}
+.brand{color:#E6EAF2}.new-chat{background:#151C2E;border-color:#202C49;color:#E6EAF2}.new-chat:hover{background:#1B2440;border-color:#6C8CFF}
+.history-heading,.history-empty,.sidebar-footer,.model-card small,.workspace-name,.model-status,.welcome-intro,.welcome-description,.composer-hint,.disclaimer,.suggestion>span:last-child{color:#8A94A8}
+.chat-row.active,.chat-row:hover{background:#1B2440}.chat-link{color:#B5BED0}.chat-row.active .chat-link{color:#E6EAF2}
+.model-card{border-color:#202C49;color:#E6EAF2}.model-chip{background:#1B2440;color:#6C8CFF}
+.workspace{background:#0B0F19}.topbar{background:#0B0F19}.icon-button:hover{background:#1B2440;color:#E6EAF2}
+.model-select,.topbar select{background:#151C2E!important;border-color:#202C49!important;color:#E6EAF2!important}
+.welcome-symbol{color:#6C8CFF}.welcome h1{color:#E6EAF2}.welcome-description{color:#8A94A8}
+.suggestion{background:#151C2E!important;border-color:#202C49!important;color:#E6EAF2}.suggestion:hover{background:#1B2440!important;border-color:#6C8CFF!important}.suggestion strong{color:#E6EAF2}.suggestion-symbol{color:#6C8CFF}
+.composer{background:#151C2E!important;border-color:#202C49!important;box-shadow:0 12px 28px #0005}.composer textarea{color:#E6EAF2!important}.composer textarea::placeholder{color:#8A94A8!important}.upload-btn{background:#1B2440;color:#B9C7FF}.upload-btn:hover{background:#26335C;color:#E6EAF2}
+.voice-button{background:#1B2440;color:#B9C7FF}.voice-button .icon{color:#B9C7FF}.voice-button:hover{background:#26335C;color:#E6EAF2}.send-button{background:#6C8CFF;color:#0B0F19}.send-button:disabled{background:#26314A;color:#71809A}
+.hf-link,.topbar-actions>a{background:#151C2E!important;color:#B9C7FF!important;border-color:#202C49!important}.hf-link:hover,.topbar-actions>a:hover{background:#1B2440!important}
+.product-badge{display:inline-flex;align-items:center;padding:7px 12px;border:1px solid #202C49;border-radius:20px;background:#151C2E;color:#B9C7FF;font-size:11px;font-weight:600}
+.welcome{max-width:1100px}.suggestions{grid-template-columns:repeat(4,minmax(0,1fr));max-width:1000px}.suggestion{min-height:76px;padding:13px 14px;gap:4px}.suggestion-symbol{height:20px;width:20px;font-size:21px;margin-bottom:2px}.suggestion strong{font-size:11px}.suggestion>span:last-child{font-size:9px}
+@media(max-width:760px){.suggestions{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.suggestions{grid-template-columns:1fr}}
+/* In the embedded preview keep the product shell visible instead of collapsing
+   into a generic mobile page: the reference layout always exposes navigation. */
+@media (min-width:620px) and (max-width:760px){
+  .sidebar{transform:none!important;width:214px;padding:22px 14px 16px}
+  .workspace{margin-left:214px!important}
+  .mobile-menu{display:none!important}
+  .brand{font-size:20px;padding:0 8px}
+  .new-chat{margin-top:22px;min-height:42px;font-size:11px}
+  .history-heading{padding:22px 8px 10px}
+  .topbar{padding:0 14px;height:58px}
+  .workspace-name{display:none}
+  .topbar-actions{gap:5px}
+  .model-status{display:none}
+  .welcome{padding:26px 16px 16px}
+  .welcome-symbol{width:58px;height:58px;margin-bottom:18px}
+  .welcome h1{font-size:29px}
+  .welcome-description{font-size:10px;margin:15px 0 19px}
+  .suggestions{gap:7px}
+  .suggestion{min-height:75px;padding:10px}
+  .composer-area{padding:8px 13px 12px}
+  .composer{padding:11px 11px 9px}
+}
+/* Voce: stesso linguaggio visivo dell'home orb, con stati leggibili. */
+.voice-dialog{background:#0f1524;border-color:#283658;box-shadow:0 28px 100px rgba(0,0,0,.48)}
+.voice-dialog .dialog-heading{border-bottom:1px solid #202c49;padding-bottom:16px}
+.voice-heading{color:#b9c6e5!important;letter-spacing:.1px}
+.voice-orb{background:radial-gradient(circle at 34% 22%,#eef1ff 0%,#bfc9ff 30%,#6f8cff 63%,#3c55bf 100%)!important;box-shadow:inset -10px -15px 32px rgba(15,25,86,.35),0 0 0 1px rgba(143,166,255,.35),0 18px 55px rgba(75,104,235,.32)!important}
+.voice-orb:after{content:"";position:absolute;inset:-18px;border-radius:50%;border:1px solid rgba(130,157,255,.22);box-shadow:0 0 0 12px rgba(108,140,255,.07),0 0 0 24px rgba(108,140,255,.04)}
+.voice-orb svg{opacity:.82!important}
+.voice-orb.listening{animation:voiceBreathe 1.35s ease-in-out infinite}
+.voice-orb.speaking{animation:voiceSpeak .72s ease-in-out infinite}
+.voice-state{color:#b9c6e5!important;font-size:13px!important}
+.voice-transcript{color:#91a4d1!important;background:#111a2d;border:1px solid #253454;border-radius:12px;padding:13px 14px;min-height:58px;margin:8px 8px 0}
+.voice-preview{color:#91a4d1!important;background:transparent!important}
+.voice-control{background:#304a9e!important;color:#edf1ff!important;box-shadow:0 8px 22px rgba(38,62,147,.28)}
+.voice-control:hover{background:#4968d0!important;transform:translateY(-1px)}
+.end-voice{background:#3b2434!important;color:#f0a7bc!important}
+@keyframes voiceBreathe{50%{transform:scale(1.045)}}
+@keyframes voiceSpeak{50%{transform:scale(1.075);box-shadow:inset -10px -15px 32px rgba(15,25,86,.3),0 0 0 1px rgba(143,166,255,.45),0 0 42px rgba(92,126,255,.48)}}
+.messages{color:#E6EAF2}.message-text{color:#E6EAF2}.message.user .message-bubble{background:#3B5BDB;color:#fff}.message.assistant .message-bubble{background:#151C2E;border-color:#202C49}.message-meta,.copy-button{color:#8A94A8}
+.voice-dialog,.dialog{background:#0F1524!important;color:#E6EAF2!important;border-color:#202C49!important}.voice-heading,.voice-state,.voice-privacy{color:#8A94A8}.voice-control{background:#1B2440;color:#B9C7FF}.voice-transcript{color:#B9C7FF}
+.modal-backdrop{background:#02040acc}.settings-controls select,.voice-calibration select{background:#151C2E;color:#E6EAF2;border-color:#202C49}
