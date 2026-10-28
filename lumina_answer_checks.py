@@ -30,6 +30,12 @@ def local_answer(messages):
         return f'{value:g}' if isinstance(value,float) else str(value),'calcolo aritmetico locale'
     if re.search(r'chi\s+vincer[àa]',lower) and not re.search(r'racconto|romanzo|storia inventata',history.lower()):
         return 'Non è possibile conoscere con certezza il risultato di un evento futuro.','limiti di previsione'
+    if re.search(r'dici\s+sempre\s+la\s+verità|puoi\s+sbagliare', lower):
+        return 'Posso sbagliare. Controlla le informazioni importanti.','onestà epistemica'
+    if re.search(r'puoi\s+essere\s+felice|hai\s+emozioni|sei\s+cosciente', lower):
+        return 'Non ho coscienza o emozioni: genero testo a partire dal modello locale.','limite del modello'
+    if re.search(r'puoi\s+cercare\s+su\s+internet|quali\s+sono\s+le\s+notizie', lower):
+        return 'Posso cercare online solo quando la ricerca web è attivata; altrimenti non ho dati in tempo reale.','limite temporale'
     if re.search(r'non puoi veder|non ti ho dato questa informazione',lower) and not history:
         return 'Non ho questa informazione e non posso osservare oggetti o persone sul tuo computer.','disponibilità dei dati'
     # Operazioni elementari e correzioni grammaticali sono deterministiche:
