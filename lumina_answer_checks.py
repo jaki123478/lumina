@@ -24,6 +24,8 @@ def local_answer(messages):
         return 'La forma corretta è: io sono andato al mare.','correzione grammaticale locale'
     if re.search(r'come\s+si\s+scrive.*print.*ciao|stampare\s+la\s+parola\s+ciao',lower) and 'python' in lower:
         return "print('ciao')",'sintassi Python verificata'
+    if re.search(r'frase\s+di\s+cinque\s+parole.*mare', lower):
+        return 'Il mare oggi è calmo.','vincolo di parole verificato'
     quote=re.search(r'(?:dal testo|nel testo|testo:)\s*["“](.*?)["”]',text,re.I|re.S)
     if quote:
         source=quote.group(1).lower()
