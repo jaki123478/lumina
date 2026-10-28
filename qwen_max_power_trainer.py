@@ -181,7 +181,7 @@ def main():
     deck = list(CURRICULUM_MAX_POWER)
     random.shuffle(deck)
     deck_idx = 0
-    lesson_num = 1161
+    lesson_num = 2402
 
     log_print("\n[+] Potenza Massima Attiva: Qwen Coder istruisce Lumina in diretta!\n", log_fp)
 
@@ -316,7 +316,4 @@ def main():
             time.sleep(2.0)
 
 if __name__ == "__main__":
-    # Il ciclo storico resta disponibile per consultazione; l'avvio normale
-    # usa distillazione finita, validazione separata e checkpoint reversibili.
-    from qwen_repair_trainer import main as repair_main
-    repair_main()
+    main()
