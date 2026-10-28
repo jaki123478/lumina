@@ -7,7 +7,7 @@ from tokenizers import ByteLevelBPETokenizer
 from modeling_lumina_next import LuminaNextForCausalLM
 from lumina_next_runtime import prompt_ids, stop_sequences, response_text, ROOT
 from lumina_voice_neural import clean
-from qwen_repair_trainer import curriculum, training_sequence, validate_teacher
+from qwen_repair_trainer import curriculum, training_sequence, validate_teacher, RESERVED_QUESTIONS
 
 
 class ScriptedModel(LuminaNextForCausalLM):
@@ -61,6 +61,7 @@ class NextRepairTests(unittest.TestCase):
         import json
         key=lambda r: json.dumps(r['messages'],sort_keys=True)
         self.assertFalse({key(r) for r in train}&{key(r) for r in valid})
+        self.assertFalse({r['messages'][-1]['content'] for r in train}&RESERVED_QUESTIONS)
         x,y=training_sequence(self.tok,train[0])
         self.assertEqual(len(x),len(y))
         prefix=prompt_ids(self.tok,train[0]['messages'])
@@ -73,6 +74,17 @@ class NextRepairTests(unittest.TestCase):
             cfg={'vocab_size':32,'d_model':16,'n_layers':1,'n_heads':2,'n_kv_heads':1,'head_dim':8,'d_ff':32,'max_position_embeddings':64}
             Path(tmp,'config.json').write_text(json.dumps(cfg))
             with self.assertRaises(FileNotFoundError): LuminaNextForCausalLM.from_pretrained(tmp)
+
+    def test_next_cached_decoding_matches_full_context(self):
+        cfg={'vocab_size':32,'d_model':16,'n_layers':2,'n_heads':2,'n_kv_heads':1,'head_dim':8,'d_ff':32,'max_position_embeddings':64}
+        torch.manual_seed(9)
+        m=LuminaNextForCausalLM(cfg).eval()
+        ids=torch.tensor([[3,4,5,6]])
+        with torch.inference_mode():
+            _,cache=m(ids[:,:-1],use_cache=True)
+            cached,_=m(ids[:,-1:],past_key_values=cache,use_cache=True)
+            full=m(ids)
+        torch.testing.assert_close(cached[:,-1],full[:,-1],atol=1e-5,rtol=1e-5)
 
 
 if __name__=='__main__': unittest.main()

@@ -91,6 +91,35 @@ Il progetto include e mantiene aperto il dataset sintetico di distillazione ital
 
 ---
 
+## Addestramento e voce in locale
+
+### Ciclo locale Qwen con verifica dei miglioramenti
+
+Esegui `.venv\Scripts\python.exe qwen_max_power_trainer.py --steps 240`.
+Il ciclo usa soltanto Qwen e tokenizer già presenti nella cache locale, scarta
+risposte troncate o blocchi Python con errori di sintassi e bilancia i tipi di
+esercizio. Termina dopo il numero di aggiornamenti richiesto. Non sovrascrive i
+checkpoint sorgente: salva lezioni, validazione e candidato in una nuova cartella
+`outputs/qwen_repair_*`.
+
+La selezione richiede una loss inferiore su esempi separati, più risposte corrette
+sulle domande di controllo e conservazione di quelle già corrette. Sono controlli
+limitati, non una garanzia di accuratezza generale. Un candidato approvato viene
+selezionato da `config/lumina_active_model.json`; riavvia il server per caricarlo.
+Per tornare alla versione precedente ripristina quel file dal backup del ciclo,
+oppure rimuovilo per usare l'export originale.
+
+`PARLA_CON_LUMINA.bat` usa il modello locale selezionato e Piper Paola, con memoria
+degli scambi recenti. `ASCOLTA_VOCE_LUMINA.bat` genera e riproduce un nuovo saluto.
+La chat nel browser usa Next in modalità automatica; la scelta Mini usa davvero il
+modello da 50K nel browser. La voce del browser arriva dall'endpoint locale
+`/api/tts`, senza servizi vocali esterni.
+
+La trascrizione libera del microfono richiede separatamente Vosk e un modello
+italiano nella cartella `voices/vosk-it`. Se non ci sono, usa l'immissione testuale:
+il programma non invia l'audio a servizi esterni. Il riconoscitore del browser
+resta limitato alle frasi registrate dall'utente.
+
 ## 📜 Licenza
 
 Rilasciato sotto licenza libera e aperta **MIT**.  

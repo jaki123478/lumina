@@ -72,12 +72,14 @@ class LuminaPyTorchEngine:
         ckpt_dir = active_model_dir()
         print(f"[*] Caricamento Lumina-Next Step 8000 su {self.device} ({self.dtype})...")
         self.model = LuminaNextForCausalLM.from_pretrained(ckpt_dir).to(device=self.device, dtype=self.dtype).eval()
+        self.history = []
         print(f"[+] Modello pronto in memoria GPU! Parametri: {self.model.count_parameters():,}")
 
     def generate(self, prompt: str, max_new_tokens: int = 80) -> tuple[str, float, int]:
         import torch
         from lumina_next_runtime import prompt_ids, stop_sequences, response_text
-        input_ids = torch.tensor([prompt_ids(self.tokenizer, [{'role':'user','content':prompt}])], device=self.device, dtype=torch.long)
+        messages = self.history + [{'role':'user','content':prompt}]
+        input_ids = torch.tensor([prompt_ids(self.tokenizer, messages)], device=self.device, dtype=torch.long)
         
         t0 = time.perf_counter()
         with torch.no_grad():
@@ -88,13 +90,14 @@ class LuminaPyTorchEngine:
         gen_tokens = len(out_ids[0]) - len(input_ids[0])
         speed = gen_tokens / elapsed if elapsed > 0 else 0
         reply = response_text(self.tokenizer, out_ids[0][len(input_ids[0]):].tolist())
+        self.history = (messages + [{'role':'assistant','content':reply}])[-12:]
         return reply, speed, gen_tokens
 
 
 def main():
     print("=" * 70)
     print("      🎙️ LUMINA VOICE INTERACTIVE — PC LENOVO RTX 5060")
-    print("      Modello: Step 8000 (100% Benchmark Score) | Voce: Elsa (it-IT)")
+    print("      Modello locale attivo | Voce: Piper Paola (it-IT)")
     print("      Digita la tua domanda: Lumina risponderà a schermo e a voce!")
     print("      Digita 'esci' per uscire.")
     print("=" * 70 + "\n")

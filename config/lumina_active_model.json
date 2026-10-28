@@ -1,4 +1,4 @@
 {
-  "path": "outputs\\qwen_repair_20261028\\candidate",
-  "validation_report": "outputs\\qwen_repair_20261028\\report.json"
+  "path": "outputs\\qwen_repair_20261028_balanced\\candidate",
+  "validation_report": "outputs\\qwen_repair_20261028_balanced\\report.json"
 }

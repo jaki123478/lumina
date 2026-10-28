@@ -208,6 +208,8 @@ class Handler(SimpleHTTPRequestHandler):
             models_payload = {
                 "object": "list",
                 "data": [
+                    {"id":"lumina-assisted","object":"model","owned_by":"lumina",
+                     "backend":"Qwen/Qwen2.5-Coder-1.5B-Instruct locale e calcolatrice locale"},
                     {
                         "id": "lumina-2.75m",
                         "object": "model",
@@ -443,10 +445,11 @@ class Handler(SimpleHTTPRequestHandler):
         if self.path in ("/v1/chat/completions", "/api/v1/chat/completions"):
             try:
                 data = json.loads(raw_body)
-                requested_model = data.get("model", "lumina-2.75m")
+                requested_model = data.get("model", "lumina-assisted")
+                backend = None
                 messages = data.get("messages", [])
-                temperature = float(data.get("temperature", 0.0))
-                max_tokens = int(data.get("max_tokens", 100))
+                temperature = max(0.0, min(1.5, float(data.get("temperature", 0.0))))
+                max_tokens = max(1, min(512, int(data.get("max_tokens", 100))))
 
                 # Estrai l'ultimo messaggio utente
                 user_msg = ""
@@ -506,7 +509,14 @@ class Handler(SimpleHTTPRequestHandler):
 
                 # Step B: Generazione con Lumina se sicuro
                 if not reply_text:
-                    if "coder" in requested_model.lower():
+                    if requested_model.lower() in ('lumina-assisted','lumina-general','auto','lumina'):
+                        from lumina_general import generate
+                        context_messages=[dict(m) for m in messages if m.get('role') in ('user','assistant')]
+                        if context_messages and context_messages[-1]['role']=='user':
+                            context_messages[-1]['content']=user_msg
+                        else:context_messages.append({'role':'user','content':user_msg})
+                        reply_text,backend=generate(context_messages,max_tokens=max_tokens)
+                    elif "coder" in requested_model.lower():
                         try:
                             import torch
                             coder_m, coder_tok = get_coder_model()
@@ -529,7 +539,10 @@ class Handler(SimpleHTTPRequestHandler):
                             dev = next(next_m.parameters()).device
                             from lumina_next_runtime import prompt_ids, stop_sequences, response_text
                             context_messages = [dict(m) for m in messages if m.get('role') in ('system', 'user', 'assistant')]
-                            context_messages[-1] = {"role": "user", "content": user_msg}
+                            if context_messages and context_messages[-1].get('role') == 'user':
+                                context_messages[-1] = {"role": "user", "content": user_msg}
+                            else:
+                                context_messages.append({"role": "user", "content": user_msg})
                             ids = prompt_ids(next_tok, context_messages,
                                              budget=min(2048, next_m.config['max_position_embeddings'] - max_tokens))
                             inputs = torch.tensor([ids], device=dev, dtype=torch.long)
@@ -569,6 +582,8 @@ class Handler(SimpleHTTPRequestHandler):
                         "total_tokens": max(2, len(user_msg.split()) + len(reply_text.split()))
                     }
                 }
+                if backend is not None:
+                    openai_response['backend'] = backend
                 body = json.dumps(openai_response, ensure_ascii=False).encode("utf-8")
                 self.send_response(200)
                 self.send_header("Content-Type", "application/json")

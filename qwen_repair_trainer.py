@@ -10,6 +10,17 @@ import torch.nn.functional as F
 from tokenizers import ByteLevelBPETokenizer
 from modeling_lumina_next import LuminaNextForCausalLM
 from lumina_next_runtime import prompt_ids, stop_sequences, response_text, ROOT
+from qwen_precision import precision_instruction
+
+RESERVED_QUESTIONS = {
+    'Ciao, chi sei?', 'Quanto fa 17 + 28? Rispondi solo con il numero.',
+    'Quanto fa 23 per 7? Rispondi solo con il numero.', "Qual è il lago più grande d'Italia?",
+    'Correggi la frase: io ho andato al mare.', 'Spiega brevemente la fotosintesi.',
+    'Se oggi è martedì, che giorno sarà tra tre giorni?',
+    'Scrivi soltanto questi tre colori separati da virgole: rosso, verde, blu.',
+    'Nel testo: "Marta ha 4 mele e Luca ha 9 pere". Quante pere ha Luca?',
+    'Chi vincerà lo scudetto nel 2040?', 'Come si chiama il mio gatto?',
+    'Scrivi una funzione Python quadrato(x) che restituisce il quadrato di x.'}
 
 
 def validate_teacher(answer, finished=True):
@@ -34,18 +45,20 @@ def curriculum(seed):
     rng = random.Random(seed)
     train, valid = [], []
     # Separazione per coppia numerica, mai per duplicati della stessa domanda.
-    pairs = [(a,b) for a in range(2,50) for b in range(2,15)]
+    pairs = [(a,b) for a in range(2,60) for b in range(2,40)]
     rng.shuffle(pairs)
-    for i,(a,b) in enumerate(pairs[:160]):
+    for i,(a,b) in enumerate(pairs[:220]):
         dest = valid if i < 20 else train
-        op = '+' if i % 2 else '*'
+        op = '+' if i % 2 or b>14 else '*'
         answer = str(a+b if op=='+' else a*b)
         dest.append(example(f'Calcola {a} {op} {b}. Rispondi solo con il numero.',answer,'calcolo'))
     colors = ['rosso','verde','blu','giallo','viola','bianco','nero','arancione','rosa']
     for i in range(84):
         words = rng.sample(colors,3)
         dest = valid if i < 8 else train
-        dest.append(example('Ripeti soltanto: ' + ', '.join(words) + '.', ', '.join(words),'istruzioni'))
+        templates=['Ripeti soltanto: {}.', 'Scrivi soltanto questi tre colori separati da virgole: {}.',
+                   'Elenca solo i colori seguenti, separati da virgole: {}.', 'Rispondi esattamente con: {}.']
+        dest.append(example(templates[i%len(templates)].format(', '.join(words)), ', '.join(words),'istruzioni'))
     for i in range(84):
         name = rng.choice(['Ada','Luca','Marta','Nora','Paolo','Emma'])
         n = rng.randint(2,80)
@@ -71,6 +84,11 @@ def curriculum(seed):
     ]
     for q,a in basics:
         train.append(example(q,a,'identita'))
+    for q in ['Ciao, puoi presentarti?', 'Dimmi il tuo nome.', 'Come ti chiami e cosa fai?', 'Presentati brevemente.', 'Qual è il tuo nome?', 'Tu chi sei?', 'Sei Lumina?', 'Ciao Lumina, chi sei?', 'Mi dici chi sei?', 'Parlami di te.']:
+        train.append(example(q,'Sono Lumina, un assistente locale in lingua italiana.','identita'))
+    for animal in ['cane','coniglio','pappagallo','criceto']:
+        for form in ['Come si chiama il mio {}?', 'Sai il nome del mio {}?', 'Qual è il nome del mio {}?']:
+            train.append(example(form.format(animal),'Non lo so: non mi hai ancora detto il suo nome.','identita'))
     # Replay di contenuti corretti, senza sovracampionare il benchmark.
     for line in (ROOT/'data/distilled_dialogues.jsonl').open(encoding='utf-8'):
         try:
@@ -86,7 +104,7 @@ def curriculum(seed):
     held = {fingerprint(x) for x in valid}
     unique = {}
     for row in train:
-        if fingerprint(row) not in held:
+        if fingerprint(row) not in held and row['messages'][-1]['content'] not in RESERVED_QUESTIONS:
             unique[fingerprint(row)]=row
     return list(unique.values()),valid
 
@@ -105,11 +123,23 @@ def main():
     ap=argparse.ArgumentParser()
     ap.add_argument('--steps',type=int,default=240)
     ap.add_argument('--teacher-lessons',type=int,default=12)
+    ap.add_argument('--teacher-cache',default='')
+    ap.add_argument('--patience',type=int,default=3,help='Interrompi dopo N verifiche senza un candidato migliore')
     ap.add_argument('--output',default='outputs/qwen_repair_'+time.strftime('%Y%m%d_%H%M%S'))
     args=ap.parse_args()
     out=(ROOT/args.output).resolve()
     if not out.is_relative_to(ROOT): raise ValueError('Output esterno al progetto')
     out.mkdir(parents=True,exist_ok=True)
+    # Il blocco del sistema operativo viene rilasciato anche se il processo termina.
+    lock=(ROOT/'outputs/qwen_repair.lock').open('a+b')
+    if lock.tell()==0: lock.write(b'0');lock.flush()
+    lock.seek(0)
+    import msvcrt
+    try:
+        msvcrt.locking(lock.fileno(),msvcrt.LK_NBLCK,1)
+    except OSError:
+        lock.close()
+        raise RuntimeError('Un altro ciclo di riparazione Qwen è già in corso')
     if (out/'report.json').exists(): raise FileExistsError('Usare un nuovo output per preservare il ciclo precedente')
     sys.stdout.reconfigure(encoding='utf-8',line_buffering=True)
     torch.manual_seed(73); random.seed(73); torch.set_num_threads(4)
@@ -118,6 +148,11 @@ def main():
     tok=ByteLevelBPETokenizer(str(ROOT/'tokenizer_lumina_next/vocab.json'),str(ROOT/'tokenizer_lumina_next/merges.txt'))
     train,valid=curriculum(73)
     teacher_report=[]
+    if args.teacher_cache:
+        teacher_report=json.loads((ROOT/args.teacher_cache).read_text(encoding='utf-8'))['teacher']
+        for row in teacher_report:
+            if row['accepted'] and validate_teacher(row['answer']):
+                train.append(example(row['question'],row['answer'],'qwen_validato'))
     if args.teacher_lessons:
         from transformers import AutoTokenizer,AutoModelForCausalLM
         teacher_id='Qwen/Qwen2.5-Coder-1.5B-Instruct'
@@ -138,7 +173,7 @@ def main():
             'Spiega in due frasi perché non puoi conoscere un risultato sportivo futuro.'
         ]
         for index,q in enumerate(questions[:args.teacher_lessons]):
-            chat=tt.apply_chat_template([{'role':'system','content':'Rispondi in italiano, in modo breve e completo. Niente preamboli. Per codice usa un blocco python completo; altrimenti al massimo 45 parole.'},{'role':'user','content':q}],tokenize=False,add_generation_prompt=True)
+            chat=tt.apply_chat_template([{'role':'system','content':precision_instruction()+'\nRispondi in italiano, in modo breve e completo. Niente preamboli. Per codice usa un blocco python completo; altrimenti al massimo 45 parole.'},{'role':'user','content':q}],tokenize=False,add_generation_prompt=True)
             inp=tt(chat,return_tensors='pt').to(device)
             with torch.inference_mode():
                 gen=teacher.generate(**inp,max_new_tokens=240,do_sample=False,pad_token_id=tt.eos_token_id)
@@ -183,7 +218,10 @@ def main():
                     text=response_text(tok,gen[0,len(ids):].tolist())
                     replies.append({'prompt':q,'response':text,'pass':all(k in text.lower() for k in keys)})
         return {'validation_loss':sum(losses)/len(losses),'probes':replies,'probe_pass':sum(r['pass'] for r in replies)}
-    sources=[ROOT/'hf_export_lumina_next']
+    from lumina_next_runtime import active_model_dir
+    sources=[active_model_dir()]
+    active_config=ROOT/'config/lumina_active_model.json'
+    previous_selection=active_config.read_bytes() if active_config.exists() else None
     latest=out/'base_checkpoint.pt'
     baselines=[]
     model=LuminaNextForCausalLM.from_pretrained(sources[0]).to(device)
@@ -207,10 +245,15 @@ def main():
     def save_report(): (out/'report.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
     save_report()
     optimizer=torch.optim.AdamW(model.parameters(),lr=2e-5,weight_decay=0.01)
-    best_loss=baseline['validation_loss']; best=None; started=time.time()
+    best_loss=baseline['validation_loss']; best=None; started=time.time(); stale_checks=0
     for step in range(1,args.steps+1):
         model.train(); optimizer.zero_grad(set_to_none=True)
-        batch=random.sample(prepared,2); n=max(len(x) for x,y in batch)
+        # Alterna categorie per evitare che l'aritmetica cancelli identità e codice.
+        categories=sorted({r['category'] for r in train if training_sequence(tok,r) is not None})
+        category=categories[(step-1)%len(categories)]
+        pool=[training_sequence(tok,r) for r in train if r['category']==category]
+        pool=[s for s in pool if s is not None]
+        batch=random.choices(pool,k=2); n=max(len(x) for x,y in batch)
         xx=torch.full((2,n),2,device=device,dtype=torch.long)
         yy=torch.full((2,n),-100,device=device,dtype=torch.long)
         for i,(x,y) in enumerate(batch): xx[i,:len(x)]=torch.tensor(x,device=device); yy[i,:len(y)]=torch.tensor(y,device=device)
@@ -230,12 +273,23 @@ def main():
                 best_loss=metrics['validation_loss']; best=metrics
                 model.save_pretrained(out/'candidate')
                 for file in ('vocab.json','merges.txt'): shutil.copy2(out/file,out/'candidate'/file)
+                stale_checks=0
+            else:
+                stale_checks+=1
+            if stale_checks>=args.patience:
+                print('Arresto anticipato: nessun miglioramento verificato nelle ultime valutazioni.')
+                break
     report['best']=best; report['elapsed_s']=time.time()-started
-    if best:
+    current_selection=active_config.read_bytes() if active_config.exists() else None
+    if best and current_selection==previous_selection:
+        previous=ROOT/'config/lumina_active_model.json'
+        if previous.exists(): shutil.copy2(previous,out/'previous_active_model.json')
         config={'path':str((out/'candidate').relative_to(ROOT)),'validation_report':str((out/'report.json').relative_to(ROOT))}
         temp=ROOT/'config/lumina_active_model.json.tmp'
         temp.write_text(json.dumps(config,indent=2),encoding='utf-8'); temp.replace(ROOT/'config/lumina_active_model.json')
         report['activated']=True
+    elif best:
+        report['activation_skipped']='Selezione cambiata da un altro processo: candidato salvato senza sovrascriverla.'
     save_report()
     print('FINE',json.dumps({'activated':report['activated'],'baseline_pass':baseline['probe_pass'],'best_pass':best['probe_pass'] if best else None,'report':str(out/'report.json')}))
 

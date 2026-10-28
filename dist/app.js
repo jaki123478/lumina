@@ -248,7 +248,7 @@ function sendMessage(content, fromVoice = false) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: selectedModel === 'auto' ? 'lumina-next' : selectedModel,
+        model: selectedModel === 'auto' ? 'lumina-assisted' : selectedModel,
         messages: chat.messages.slice(0, -1).map(m => ({ role: m.role, content: m.content })),
         max_tokens: settings.maxTokens || 250,
         temperature: settings.temperature ?? 0.2

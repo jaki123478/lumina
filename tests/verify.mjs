@@ -33,8 +33,8 @@ updateUtf8(utf8,195); assert.equal(utf8.remaining,1);
 const byteLogits=new Float32Array(259).fill(-100);byteLogits[169]=2;byteLogits[65]=20;
 assert.equal(sample(byteLogits,0,utf8,[],weights.config),169,'respect UTF8 continuation');
 updateUtf8(utf8,169);assert.equal(utf8.remaining,0);
-for(const name of ['app.js','styles.css','voice-recognizer.js','voice-synth.js','inference-worker.js','index.html'])assert.ok(fs.statSync(path.join(root,'dist',name)).size>0);
-for(const name of ['app.js','voice-recognizer.js','voice-synth.js']) {
+for(const name of ['app.js','styles.css','voice-recognizer.js','voice-synth.js','local-voice.js','inference-worker.js','index.html'])assert.ok(fs.statSync(path.join(root,'dist',name)).size>0);
+for(const name of ['app.js','voice-recognizer.js','voice-synth.js','local-voice.js']) {
   const text=fs.readFileSync(path.join(root,'dist',name),'utf8');
   assert.ok(!/\b(?:webkitSpeechRecognition|SpeechRecognition|speechSynthesis|SpeechSynthesisUtterance)\b/.test(text),`${name} must not use browser speech services`);
   const syntax=spawnSync(process.execPath,['--check',path.join(root,'dist',name)],{encoding:'utf8'});

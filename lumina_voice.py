@@ -1,13 +1,11 @@
 """
 Assistente Vocale per Lumina AI.
 Ascolta l'utente dal microfono in italiano, filtra con Lumina Sentinel,
-interroga Lumina LLM e risponde con sintesi vocale naturale italiana (Microsoft Elsa).
+interroga Lumina LLM e risponde con Piper Paola in locale.
 """
 
 import sys
 import os
-import io
-import wave
 import time
 import requests
 import numpy as np
@@ -19,19 +17,9 @@ if sys.platform == "win32":
         pass
 
 try:
-    import pyttsx3
-except ImportError:
-    pyttsx3 = None
-
-try:
     import sounddevice as sd
 except ImportError:
     sd = None
-
-try:
-    import speech_recognition as sr
-except ImportError:
-    sr = None
 
 from lumina_guardrails import LuminaSentinel
 
@@ -40,10 +28,10 @@ class LuminaVoiceAssistant:
     def __init__(self, api_url="http://localhost:8000/v1/chat/completions", model="lumina-next"):
         self.api_url = api_url
         self.model = model
+        self.history = []
         self.sentinel = LuminaSentinel()
         self.tts_engine = None
         self._init_tts()
-        self.recognizer = sr.Recognizer() if sr else None
 
     def _init_tts(self):
         try:
@@ -122,7 +110,7 @@ class LuminaVoiceAssistant:
         # 2. Chiamata API locale
         payload = {
             "model": self.model,
-            "messages": [{"role": "user", "content": prompt}],
+            "messages": self.history + [{"role": "user", "content": prompt}],
             "max_tokens": 80,
             "temperature": 0.3
         }
@@ -132,6 +120,7 @@ class LuminaVoiceAssistant:
             if res.status_code == 200:
                 data = res.json()
                 reply = data["choices"][0]["message"]["content"]
+                self.history = (payload['messages'] + [{'role':'assistant','content':reply}])[-12:]
                 return reply.strip()
             else:
                 return f"Errore server Lumina (HTTP {res.status_code})."

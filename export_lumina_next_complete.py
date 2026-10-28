@@ -122,6 +122,12 @@ def main():
     # 1. Carica Modello
     print("[*] Caricamento modello da checkpoints_lumina_next...")
     model = LuminaNextForCausalLM.from_pretrained(ckpt_dir).eval().cpu()
+    latest_pt = ckpt_dir / "checkpoint_step8000.pt"
+    if latest_pt.exists():
+        state = torch.load(latest_pt, map_location="cpu")
+        model.load_state_dict(state)
+        torch.save(model.state_dict(), ckpt_dir / "pytorch_model.bin")
+        print(f"[+] Pesi più recenti caricati da {latest_pt} e salvati in pytorch_model.bin")
 
     # 2. Esporta ONNX
     onnx_path = "lumina_next_135m.onnx"

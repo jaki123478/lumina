@@ -24,6 +24,7 @@ import torch.nn.functional as F
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from modeling_lumina_next import LuminaNextForCausalLM
 from tokenizers import ByteLevelBPETokenizer
+from qwen_precision import precision_instruction
 
 CURRICULUM_MAX_POWER = [
     # -----------------------------------------------------------------
@@ -228,7 +229,7 @@ def main():
             # PASSO 2: Spiegazione Maestra di Qwen Coder 1.5B
             # -------------------------------------------------------------
             msgs = [
-                {"role": "system", "content": f"{sys_instruct} Spiega in italiano corretto, chiaro e conciso."},
+                {"role": "system", "content": precision_instruction() + f"\n{sys_instruct} Spiega in italiano corretto, chiaro e conciso."},
                 {"role": "user", "content": f"Spiega al tuo studente la soluzione corretta a questa domanda: '{domanda}'"}
             ]
             q_chat = qwen_tok.apply_chat_template(msgs, tokenize=False, add_generation_prompt=True)
