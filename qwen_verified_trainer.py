@@ -107,7 +107,6 @@ def main():
     amp=lambda:torch.autocast(device_type=device,dtype=torch.bfloat16,enabled=device=='cuda')
     tests=json.loads((ROOT/'evaluation/general_cases.json').read_text(encoding='utf-8'))['tests']
     from evaluation.code_checks import verify_code
-    ns={'ast':ast,'re':re,'operator':operator};exec(compile(ast.Module(body=nodes,type_ignores=[]),'<interprete-verifica>','exec'),ns)
     def evaluate():
         model.eval();results=[]
         with torch.inference_mode(),amp():
