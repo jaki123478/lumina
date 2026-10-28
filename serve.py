@@ -471,7 +471,8 @@ class Handler(SimpleHTTPRequestHandler):
                 web_requested=bool(data.get('web') or re.search(r'\b(attualità|aggiornamenti|ultime notizie|cerca su internet|cerca sul web|notizie aggiornate)\b',user_msg_lower))
                 public_web_requested=bool(re.search(r'^\s*(?:cerca\b|ricerca\b)',user_msg_lower) or re.search(r'https?://',user_msg_lower) or data.get('web_search'))
                 research_requested=bool(data.get('research') or re.search(r'\b(ricerca approfondita|fai una ricerca)\b',user_msg_lower))
-                web_requested=web_requested or public_web_requested or research_requested
+                weather_requested=bool(re.search(r'\b(meteo|tempo|previsioni|piove|temperatura)\b', user_msg_lower))
+                web_requested=web_requested or public_web_requested or research_requested or weather_requested
                 from lumina_web_sources import enabled as web_enabled, set_enabled as set_web_enabled
 
                 # Gestione comandi di consenso esplicito via chat/terminale/Visual Studio
@@ -522,7 +523,9 @@ class Handler(SimpleHTTPRequestHandler):
                 # Step B: Generazione con Lumina se sicuro
                 if not reply_text:
                     if web_requested:
-                        if research_requested:
+                        if weather_requested:
+                            from lumina_weather import answer
+                        elif research_requested:
                             from lumina_research import research as answer
                         elif public_web_requested:
                             from lumina_public_web import answer
