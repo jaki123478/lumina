@@ -28,11 +28,18 @@ def upload_lumina_next_model(api: HfApi):
     create_repo(repo_id=repo_id, repo_type="model", exist_ok=True)
 
     folder = Path("hf_export_lumina_next")
-    # Copia anche ONNX e GGUF nella cartella per il rilascio completo su HF
+    # Copia anche ONNX, GGUF e Adattatore LoRA nella cartella per il rilascio completo su HF
     if Path("lumina_next_135m.onnx").exists():
         shutil.copy("lumina_next_135m.onnx", folder / "lumina_next_135m.onnx")
     if Path("lumina_next_135m.gguf").exists():
         shutil.copy("lumina_next_135m.gguf", folder / "lumina_next_135m.gguf")
+    lora_src = Path("releases/local-training-20261028")
+    if lora_src.exists():
+        lora_dst = folder / "lora_adapter_20261028"
+        lora_dst.mkdir(exist_ok=True)
+        for fname in ("adapter.pt", "adapter_config.json", "RISULTATO.md"):
+            if (lora_src / fname).exists():
+                shutil.copy2(lora_src / fname, lora_dst / fname)
 
     print(f"[*] Caricamento cartella {folder} -> {repo_id}...")
     api.upload_folder(

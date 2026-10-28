@@ -158,8 +158,8 @@ def main():
     # 1. Caricamento Qwen-Coder 1.5B
     log_print("[*] Caricamento Maestro Qwen2.5-Coder-1.5B-Instruct su GPU RTX 5060...", log_fp)
     t0 = time.time()
-    qwen_tok = AutoTokenizer.from_pretrained("Qwen/Qwen2.5-Coder-1.5B-Instruct")
-    qwen = AutoModelForCausalLM.from_pretrained("Qwen/Qwen2.5-Coder-1.5B-Instruct", dtype=dtype, device_map=device).eval()
+    qwen_tok = AutoTokenizer.from_pretrained("Qwen/Qwen2.5-Coder-1.5B-Instruct", local_files_only=True)
+    qwen = AutoModelForCausalLM.from_pretrained("Qwen/Qwen2.5-Coder-1.5B-Instruct", dtype=dtype, device_map=device, local_files_only=True).eval()
     log_print(f"[+] Qwen2.5-Coder pronto in {time.time()-t0:.2f}s (VRAM: {torch.cuda.memory_allocated()/(1024**2):.1f} MB)", log_fp)
 
     # 2. Caricamento Lumina-Next 135M
@@ -172,9 +172,6 @@ def main():
     if ckpt_path.exists():
         lumina.load_state_dict(torch.load(ckpt_path, map_location=device))
     num_params = sum(p.numel() for p in lumina.parameters())
-    log_print(f"[+] Lumina-Next pronto in {time.time()-t0:.2f}s (Parametri: {num_params:,} - Ripreso da Lezione #1160)", log_fp)
-
-    optimizer = torch.optim.AdamW(lumina.parameters(), lr=3e-5, weight_decay=0.01)
 
     dataset_file = Path("data/distilled_dialogues.jsonl")
     status_file = Path("C:/Users/Jaki1/Desktop/test/status.json")
@@ -182,7 +179,18 @@ def main():
     deck = list(CURRICULUM_MAX_POWER)
     random.shuffle(deck)
     deck_idx = 0
-    lesson_num = 2402
+    lesson_num = 3078
+    if status_file.exists():
+        try:
+            s_data = json.loads(status_file.read_text(encoding="utf-8"))
+            saved_cycle = int(s_data.get("nodes", {}).get("lenovo_rtx_5060", {}).get("live_teacher_cycle", 3077))
+            lesson_num = max(3078, saved_cycle + 1)
+        except Exception:
+            pass
+
+    log_print(f"[+] Lumina-Next pronto in {time.time()-t0:.2f}s (Parametri: {num_params:,} - Ripreso da Lezione #{lesson_num})", log_fp)
+
+    optimizer = torch.optim.AdamW(lumina.parameters(), lr=3e-5, weight_decay=0.01)
 
     log_print("\n[+] Potenza Massima Attiva: Qwen Coder istruisce Lumina in diretta!\n", log_fp)
 
@@ -317,5 +325,8 @@ def main():
             time.sleep(2.0)
 
 if __name__ == "__main__":
-    from qwen_verified_trainer import main as verified_main
-    verified_main()
+    if "--steps" in sys.argv:
+        from qwen_verified_trainer import main as verified_main
+        verified_main()
+    else:
+        main()

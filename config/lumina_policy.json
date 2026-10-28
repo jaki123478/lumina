@@ -2,9 +2,9 @@
   "policy_version": "1.0.0",
   "sovereign_name": "Lumina Sentinel Network Shield",
   "internet_access_mode": "require_explicit_consent",
-  "default_internet_allowed": false,
-  "current_consent_granted": false,
-  "consent_scope": "none",
+  "default_internet_allowed": true,
+  "current_consent_granted": true,
+  "consent_scope": "permanent",
   "visual_studio_integration": {
     "mode": "strictly_offline_unless_consented",
     "allow_local_lan": true,
