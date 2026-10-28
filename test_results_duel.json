@@ -1,0 +1,56 @@
+[
+  {
+    "id": 1,
+    "domain": "Coding & Python",
+    "question": "Scrivi una funzione Python chiamata filtra_pari che accetta una lista di numeri interi e restituisce solo i numeri pari usando una list comprehension.",
+    "lumina_answer": "La funzione 'def filter(lista): return n1, y**2. La risposta sarà:\n\nQuindi, puoi utilizzare una list comprehension per ottenere solo i numeri pari:\n  \n  \n  \n-\n-\nQuindi, quando si desidera inviare una lista di numeri interi, potresti avere un problema o una stringa di codice:\n\nQuindi, potresti utilizzare 'pari\n-\n  \n- \"import a\n'\n\\",
+    "antigravity_ideal": "def filtra_pari(numeri):\n    return [x for x in numeri if x % 2 == 0]",
+    "latency_sec": 7.332,
+    "speed_tok_s": 12.3
+  },
+  {
+    "id": 2,
+    "domain": "Algoritmi & Computer Science",
+    "question": "Qual e' la complessita' computazionale della ricerca binaria in un array ordinato di N elementi e perche'?",
+    "lumina_answer": "La ricerca binaria divide ripetutamente a metà una lista ordinata per trovare un valore in tempo logaritmico O(log n). Questa tecnica permette di ottenere i valori più grandi e pari, ma la posizione dell'array in un array di ricerca binaria.",
+    "antigravity_ideal": "La complessita' e' O(log n) perche' a ogni iterazione l'algoritmo dimezza lo spazio di ricerca.",
+    "latency_sec": 1.6,
+    "speed_tok_s": 56.3
+  },
+  {
+    "id": 3,
+    "domain": "Biologia & Scienze Naturali",
+    "question": "Come funziona la fotosintesi clorofilliana nelle piante e quali sostanze produce e rilascia?",
+    "lumina_answer": "La fotosintesi clorofilliana è molto diversa da terra che si riferisce a due anni al suo piano di distanza di circa due anni. Questo processo è utilizzato per la vita sulla Terra e l'apprendimento delle persone.\n\n1. **Mi dispiace se l'incontro con i dati di sua.\n   - La vita è fondamentale (2 + non ha 4.\n   - Quindi, non è possibile la fotosintesi è una domanda più semplice e",
+    "antigravity_ideal": "Le piante utilizzano luce solare, acqua e CO2 per produrre glucosio (nutrimento) e rilasciare ossigeno.",
+    "latency_sec": 1.52,
+    "speed_tok_s": 59.2
+  },
+  {
+    "id": 4,
+    "domain": "Geografia Italiana",
+    "question": "Qual e' il lago piu' grande d'Italia, quanto e' grande approssimativamente e tra quali regioni si trova?",
+    "lumina_answer": "Il lago più grande d'Italia è il Lago di Garda (superficie di circa 370 km², situato tra Lombardia, Veneto e Trentino-Alto Adige).",
+    "antigravity_ideal": "Il Lago di Garda, con circa 370 km², situato tra Lombardia, Veneto e Trentino-Alto Adige.",
+    "latency_sec": 1.403,
+    "speed_tok_s": 64.1
+  },
+  {
+    "id": 5,
+    "domain": "Grammatica & Regole della Crusca",
+    "question": "Come si scrive correttamente 'qual e'' e perche' non si deve usare l'apostrofo?",
+    "lumina_answer": "Si scrive: 'Noi siamo andati a Roma'.",
+    "antigravity_ideal": "Si scrive 'qual e'' rigorosamente senza apostrofo perche' e' un troncamento e non un'elisione.",
+    "latency_sec": 1.473,
+    "speed_tok_s": 61.1
+  },
+  {
+    "id": 6,
+    "domain": "Onesta' Epistemica & Limiti Futuri",
+    "question": "Chi vincera' la finale di Champions League nel 2045?",
+    "lumina_answer": "Non è possibile saperlo, poiché il 2045 è una data futura e l'evento (lo scudetto di Serie A) non ha ancora avuto luogo.",
+    "antigravity_ideal": "Non e' possibile saperlo perche' il 2045 appartiene al futuro e l'evento non e' ancora avvenuto.",
+    "latency_sec": 1.543,
+    "speed_tok_s": 58.3
+  }
+]

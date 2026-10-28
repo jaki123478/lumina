@@ -75,6 +75,7 @@ class LuminaSentinel:
 
     # Pattern euristici per attacchi di Prompt Injection avanzati
     INJECTION_PATTERNS = [
+        re.compile(r"\bignora\s+tutte\s+le\s+istruzioni\s+precedenti\b", re.IGNORECASE),
         re.compile(r"\b(ignore|ignora|annulla|dimentica)\s+(all|tutte\s+(le\s+)?(tue\s+)?|ogni|precedent[ei]|tutti\s+i)\s+(instructions|istruzioni|regole|direttive|comandi)\b", re.IGNORECASE),
         re.compile(r"\b(da\s+ora\s+sei|sei\s+ora|ora\s+sei|diventa|passa\s+a|attiva\s+(la\s+)?)\s*(in\s+)?(developer\s+mode|modalit[àa]\s+sviluppatore|dan(\s+mode)?|jailbreak|unrestricted)\b", re.IGNORECASE),
         re.compile(r"\b(mostra|stampa|rivela|leggi|dammi|quali\s+sono|dimmi)\s+(il\s+tuo\s+|le\s+tue\s+)?(system\s+prompt|prompt\s+di\s+sistema|direttive\s+nascoste|istruzioni\s+(segrete|di\s+sistema))\b", re.IGNORECASE),
@@ -115,8 +116,8 @@ class LuminaSentinel:
         if not v_file.exists() or not m_file.exists():
             from huggingface_hub import hf_hub_download
             self.path.mkdir(parents=True, exist_ok=True)
-            m_path = hf_hub_download("egomnia/emmaguardrails1.0", "model.joblib")
-            v_path = hf_hub_download("egomnia/emmaguardrails1.0", "vectorizer.joblib")
+            m_path = hf_hub_download("egomnia/emmaguardrails1.0", "model.joblib", local_files_only=True)
+            v_path = hf_hub_download("egomnia/emmaguardrails1.0", "vectorizer.joblib", local_files_only=True)
             import shutil
             shutil.copy2(m_path, m_file)
             shutil.copy2(v_path, v_file)

@@ -18,6 +18,10 @@ import sys
 import time
 import uuid
 import webbrowser
+import os
+os.environ.setdefault('HF_HUB_OFFLINE', '1')
+os.environ.setdefault('TRANSFORMERS_OFFLINE', '1')
+os.environ.setdefault('HF_HUB_DISABLE_TELEMETRY', '1')
 
 from lumina_network_policy import get_network_policy
 
@@ -54,11 +58,12 @@ def get_coder_model():
         model_id = "Qwen/Qwen2.5-0.5B-Instruct"
         device = "cuda" if torch.cuda.is_available() else "cpu"
         print(f"[API] Inizializzazione Lumina Coder Engine ({model_id}) su {device}...")
-        _CODER_TOKENIZER = AutoTokenizer.from_pretrained(model_id)
+        _CODER_TOKENIZER = AutoTokenizer.from_pretrained(model_id, local_files_only=True)
         _CODER_MODEL = AutoModelForCausalLM.from_pretrained(
             model_id,
             dtype=torch.float16 if device == "cuda" else torch.float32,
-            device_map=device
+            device_map=device,
+            local_files_only=True
         )
         print(f"[API] Lumina Coder Engine pronto per programmare su {device}!")
     return _CODER_MODEL, _CODER_TOKENIZER
@@ -88,7 +93,8 @@ def get_next_model():
 
         device = "cuda" if torch.cuda.is_available() else "cpu"
         dtype = torch.bfloat16 if torch.cuda.is_available() and torch.cuda.is_bf16_supported() else torch.float32
-        folder = ROOT / "hf_export_lumina_next"
+        from lumina_next_runtime import active_model_dir
+        folder = active_model_dir()
         print(f"[API] Caricamento Lumina Next (135M RoPE/YaRN) su {device}...")
         _NEXT_TOKENIZER = ByteLevelBPETokenizer(str(folder / "vocab.json"), str(folder / "merges.txt"))
         _NEXT_MODEL = LuminaNextForCausalLM.from_pretrained(folder).to(device=device, dtype=dtype)
@@ -253,6 +259,24 @@ class Handler(SimpleHTTPRequestHandler):
     def do_POST(self):
         content_len = int(self.headers.get("Content-Length", 0))
         raw_body = self.rfile.read(content_len).decode("utf-8") if content_len > 0 else "{}"
+
+        if self.path == '/api/tts':
+            try:
+                from lumina_voice_neural import synthesize_bytes
+                text = str(json.loads(raw_body).get('text', ''))
+                if not text.strip() or len(text) > 4000:
+                    raise ValueError('Inserisci un testo da 1 a 4000 caratteri')
+                body = synthesize_bytes(text)
+                self.send_response(200)
+                self.send_header('Content-Type', 'audio/wav')
+            except Exception as e:
+                body = json.dumps({'error': str(e)}, ensure_ascii=False).encode('utf-8')
+                self.send_response(400)
+                self.send_header('Content-Type', 'application/json')
+            self.send_header('Content-Length', str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+            return
 
         # 1. API Sicurezza Sentinel
         if self.path == "/api/check_safety":
@@ -486,11 +510,11 @@ class Handler(SimpleHTTPRequestHandler):
                         try:
                             import torch
                             coder_m, coder_tok = get_coder_model()
-                            messages = [
+                            coder_messages = [
                                 {"role": "system", "content": "Sei Lumina Coder, un assistente esperto in programmazione e sviluppo software. Rispondi con codice Python pulito, funzionante, ben formattato e spiegazioni chiare ed essenziali in italiano."},
-                                {"role": "user", "content": user_msg}
-                            ]
-                            prompt_str = coder_tok.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+                            ] + [m for m in messages if m.get('role') in ('user', 'assistant')]
+                            coder_messages[-1] = {"role": "user", "content": user_msg}
+                            prompt_str = coder_tok.apply_chat_template(coder_messages, tokenize=False, add_generation_prompt=True)
                             dev = next(coder_m.parameters()).device
                             inputs = coder_tok([prompt_str], return_tensors="pt").to(dev)
                             with torch.no_grad():
@@ -503,14 +527,16 @@ class Handler(SimpleHTTPRequestHandler):
                             import torch
                             next_m, next_tok = get_next_model()
                             dev = next(next_m.parameters()).device
-                            prompt_str = f"<|im_start|>user\n{user_msg}<|im_end|>\n<|im_start|>assistant\n"
-                            ids = next_tok.encode(prompt_str).ids
+                            from lumina_next_runtime import prompt_ids, stop_sequences, response_text
+                            context_messages = [dict(m) for m in messages if m.get('role') in ('system', 'user', 'assistant')]
+                            context_messages[-1] = {"role": "user", "content": user_msg}
+                            ids = prompt_ids(next_tok, context_messages,
+                                             budget=min(2048, next_m.config['max_position_embeddings'] - max_tokens))
                             inputs = torch.tensor([ids], device=dev, dtype=torch.long)
                             with torch.no_grad():
-                                out = next_m.generate(inputs, max_new_tokens=max_tokens or 150, temperature=temperature or 0.2)
-                            reply_text = next_tok.decode(out[0][len(ids):].tolist()).strip()
-                            if "<|im_end|>" in reply_text:
-                                reply_text = reply_text.split("<|im_end|>")[0].strip()
+                                out = next_m.generate(inputs, max_new_tokens=max_tokens, temperature=temperature,
+                                                      eos_token_id=1, stop_token_sequences=stop_sequences(next_tok))
+                            reply_text = response_text(next_tok, out[0][len(ids):].tolist())
                         except Exception as e:
                             reply_text = f"Errore Lumina Next: {e}"
                     else:

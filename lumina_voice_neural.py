@@ -6,18 +6,18 @@ lumina_voice_neural.py - Voce femminile neurale italiana (Piper VITS "Paola") pe
 import argparse
 import sys
 import wave
-import subprocess
+import re
+import io
+import threading
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 VOICE_CANDIDATES = [
     HERE / "voices" / "it_IT-paola-medium.onnx",
-    HERE.parent / "voices" / "it_IT-paola-medium.onnx",
-    Path(r"C:\Users\Jaki1\Desktop\ai lumina\voices\it_IT-paola-medium.onnx"),
-    Path(r"C:\Users\Jaki1\Desktop\test\voce_neurale_lumina\voices\it_IT-paola-medium.onnx"),
 ]
 
 _voice = None
+_voice_lock = threading.RLock()
 
 
 def load_voice():
@@ -32,29 +32,48 @@ def load_voice():
 
 
 def clean(text: str) -> str:
-    for t in ("<|im_start|>", "<|im_end|>", "<|pad|>", "<think>", "</think>"):
-        text = text.replace(t, "")
-    return " ".join(text.split())[:600]
+    text = re.sub(r'<think>.*?</think>', '', text, flags=re.S)
+    for marker in ('<|im_end|>', '<|im_start|>', '<|pad|>'):
+        text = text.split(marker, 1)[0]
+    text = re.sub(r'<think>.*', '', text, flags=re.S)
+    text = re.sub(r'```.*?```', ' Il codice è disponibile a schermo. ', text, flags=re.S)
+    text = re.sub(r'```.*', ' Il codice è disponibile a schermo. ', text, flags=re.S)
+    text = re.sub(r'\[([^\]]+)\]\([^)]*\)', r'\1', text)
+    text = re.sub(r'https?://\S+', '', text)
+    text = re.sub(r'(?m)^\s*(?:#{1,6}|[-*])\s+', '', text)
+    text = text.replace('**', '').replace('`', '').replace('km²', 'chilometri quadrati')
+    text = text.replace('×', ' per ').replace('CO2', 'anidride carbonica')
+    text = ' '.join(text.split())
+    if len(text) > 1000:
+        text = text[:1000].rsplit(' ', 1)[0] + '.'
+    return text
 
 
-def synthesize(text: str, out_path: Path) -> Path:
-    voice = load_voice()
+def synthesize(text: str, out_path: Path, *, length_scale: float = 1.08, volume: float = 0.85) -> Path:
+    out_path = Path(out_path)
+    audio = synthesize_bytes(text, length_scale=length_scale, volume=volume)
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    with wave.open(str(out_path), "wb") as wf:
-        voice.synthesize_wav(clean(text), wf)
+    out_path.write_bytes(audio)
     return out_path
 
 
+def synthesize_bytes(text: str, *, length_scale: float = 1.08, volume: float = 0.85) -> bytes:
+    from piper import SynthesisConfig
+    text = clean(text)
+    if not text:
+        raise ValueError('Nessun testo pronunciabile')
+    audio = io.BytesIO()
+    with _voice_lock:
+        voice = load_voice()
+        with wave.open(audio, "wb") as wf:
+            voice.synthesize_wav(text, wf, syn_config=SynthesisConfig(
+                length_scale=length_scale, volume=volume, normalize_audio=True))
+    return audio.getvalue()
+
+
 def play(path: Path):
-    ps = (
-        "Add-Type -AssemblyName PresentationCore;"
-        "$p=New-Object System.Windows.Media.MediaPlayer;"
-        f"$p.Open([Uri]'{path}');$p.Volume=1;$p.Play();"
-        "Start-Sleep -Milliseconds 800;"
-        "while($p.NaturalDuration.HasTimeSpan -and $p.Position -lt $p.NaturalDuration.TimeSpan){Start-Sleep -Milliseconds 300};"
-        "$p.Close()"
-    )
-    subprocess.run(["powershell", "-NoProfile", "-Command", ps], check=False)
+    import winsound
+    winsound.PlaySound(str(path.resolve()), winsound.SND_FILENAME)
 
 
 def speak(text: str, name: str = "lumina_neurale", do_play: bool = True) -> Path:

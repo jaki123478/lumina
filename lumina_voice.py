@@ -37,7 +37,7 @@ from lumina_guardrails import LuminaSentinel
 
 
 class LuminaVoiceAssistant:
-    def __init__(self, api_url="http://localhost:8000/v1/chat/completions", model="lumina-2.75m"):
+    def __init__(self, api_url="http://localhost:8000/v1/chat/completions", model="lumina-next"):
         self.api_url = api_url
         self.model = model
         self.sentinel = LuminaSentinel()
@@ -46,24 +46,9 @@ class LuminaVoiceAssistant:
         self.recognizer = sr.Recognizer() if sr else None
 
     def _init_tts(self):
-        if not pyttsx3:
-            print("[!] pyttsx3 non installato. Sintesi vocale disabilitata.")
-            return
         try:
-            self.tts_engine = pyttsx3.init()
-            voices = self.tts_engine.getProperty("voices")
-            # Cerca voce italiana (Elsa desktop o simile)
-            selected_voice = None
-            for v in voices:
-                v_name = v.name.lower()
-                v_id = v.id.lower()
-                if "it-it" in v_id or "elsa" in v_name or "italian" in v_name:
-                    selected_voice = v.id
-                    break
-            if selected_voice:
-                self.tts_engine.setProperty("voice", selected_voice)
-            self.tts_engine.setProperty("rate", 175)
-            self.tts_engine.setProperty("volume", 1.0)
+            from lumina_voice_neural import load_voice
+            self.tts_engine = load_voice()
         except Exception as e:
             print(f"[!] Errore inizializzazione motore vocale: {e}")
             self.tts_engine = None
@@ -72,12 +57,12 @@ class LuminaVoiceAssistant:
         """Pronuncia la frase tramite il motore TTS locale."""
         if not text:
             return
-        clean_text = text.replace("*", "").replace("#", "").replace("`", "").strip()
+        from lumina_voice_neural import clean, speak
+        clean_text = clean(text)
         print(f"\n🔊 [Lumina Voce]: {clean_text}")
         if self.tts_engine:
             try:
-                self.tts_engine.say(clean_text)
-                self.tts_engine.runAndWait()
+                speak(clean_text)
             except Exception as e:
                 print(f"[!] Errore riproduzione vocale: {e}")
 
@@ -102,28 +87,23 @@ class LuminaVoiceAssistant:
             return None
 
     def transcribe(self, recording, sample_rate):
-        """Trascrive l'audio registrato tramite SpeechRecognition."""
-        if recording is None or not self.recognizer:
+        """Riconoscimento Vosk solo da modello locale, senza fallback di rete."""
+        if recording is None:
             return None
-
-        wav_io = io.BytesIO()
-        with wave.open(wav_io, "wb") as wf:
-            wf.setnchannels(1)
-            wf.setsampwidth(2)
-            wf.setframerate(sample_rate)
-            wf.writeframes(recording.tobytes())
-        wav_io.seek(0)
-
         try:
-            with sr.AudioFile(wav_io) as source:
-                audio_data = self.recognizer.record(source)
-            text = self.recognizer.recognize_google(audio_data, language="it-IT")
-            return text.strip()
-        except sr.UnknownValueError:
-            print("[?] Nessuna parola distinta rilevata. Riprova.")
-            return None
-        except sr.RequestError as e:
-            print(f"[!] Servizio trascrizione non raggiungibile: {e}")
+            from pathlib import Path
+            import json
+            from vosk import Model, KaldiRecognizer
+            folder = Path(__file__).resolve().parent / 'voices' / 'vosk-it'
+            if not folder.is_dir():
+                raise FileNotFoundError('Modello Vosk italiano locale mancante')
+            if not hasattr(self, '_stt_model'):
+                self._stt_model = Model(str(folder))
+            recognizer = KaldiRecognizer(self._stt_model, sample_rate)
+            recognizer.AcceptWaveform(recording.astype('<i2').tobytes())
+            return json.loads(recognizer.FinalResult()).get('text', '').strip() or None
+        except (ImportError, FileNotFoundError):
+            print('[!] Trascrizione offline non configurata: usa t per digitare. Nessun audio inviato in rete.')
             return None
         except Exception as e:
             print(f"[!] Errore trascrizione: {e}")
@@ -148,7 +128,7 @@ class LuminaVoiceAssistant:
         }
 
         try:
-            res = requests.post(self.api_url, json=payload, timeout=10)
+            res = requests.post(self.api_url, json=payload, timeout=90)
             if res.status_code == 200:
                 data = res.json()
                 reply = data["choices"][0]["message"]["content"]
@@ -162,8 +142,8 @@ class LuminaVoiceAssistant:
         print("=" * 65)
         print("       🎙️  LUMINA VOICE ASSISTANT - ASSISTENTE VOCALE ITALIANO")
         print("=" * 65)
-        print("• Riconoscimento vocale: Italiano (Google Speech / SoundDevice)")
-        print("• Sintesi vocale (TTS): Microsoft Elsa it-IT (100% Locale)")
+        print("• Riconoscimento vocale: Vosk italiano, se installato in locale")
+        print("• Sintesi vocale (TTS): Piper Paola, locale")
         print("• Protezione: Lumina Sentinel (ML + Heuristic + Anti-PII)")
         print("• Server: " + self.api_url)
         print("=" * 65)

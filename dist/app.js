@@ -1,4 +1,4 @@
-import { VoiceSynth } from './voice-synth.js';
+import { LocalVoiceSynth as VoiceSynth } from './local-voice.js';
 
 const $ = id => document.getElementById(id);
 const iconPaths = {
@@ -243,15 +243,15 @@ function sendMessage(content, fromVoice = false) {
 
   // 2. Gestione Selezione Modello
   const selectedModel = $('model-selector')?.value || 'auto';
-  if (selectedModel !== 'auto' && selectedModel !== 'lumina-2.75m') {
+  if (selectedModel !== 'lumina-50k') {
     fetch('/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: selectedModel,
+        model: selectedModel === 'auto' ? 'lumina-next' : selectedModel,
         messages: chat.messages.slice(0, -1).map(m => ({ role: m.role, content: m.content })),
         max_tokens: settings.maxTokens || 250,
-        temperature: settings.temperature || 0.2
+        temperature: settings.temperature ?? 0.2
       })
     })
     .then(r => r.json())
@@ -265,7 +265,9 @@ function sendMessage(content, fromVoice = false) {
       if (fromVoice && voice.live) speakReply(run.response.content);
     })
     .catch(() => {
-      worker.postMessage({ type: 'generate', id, messages: chat.messages.slice(0, -1).map(m => ({ role: m.role, content: m.content })), maxTokens: settings.maxTokens, temperature: settings.temperature });
+      const run = active; active = null;
+      run.response.content = 'Server Lumina locale non disponibile. Avvialo oppure scegli Lumina Mini nel menu.';
+      saveChats(); renderConversation(); updateComposer();
     });
     return;
   }
@@ -377,7 +379,7 @@ $('voice-preview').addEventListener('click', async () => {
   stopVoice(); const epoch = voice.epoch; voice.preview = true; voice.speaking = true;
   $('voice-preview').querySelector('span:last-child').textContent = 'Interrompi anteprima';
   const text = 'Ciao, sono Lumina. Questa è la mia voce sperimentale.';
-  $('voice-transcript').textContent = text; setVoiceState('speaking', 'Anteprima della voce sintetizzata da zero. Microfono spento.');
+  $('voice-transcript').textContent = text; setVoiceState('speaking', 'Anteprima della voce italiana locale. Microfono spento.');
   try { await unlockAudio(); if (voice.epoch !== epoch) return; await voice.synth.speak(text); if (voice.epoch === epoch) { voice.preview = false; voice.speaking = false; $('voice-preview').querySelector('span:last-child').textContent = 'Ascolta la voce'; setVoiceState('idle', 'Anteprima terminata. Registra una frase per iniziare a parlare.'); } }
   catch (error) { if (voice.epoch === epoch) { voice.preview = false; voice.speaking = false; $('voice-preview').querySelector('span:last-child').textContent = 'Ascolta la voce'; setVoiceState('idle', error.message || 'Audio non disponibile in questo browser.'); } }
 });

@@ -248,7 +248,8 @@ class LuminaNextForCausalLM(nn.Module):
         max_new_tokens: int = 120,
         temperature: float = 0.7,
         top_p: float = 0.9,
-        eos_token_id: int = 2,
+        eos_token_id: int = 1,
+        stop_token_sequences: Optional[list[list[int]]] = None,
     ) -> torch.Tensor:
         """Generazione autoregressiva accelerata con KV Cache."""
         self.eval()
@@ -256,6 +257,7 @@ class LuminaNextForCausalLM(nn.Module):
         curr_ids = input_ids
         past_kv = None
 
+        generated = []
         for _ in range(max_new_tokens):
             if past_kv is None:
                 step_input = curr_ids
@@ -282,7 +284,11 @@ class LuminaNextForCausalLM(nn.Module):
                 next_token = torch.multinomial(probs, num_samples=1)
 
             curr_ids = torch.cat([curr_ids, next_token], dim=-1)
+            generated.append(next_token.item())
             if next_token.item() == eos_token_id:
+                break
+            if any(seq and len(generated) >= len(seq) and generated[-len(seq):] == seq
+                   for seq in (stop_token_sequences or [])):
                 break
 
         return curr_ids
@@ -315,4 +321,6 @@ class LuminaNextForCausalLM(nn.Module):
         if weights_path.exists():
             state_dict = torch.load(weights_path, map_location="cpu", weights_only=True)
             model.load_state_dict(state_dict)
+        else:
+            raise FileNotFoundError(f'Pesi Next mancanti o illeggibili in {save_dir}')
         return model

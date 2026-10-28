@@ -167,10 +167,13 @@ def main():
     tok_dir = Path("tokenizer_lumina_next")
     lumina_tok = ByteLevelBPETokenizer(str(tok_dir / "vocab.json"), str(tok_dir / "merges.txt"))
     lumina = LuminaNextForCausalLM.from_pretrained("checkpoints_lumina_next").to(device=device, dtype=dtype)
+    ckpt_path = Path("checkpoints_lumina_next/checkpoint_step8000.pt")
+    if ckpt_path.exists():
+        lumina.load_state_dict(torch.load(ckpt_path, map_location=device))
     num_params = sum(p.numel() for p in lumina.parameters())
-    log_print(f"[+] Lumina-Next pronto in {time.time()-t0:.2f}s (Parametri: {num_params:,})", log_fp)
+    log_print(f"[+] Lumina-Next pronto in {time.time()-t0:.2f}s (Parametri: {num_params:,} - Ripreso da Lezione #1160)", log_fp)
 
-    optimizer = torch.optim.AdamW(lumina.parameters(), lr=4e-5, weight_decay=0.01)
+    optimizer = torch.optim.AdamW(lumina.parameters(), lr=3e-5, weight_decay=0.01)
 
     dataset_file = Path("data/distilled_dialogues.jsonl")
     status_file = Path("C:/Users/Jaki1/Desktop/test/status.json")
@@ -178,7 +181,7 @@ def main():
     deck = list(CURRICULUM_MAX_POWER)
     random.shuffle(deck)
     deck_idx = 0
-    lesson_num = 1
+    lesson_num = 1161
 
     log_print("\n[+] Potenza Massima Attiva: Qwen Coder istruisce Lumina in diretta!\n", log_fp)
 
@@ -313,4 +316,7 @@ def main():
             time.sleep(2.0)
 
 if __name__ == "__main__":
-    main()
+    # Il ciclo storico resta disponibile per consultazione; l'avvio normale
+    # usa distillazione finita, validazione separata e checkpoint reversibili.
+    from qwen_repair_trainer import main as repair_main
+    repair_main()
