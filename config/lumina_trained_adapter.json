@@ -1,0 +1,6 @@
+{
+  "path": "releases/local-training-20261028",
+  "experimental": true,
+  "base": "Qwen/Qwen2.5-0.5B-Instruct",
+  "description": "Adattatore locale Lumina, separato dalla modalità assistita e dai pesi Next."
+}

@@ -1,0 +1,7 @@
+{
+  "base": "Qwen/Qwen2.5-0.5B-Instruct",
+  "rank": 8,
+  "alpha": 16,
+  "system": "Sei Lumina, assistente locale in italiano. Rispondi direttamente e rispetta il formato richiesto. Usa i dati della conversazione. Se mancano informazioni, dichiaralo senza inventare.",
+  "report": "report.json"
+}

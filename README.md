@@ -100,18 +100,24 @@ Il ciclo usa soltanto Qwen e tokenizer già presenti nella cache locale, scarta
 risposte troncate o blocchi Python con errori di sintassi e bilancia i tipi di
 esercizio. Termina dopo il numero di aggiornamenti richiesto. Non sovrascrive i
 checkpoint sorgente: salva lezioni, validazione e candidato in una nuova cartella
-`outputs/qwen_repair_*`.
+`outputs/verified_general_*`. Il server locale deve essere già in esecuzione:
+Qwen propone lezioni attraverso l'API locale e un riferimento esatto le controlla.
 
-La selezione richiede una loss inferiore su esempi separati, più risposte corrette
-sulle domande di controllo e conservazione di quelle già corrette. Sono controlli
-limitati, non una garanzia di accuratezza generale. Un candidato approvato viene
-selezionato da `config/lumina_active_model.json`; riavvia il server per caricarlo.
+La selezione del candidato usa un confronto sulle generazioni, non solo la loss.
+Il candidato rimane separato: prima di attivarlo occorre una prova finale con
+domande nuove. La configurazione `config/lumina_active_model.json` riguarda
+soltanto i pesi nativi di Next; il modello assistito non viene presentato come
+un miglioramento di quei pesi.
 Per tornare alla versione precedente ripristina quel file dal backup del ciclo,
 oppure rimuovilo per usare l'export originale.
 
-`PARLA_CON_LUMINA.bat` usa il modello locale selezionato e Piper Paola, con memoria
-degli scambi recenti. `ASCOLTA_VOCE_LUMINA.bat` genera e riproduce un nuovo saluto.
-La chat nel browser usa Next in modalità automatica; la scelta Mini usa davvero il
+`PARLA_CON_LUMINA.bat` usa il supporto Qwen locale e Piper Paola, con memoria
+degli scambi recenti. Il motore nativo resta disponibile lanciando la console con
+`--native`. `ASCOLTA_VOCE_LUMINA.bat` genera e riproduce un nuovo saluto.
+La chat nel browser usa “Lumina · supporto Qwen locale” in modalità automatica:
+Qwen2.5-Coder-1.5B-Instruct già in cache, strumenti aritmetici e controlli locali.
+L'API dichiara il backend in ogni risposta assistita. Next resta una scelta
+separata, nativa e sperimentale; la scelta Mini usa davvero il
 modello da 50K nel browser. La voce del browser arriva dall'endpoint locale
 `/api/tts`, senza servizi vocali esterni.
 
@@ -121,6 +127,16 @@ il programma non invia l'audio a servizi esterni. Il riconoscitore del browser
 resta limitato alle frasi registrate dall'utente.
 
 ## 📜 Licenza
+
+### Adattatore locale e prove riproducibili
+
+L'adattatore sperimentale è incluso in `releases/local-training-20261028/`, insieme
+al report dei limiti. Richiede la base `Qwen/Qwen2.5-0.5B-Instruct` già disponibile
+nella cache locale; non contiene il modello base e non lo scarica automaticamente.
+`PARLA_CON_LUMINA_ADDESTRATA.bat` avvia chat e voce senza browser.
+Le domande di verifica e l'interprete limitato del codice sono in `evaluation/`.
+La voce usa Piper Paola locale: la lettura durante il training è sintesi vocale,
+non riaddestramento dei pesi vocali.
 
 Rilasciato sotto licenza libera e aperta **MIT**.  
 Creato e mantenuto da **Jacopo Forti ([@jaki123478](https://github.com/jaki123478))**.

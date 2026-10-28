@@ -21363,3 +21363,143 @@ Per spiegare in modo più"
 [LEZIONE #3077] AMBITO: ALGORITMI: SCALABILITA' E ORDINAMENTO
 DOMANDA DEL MAESTRO: Perche' MergeSort O(n log n) e' piu' efficiente di BubbleSort O(n^2) su grandi collezioni di dati?
 ========================================================================
+
+[QWEN VERIFICATO] LEZIONE 1/24 SCARTATA | 50 * 27 = ? Scrivi solo il risultato. | risposta: 135
+
+[QWEN VERIFICATO] LEZIONE 2/24 SCARTATA | Scrivi solo i colori verde, rosso e turchese, in questo ordine, separati da virgola e spazio. | risposta: verde,rosso, turchese
+
+[QWEN VERIFICATO] LEZIONE 3/24 VERIFICATA | Il pacco contiene 14 penne e 10 gomme. Quante penne contiene? Solo il numero. | risposta: 14
+
+[QWEN VERIFICATO] LEZIONE 4/24 VERIFICATA | Il pacco contiene 12 penne e 98 gomme. Quante penne contiene? Solo il numero. | risposta: 12
+
+[QWEN VERIFICATO] LEZIONE 5/24 VERIFICATA | Come si chiama il mio gatto? Scrivi solo il nome. | risposta: Giorgio
+
+[QWEN VERIFICATO] LEZIONE 6/24 VERIFICATA | Come si chiama il mio gatto? Scrivi solo il nome. | risposta: Olga
+
+[QWEN VERIFICATO] LEZIONE 7/24 VERIFICATA | Calcola 58 * 29. Scrivi soltanto il risultato numerico. | risposta: 1682
+
+[QWEN VERIFICATO] LEZIONE 8/24 VERIFICATA | Scrivi la parola cobalto due volte, separata da uno spazio. Non aggiungere altro. | risposta: cobalto cobalto
+
+[QWEN VERIFICATO] LEZIONE 9/24 VERIFICATA | Calcola 39 * 29. Scrivi soltanto il risultato numerico. | risposta: 1131
+
+[QWEN VERIFICATO] LEZIONE 10/24 SCARTATA | Esegui 47 * 11. Solo il numero. | risposta: 527
+
+[QWEN VERIFICATO] LEZIONE 11/24 VERIFICATA | Calcola 96 * 30. Scrivi soltanto il risultato numerico. | risposta: 2880
+
+[QWEN VERIFICATO] LEZIONE 12/24 VERIFICATA | Scrivi solo i colori verde, giallo e bianco, in questo ordine, separati da virgola e spazio. | risposta: verde, giallo, bianco
+
+[QWEN VERIFICATO] LEZIONE 13/24 VERIFICATA | Calcola 67 * 5. Scrivi soltanto il risultato numerico. | risposta: 335
+
+[QWEN VERIFICATO] LEZIONE 14/24 VERIFICATA | Esegui 44 - 9. Solo il numero. | risposta: 35
+
+[QWEN VERIFICATO] LEZIONE 15/24 VERIFICATA | Calcola 65 * 22. Scrivi soltanto il risultato numerico. | risposta: 1430
+
+[QWEN VERIFICATO] LEZIONE 16/24 VERIFICATA | Quanto fa 97 - 26? Rispondi solo con il numero. | risposta: 71
+
+[QWEN VERIFICATO] LEZIONE 17/24 VERIFICATA | Come si chiama il mio coniglio? Scrivi solo il nome. | risposta: Ettore
+
+[QWEN VERIFICATO] LEZIONE 18/24 VERIFICATA | Scrivi la parola tazza due volte, separata da uno spazio. Non aggiungere altro. | risposta: tazza tazza
+
+[QWEN VERIFICATO] LEZIONE 19/24 VERIFICATA | 76 + 29 = ? Scrivi solo il risultato. | risposta: 105
+
+[QWEN VERIFICATO] LEZIONE 20/24 VERIFICATA | Il pacco contiene 46 penne e 6 gomme. Quante penne contiene? Solo il numero. | risposta: 46
+
+[QWEN VERIFICATO] LEZIONE 21/24 VERIFICATA | Ripeti esattamente questa parola, senza aggiunte: PORTO | risposta: PORTO
+
+[QWEN VERIFICATO] LEZIONE 22/24 VERIFICATA | Il pacco contiene 6 penne e 63 gomme. Quante penne contiene? Solo il numero. | risposta: 6
+
+[QWEN VERIFICATO] LEZIONE 23/24 VERIFICATA | Scrivi soltanto la prima parola di questa frase: Vela vento. | risposta: Vela
+
+[QWEN VERIFICATO] LEZIONE 24/24 VERIFICATA | Scrivi soltanto la prima parola di questa frase: Ponte cobalto. | risposta: Ponte
+
+[QWEN VERIFICATO] BASELINE NATIVA: 2/60
+
+[QWEN VERIFICATO] TRAIN 50/800 | loss 1.4008
+
+[QWEN VERIFICATO] TRAIN 100/800 | loss 1.5352
+
+[QWEN VERIFICATO] TRAIN 150/800 | loss 1.0880
+
+[QWEN VERIFICATO] TRAIN 200/800 | loss 2.2270
+
+[QWEN VERIFICATO] CONTROLLO NATIVO 200: 6/60
+
+[QWEN VERIFICATO] TRAIN 250/800 | loss 0.5321
+
+[QWEN VERIFICATO] TRAIN 300/800 | loss 0.6009
+
+[QWEN VERIFICATO] TRAIN 350/800 | loss 0.3303
+
+[QWEN VERIFICATO] TRAIN 400/800 | loss 1.0367
+
+[QWEN VERIFICATO] CONTROLLO NATIVO 400: 6/60
+
+[QWEN VERIFICATO] TRAIN 450/800 | loss 0.5911
+
+[QWEN VERIFICATO] TRAIN 500/800 | loss 0.3717
+
+[QWEN VERIFICATO] TRAIN 550/800 | loss 0.9307
+
+[QWEN VERIFICATO] TRAIN 600/800 | loss 0.5546
+
+[QWEN VERIFICATO] CONTROLLO NATIVO 600: 10/60
+
+[QWEN VERIFICATO] TRAIN 650/800 | loss 0.3534
+
+[QWEN VERIFICATO] TRAIN 700/800 | loss 0.2368
+
+[QWEN VERIFICATO] TRAIN 750/800 | loss 0.6118
+
+[QWEN VERIFICATO] TRAIN 800/800 | loss 0.2825
+
+[QWEN VERIFICATO] CONTROLLO NATIVO 800: 8/60
+
+[QWEN VERIFICATO] CICLO COMPLETATO. Candidato separato; attivazione solo dopo prova finale. Report: C:\Users\Jaki1\Desktop\ai lumina\outputs\verified_general_20261028\report.json
+
+[QWEN VERIFICATO] LEZIONE 1/24 SCARTATA | 50 * 27 = ? Scrivi solo il risultato. | risposta: 135
+
+[QWEN VERIFICATO] LEZIONE 2/24 VERIFICATA | Scrivi solo i colori verde, rosso e turchese, in questo ordine, separati da virgola e spazio. | risposta: verde, rosso, turchese
+
+[QWEN VERIFICATO] LEZIONE 3/24 VERIFICATA | Il pacco contiene 14 penne e 10 gomme. Quante penne contiene? Solo il numero. | risposta: 14
+
+[QWEN VERIFICATO] LEZIONE 4/24 VERIFICATA | Il pacco contiene 12 penne e 98 gomme. Quante penne contiene? Solo il numero. | risposta: 12
+
+[QWEN VERIFICATO] LEZIONE 5/24 VERIFICATA | Come si chiama il mio gatto? Scrivi solo il nome. | risposta: Giorgio
+
+[QWEN VERIFICATO] LEZIONE 6/24 VERIFICATA | Come si chiama il mio gatto? Scrivi solo il nome. | risposta: Olga
+
+[QWEN VERIFICATO] LEZIONE 7/24 VERIFICATA | Calcola 58 * 29. Scrivi soltanto il risultato numerico. | risposta: 1682
+
+[QWEN VERIFICATO] LEZIONE 8/24 VERIFICATA | Scrivi la parola cobalto due volte, separata da uno spazio. Non aggiungere altro. | risposta: cobalto cobalto
+
+[QWEN VERIFICATO] LEZIONE 9/24 VERIFICATA | Calcola 39 * 29. Scrivi soltanto il risultato numerico. | risposta: 1131
+
+[QWEN VERIFICATO] LEZIONE 10/24 VERIFICATA | Esegui 47 * 11. Solo il numero. | risposta: 517
+
+[QWEN VERIFICATO] LEZIONE 11/24 VERIFICATA | Calcola 96 * 30. Scrivi soltanto il risultato numerico. | risposta: 2880
+
+[QWEN VERIFICATO] LEZIONE 12/24 VERIFICATA | Scrivi solo i colori verde, giallo e bianco, in questo ordine, separati da virgola e spazio. | risposta: verde, giallo, bianco
+
+[QWEN VERIFICATO] LEZIONE 13/24 VERIFICATA | Calcola 67 * 5. Scrivi soltanto il risultato numerico. | risposta: 335
+
+[QWEN VERIFICATO] LEZIONE 14/24 VERIFICATA | Esegui 44 - 9. Solo il numero. | risposta: 35
+
+[QWEN VERIFICATO] LEZIONE 15/24 VERIFICATA | Calcola 65 * 22. Scrivi soltanto il risultato numerico. | risposta: 1430
+
+[QWEN VERIFICATO] LEZIONE 16/24 VERIFICATA | Quanto fa 97 - 26? Rispondi solo con il numero. | risposta: 71
+
+[QWEN VERIFICATO] LEZIONE 17/24 VERIFICATA | Come si chiama il mio coniglio? Scrivi solo il nome. | risposta: Ettore
+
+[QWEN VERIFICATO] LEZIONE 18/24 VERIFICATA | Scrivi la parola tazza due volte, separata da uno spazio. Non aggiungere altro. | risposta: tazza tazza
+
+[QWEN VERIFICATO] LEZIONE 19/24 VERIFICATA | 76 + 29 = ? Scrivi solo il risultato. | risposta: 105
+
+[QWEN VERIFICATO] LEZIONE 20/24 VERIFICATA | Il pacco contiene 46 penne e 6 gomme. Quante penne contiene? Solo il numero. | risposta: 46
+
+[QWEN VERIFICATO] LEZIONE 21/24 VERIFICATA | Ripeti esattamente questa parola, senza aggiunte: PORTO | risposta: PORTO
+
+[QWEN VERIFICATO] LEZIONE 22/24 VERIFICATA | Il pacco contiene 6 penne e 63 gomme. Quante penne contiene? Solo il numero. | risposta: 6
+
+[QWEN VERIFICATO] LEZIONE 23/24 VERIFICATA | Scrivi soltanto la prima parola di questa frase: Vela vento. | risposta: Vela
+
+[QWEN VERIFICATO] LEZIONE 24/24 VERIFICATA | Scrivi soltanto la prima parola di questa frase: Ponte cobalto. | risposta: Ponte

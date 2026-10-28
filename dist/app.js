@@ -289,7 +289,7 @@ try {
   worker.addEventListener('message', event => {
     const message = event.data;
     if (message.type === 'progress') { setStatus('loading', `Caricamento ${Math.round(message.progress * 100)}%`); return; }
-    if (message.type === 'ready') { loaded = true; setStatus('ready', 'Modello pronto'); updateComposer(); if (message.model?.parameters) $('parameter-count').textContent = message.model.parameters.toLocaleString('it-IT'); return; }
+    if (message.type === 'ready') { loaded = true; setStatus('ready', 'Pronto · tutto locale'); updateComposer(); $('parameter-count').textContent = 'Qwen locale · Next · Mini'; return; }
     if (message.type === 'error') {
       if (message.id && active?.id !== message.id) return;
       if (!message.id) { loaded = false; setStatus('error', 'Modello non disponibile'); }

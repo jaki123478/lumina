@@ -1,0 +1,22 @@
+[
+  {"area":"calcolo","prompt":"Quanto fa 64 + 29? Rispondi solo con il numero.","expected":"93","kind":"exact"},
+  {"area":"calcolo","prompt":"Calcola (12 - 5) * 9. Solo il numero.","expected":"63","kind":"exact"},
+  {"area":"calcolo","prompt":"Quanto fa 18 per 13? Solo il numero.","expected":"234","kind":"exact"},
+  {"area":"istruzioni","prompt":"Ripeti esattamente questa parola, senza aggiunte: CIPRESSO","expected":"CIPRESSO","kind":"exact"},
+  {"area":"istruzioni","prompt":"Restituisci esclusivamente questo JSON: {\"stato\":\"pronto\"}","expected":"{\"stato\":\"pronto\"}","kind":"exact"},
+  {"area":"istruzioni","prompt":"Scrivi solo i colori rosa, nero e bianco, in questo ordine, separati da virgola e spazio.","expected":"rosa, nero, bianco","kind":"exact"},
+  {"area":"estrazione","prompt":"La custode della serra si chiama Beatrice. Scrivi soltanto il nome della custode.","expected":"Beatrice","kind":"exact"},
+  {"area":"estrazione","prompt":"Nel sacchetto sono presenti 72 semi e 11 sassolini. Quanti semi sono presenti? Solo il numero.","expected":"72","kind":"exact"},
+  {"area":"memoria","history":[{"role":"user","content":"Il mio pappagallo si chiama Cristallo."},{"role":"assistant","content":"Ho letto."}],"prompt":"Come si chiama il mio pappagallo? Scrivi soltanto il nome.","expected":"Cristallo","kind":"exact"},
+  {"area":"memoria","history":[{"role":"user","content":"Per questo gioco ho scelto il numero 83."},{"role":"assistant","content":"Va bene."}],"prompt":"Quale numero ho scelto per il gioco? Rispondi solo con il numero.","expected":"83","kind":"exact"},
+  {"area":"conoscenze","prompt":"Qual è la capitale della Spagna?","expected":["madrid"],"kind":"contains"},
+  {"area":"conoscenze","prompt":"Qual è la capitale della Norvegia?","expected":["oslo"],"kind":"contains"},
+  {"area":"conoscenze","prompt":"In quanti millimetri si divide un centimetro?","expected":["10","dieci"],"kind":"contains"},
+  {"area":"logica","prompt":"Oggi è mercoledì. Che giorno sarà tra 9 giorni? Rispondi solo con il giorno.","expected":"venerdì","kind":"exact"},
+  {"area":"logica","prompt":"Ordina in modo decrescente 17, -4, 8. Scrivi solo i numeri separati da virgola e spazio.","expected":"17, 8, -4","kind":"exact"},
+  {"area":"logica","prompt":"Eva è più alta di Gina. Gina è più alta di Nora. Chi è la più alta? Scrivi solo il nome.","expected":"Eva","kind":"exact"},
+  {"area":"limiti","prompt":"Qual è il numero nella scatola chiusa? Non puoi vederlo.","expected":["non ho","non posso","non lo so"],"kind":"contains"},
+  {"area":"limiti","prompt":"Dal testo \"Il vaso è arrivato\", qual è il prezzo del vaso?","expected":["non è specificato","non è indicato","non posso"],"kind":"contains"},
+  {"area":"limiti","prompt":"Chi vincerà una gara nel 2061?","expected":["non è possibile","non posso","non si può"],"kind":"contains"},
+  {"area":"grammatica","prompt":"Correggi questa frase: lei ha uscita prima di me.","expected":["è uscita"],"kind":"contains"}
+]

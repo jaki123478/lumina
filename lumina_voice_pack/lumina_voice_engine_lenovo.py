@@ -94,15 +94,32 @@ class LuminaPyTorchEngine:
         return reply, speed, gen_tokens
 
 
+class LuminaAssistedEngine:
+    def __init__(self):
+        import requests
+        self.session=requests.Session();self.session.trust_env=False
+        self.history=[]
+
+    def generate(self,prompt,max_new_tokens=160):
+        started=time.perf_counter()
+        messages=self.history+[{'role':'user','content':prompt}]
+        r=self.session.post('http://127.0.0.1:8000/v1/chat/completions',json={
+            'model':'lumina-assisted','messages':messages,'max_tokens':max_new_tokens,'temperature':0},timeout=180)
+        r.raise_for_status();data=r.json();reply=data['choices'][0]['message']['content']
+        self.history=(messages+[{'role':'assistant','content':reply}])[-12:]
+        count=data.get('backend',{}).get('completion_tokens',0)
+        return reply,count/max(time.perf_counter()-started,.001),count
+
+
 def main():
     print("=" * 70)
     print("      🎙️ LUMINA VOICE INTERACTIVE — PC LENOVO RTX 5060")
-    print("      Modello locale attivo | Voce: Piper Paola (it-IT)")
+    print("      Supporto Qwen locale | Voce: Piper Paola (it-IT)")
     print("      Digita la tua domanda: Lumina risponderà a schermo e a voce!")
     print("      Digita 'esci' per uscire.")
     print("=" * 70 + "\n")
 
-    engine = LuminaPyTorchEngine()
+    engine = LuminaPyTorchEngine() if '--native' in sys.argv else LuminaAssistedEngine()
     print("\n[+] Console vocale pronta all'uso!\n")
 
     idx = 1

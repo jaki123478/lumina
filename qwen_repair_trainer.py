@@ -280,16 +280,8 @@ def main():
                 print('Arresto anticipato: nessun miglioramento verificato nelle ultime valutazioni.')
                 break
     report['best']=best; report['elapsed_s']=time.time()-started
-    current_selection=active_config.read_bytes() if active_config.exists() else None
-    if best and current_selection==previous_selection:
-        previous=ROOT/'config/lumina_active_model.json'
-        if previous.exists(): shutil.copy2(previous,out/'previous_active_model.json')
-        config={'path':str((out/'candidate').relative_to(ROOT)),'validation_report':str((out/'report.json').relative_to(ROOT))}
-        temp=ROOT/'config/lumina_active_model.json.tmp'
-        temp.write_text(json.dumps(config,indent=2),encoding='utf-8'); temp.replace(ROOT/'config/lumina_active_model.json')
-        report['activated']=True
-    elif best:
-        report['activation_skipped']='Selezione cambiata da un altro processo: candidato salvato senza sovrascriverla.'
+    if best:
+        report['activation_skipped']='Candidato sperimentale: serve un test finale separato prima della selezione. Nessuna attivazione automatica.'
     save_report()
     print('FINE',json.dumps({'activated':report['activated'],'baseline_pass':baseline['probe_pass'],'best_pass':best['probe_pass'] if best else None,'report':str(out/'report.json')}))
 

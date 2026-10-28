@@ -9,6 +9,7 @@ import wave
 import re
 import io
 import threading
+import json
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -49,25 +50,42 @@ def clean(text: str) -> str:
     return text
 
 
-def synthesize(text: str, out_path: Path, *, length_scale: float = 1.08, volume: float = 0.85) -> Path:
+def voice_settings():
+    settings={'length_scale':1.08,'volume':0.85,'noise_scale':0.55,'noise_w_scale':0.7}
+    path=HERE/'config/lumina_voice_settings.json'
+    if path.exists():settings.update(json.loads(path.read_text(encoding='utf-8')))
+    limits={'length_scale':(.75,1.5),'volume':(.1,.95),'noise_scale':(.1,1.),'noise_w_scale':(.1,1.)}
+    for key,(lo,hi) in limits.items():
+        if not isinstance(settings.get(key),(int,float)) or not lo<=settings[key]<=hi:
+            raise ValueError('Impostazione voce fuori intervallo: '+key)
+    return {key:settings[key] for key in limits}
+
+
+def synthesize(text: str, out_path: Path, *, length_scale=None, volume=None, noise_scale=None, noise_w_scale=None) -> Path:
     out_path = Path(out_path)
-    audio = synthesize_bytes(text, length_scale=length_scale, volume=volume)
+    audio = synthesize_bytes(text, length_scale=length_scale, volume=volume,noise_scale=noise_scale,noise_w_scale=noise_w_scale)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_bytes(audio)
     return out_path
 
 
-def synthesize_bytes(text: str, *, length_scale: float = 1.08, volume: float = 0.85) -> bytes:
+def synthesize_bytes(text: str, *, length_scale=None, volume=None, noise_scale=None, noise_w_scale=None) -> bytes:
     from piper import SynthesisConfig
     text = clean(text)
     if not text:
         raise ValueError('Nessun testo pronunciabile')
+    settings=voice_settings()
+    overrides={'length_scale':length_scale,'volume':volume,'noise_scale':noise_scale,'noise_w_scale':noise_w_scale}
+    settings.update({k:v for k,v in overrides.items() if v is not None})
+    for key,value in settings.items():
+        if not isinstance(value,(int,float)) or not value>0 or value>1.5:
+            raise ValueError('Parametro vocale non valido: '+key)
+    if settings['volume']>.95:raise ValueError('Volume massimo consentito: 0.95')
     audio = io.BytesIO()
     with _voice_lock:
         voice = load_voice()
         with wave.open(audio, "wb") as wf:
-            voice.synthesize_wav(text, wf, syn_config=SynthesisConfig(
-                length_scale=length_scale, volume=volume, normalize_audio=True))
+            voice.synthesize_wav(text, wf, syn_config=SynthesisConfig(**settings,normalize_audio=True))
     return audio.getvalue()
 
 

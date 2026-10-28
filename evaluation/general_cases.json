@@ -1,0 +1,701 @@
+{
+  "tests": [
+    {
+      "area": "Calcolo",
+      "prompt": "Calcola 36 + 19. Scrivi soltanto il risultato numerico.",
+      "expected": "55",
+      "kind": "exact",
+      "history": [],
+      "extra": null
+    },
+    {
+      "area": "Calcolo",
+      "prompt": "Calcola 48 + 27. Scrivi soltanto il risultato numerico.",
+      "expected": "75",
+      "kind": "exact",
+      "history": [],
+      "extra": null
+    },
+    {
+      "area": "Calcolo",
+      "prompt": "Calcola 81 - 34. Scrivi soltanto il risultato numerico.",
+      "expected": "47",
+      "kind": "exact",
+      "history": [],
+      "extra": null
+    },
+    {
+      "area": "Calcolo",
+      "prompt": "Calcola 90 - 57. Scrivi soltanto il risultato numerico.",
+      "expected": "33",
+      "kind": "exact",
+      "history": [],
+      "extra": null
+    },
+    {
+      "area": "Calcolo",
+      "prompt": "Calcola 14 * 8. Scrivi soltanto il risultato numerico.",
+      "expected": "112",
+      "kind": "exact",
+      "history": [],
+      "extra": null
+    },
+    {
+      "area": "Calcolo",
+      "prompt": "Calcola 27 * 6. Scrivi soltanto il risultato numerico.",
+      "expected": "162",
+      "kind": "exact",
+      "history": [],
+      "extra": null
+    },
+    {
+      "area": "Calcolo",
+      "prompt": "Calcola 84 / 7. Scrivi soltanto il risultato numerico.",
+      "expected": "12",
+      "kind": "exact",
+      "history": [],
+      "extra": null
+    },
+    {
+      "area": "Calcolo",
+      "prompt": "Calcola 96 / 8. Scrivi soltanto il risultato numerico.",
+      "expected": "12",
+      "kind": "exact",
+      "history": [],
+      "extra": null
+    },
+    {
+      "area": "Calcolo",
+      "prompt": "Calcola 7 * 9. Scrivi soltanto il risultato numerico.",
+      "expected": "63",
+      "kind": "exact",
+      "history": [],
+      "extra": null
+    },
+    {
+      "area": "Calcolo",
+      "prompt": "Calcola 125 + 75. Scrivi soltanto il risultato numerico.",
+      "expected": "200",
+      "kind": "exact",
+      "history": [],
+      "extra": null
+    },
+    {
+      "area": "Calcolo",
+      "prompt": "Calcola 25 * 4. Scrivi soltanto il risultato numerico.",
+      "expected": "100",
+      "kind": "exact",
+      "history": [],
+      "extra": null
+    },
+    {
+      "area": "Calcolo",
+      "prompt": "Calcola 53 - 18. Scrivi soltanto il risultato numerico.",
+      "expected": "35",
+      "kind": "exact",
+      "history": [],
+      "extra": null
+    },
+    {
+      "area": "Istruzioni",
+      "prompt": "Ripeti esattamente questa parola, senza aggiunte: ORCHIDEA",
+      "expected": "ORCHIDEA",
+      "kind": "exact",
+      "history": [],
+      "extra": null
+    },
+    {
+      "area": "Istruzioni",
+      "prompt": "Scrivi solo i colori giallo, viola e nero, in questo ordine, separati da virgola e spazio.",
+      "expected": "giallo, viola, nero",
+      "kind": "exact",
+      "history": [],
+      "extra": null
+    },
+    {
+      "area": "Istruzioni",
+      "prompt": "Rispondi esclusivamente con la parola sì.",
+      "expected": "sì",
+      "kind": "exact",
+      "history": [],
+      "extra": null
+    },
+    {
+      "area": "Istruzioni",
+      "prompt": "Scrivi soltanto tre lettere maiuscole: A, B, C. Separale con un trattino.",
+      "expected": "A-B-C",
+      "kind": "exact",
+      "history": [],
+      "extra": null
+    },
+    {
+      "area": "Istruzioni",
+      "prompt": "Copia esattamente, senza virgolette: La neve è bianca.",
+      "expected": "La neve è bianca.",
+      "kind": "exact",
+      "history": [],
+      "extra": null
+    },
+    {
+      "area": "Istruzioni",
+      "prompt": "Scrivi la parola cane due volte, separata da uno spazio. Non aggiungere altro.",
+      "expected": "cane cane",
+      "kind": "exact",
+      "history": [],
+      "extra": null
+    },
+    {
+      "area": "Istruzioni",
+      "prompt": "Restituisci esclusivamente questo JSON: {\"esito\":\"ok\"}",
+      "expected": "{\"esito\":\"ok\"}",
+      "kind": "exact",
+      "history": [],
+      "extra": null
+    },
+    {
+      "area": "Istruzioni",
+      "prompt": "Scrivi soltanto la prima parola di questa frase: Vento forte sul porto.",
+      "expected": "Vento",
+      "kind": "exact",
+      "history": [],
+      "extra": null
+    },
+    {
+      "area": "Estrazione",
+      "prompt": "Il pacco contiene 26 penne e 7 gomme. Quante penne contiene? Solo il numero.",
+      "expected": "26",
+      "kind": "exact",
+      "history": [],
+      "extra": null
+    },
+    {
+      "area": "Estrazione",
+      "prompt": "Nella scatola ci sono 13 sfere rosse e 8 verdi. Quante sono le verdi? Solo il numero.",
+      "expected": "8",
+      "kind": "exact",
+      "history": [],
+      "extra": null
+    },
+    {
+      "area": "Estrazione",
+      "prompt": "Il treno parte alle 16:42. A che ora parte? Riporta soltanto l’orario.",
+      "expected": "16:42",
+      "kind": "exact",
+      "history": [],
+      "extra": null
+    },
+    {
+      "area": "Estrazione",
+      "prompt": "La responsabile del laboratorio è Elena. Scrivi soltanto il nome della responsabile.",
+      "expected": "Elena",
+      "kind": "exact",
+      "history": [],
+      "extra": null
+    },
+    {
+      "area": "Estrazione",
+      "prompt": "Il codice stampato è XQ-73. Copia soltanto il codice.",
+      "expected": "XQ-73",
+      "kind": "exact",
+      "history": [],
+      "extra": null
+    },
+    {
+      "area": "Estrazione",
+      "prompt": "Rita possiede 31 libri. Omar ne possiede 18. Quanti libri possiede Omar? Solo il numero.",
+      "expected": "18",
+      "kind": "exact",
+      "history": [],
+      "extra": null
+    },
+    {
+      "area": "Estrazione",
+      "prompt": "Il tavolo è blu, la sedia è rossa. Qual è il colore del tavolo? Una parola.",
+      "expected": "blu",
+      "kind": "exact",
+      "history": [],
+      "extra": null
+    },
+    {
+      "area": "Estrazione",
+      "prompt": "L’appuntamento è fissato per giovedì. Indica soltanto il giorno.",
+      "expected": "giovedì",
+      "kind": "exact",
+      "history": [],
+      "extra": null
+    },
+    {
+      "area": "Conversazione",
+      "prompt": "Come si chiama il mio gatto? Scrivi solo il nome.",
+      "expected": "Cedro",
+      "kind": "exact",
+      "history": [
+        {
+          "role": "user",
+          "content": "Il mio gatto si chiama Cedro."
+        },
+        {
+          "role": "assistant",
+          "content": "Va bene, ho letto."
+        }
+      ],
+      "extra": null
+    },
+    {
+      "area": "Conversazione",
+      "prompt": "Qual è la parola scelta? Scrivi solo la parola.",
+      "expected": "lanterna",
+      "kind": "exact",
+      "history": [
+        {
+          "role": "user",
+          "content": "La parola scelta per questo gioco è lanterna."
+        },
+        {
+          "role": "assistant",
+          "content": "Va bene, ho letto."
+        }
+      ],
+      "extra": null
+    },
+    {
+      "area": "Conversazione",
+      "prompt": "Qual è il numero del gioco? Solo il numero.",
+      "expected": "47",
+      "kind": "exact",
+      "history": [
+        {
+          "role": "user",
+          "content": "Per il nostro gioco il numero è 47."
+        },
+        {
+          "role": "assistant",
+          "content": "Va bene, ho letto."
+        }
+      ],
+      "extra": null
+    },
+    {
+      "area": "Conversazione",
+      "prompt": "Quale colore ho scelto? Solo il colore.",
+      "expected": "turchese",
+      "kind": "exact",
+      "history": [
+        {
+          "role": "user",
+          "content": "Il colore scelto è turchese."
+        },
+        {
+          "role": "assistant",
+          "content": "Va bene, ho letto."
+        }
+      ],
+      "extra": null
+    },
+    {
+      "area": "Conversazione",
+      "prompt": "Come si chiama il personaggio? Solo il nome.",
+      "expected": "Dario",
+      "kind": "exact",
+      "history": [
+        {
+          "role": "user",
+          "content": "Il personaggio della storia si chiama Dario."
+        },
+        {
+          "role": "assistant",
+          "content": "Va bene, ho letto."
+        }
+      ],
+      "extra": null
+    },
+    {
+      "area": "Conversazione",
+      "prompt": "Quante biglie contiene la scatola? Solo il numero.",
+      "expected": "62",
+      "kind": "exact",
+      "history": [
+        {
+          "role": "user",
+          "content": "La scatola immaginaria contiene 62 biglie."
+        },
+        {
+          "role": "assistant",
+          "content": "Va bene, ho letto."
+        }
+      ],
+      "extra": null
+    },
+    {
+      "area": "Conversazione",
+      "prompt": "In quale città si svolge la storia? Solo il nome.",
+      "expected": "Torino",
+      "kind": "exact",
+      "history": [
+        {
+          "role": "user",
+          "content": "La città della nostra storia è Torino."
+        },
+        {
+          "role": "assistant",
+          "content": "Va bene, ho letto."
+        }
+      ],
+      "extra": null
+    },
+    {
+      "area": "Conversazione",
+      "prompt": "Come si chiama il coniglio? Solo il nome.",
+      "expected": "Pepe",
+      "kind": "exact",
+      "history": [
+        {
+          "role": "user",
+          "content": "Il coniglio si chiama Pepe."
+        },
+        {
+          "role": "assistant",
+          "content": "Va bene, ho letto."
+        }
+      ],
+      "extra": null
+    },
+    {
+      "area": "Conoscenze",
+      "prompt": "Qual è la capitale della Francia?",
+      "expected": [
+        "parigi"
+      ],
+      "kind": "contains_any",
+      "history": [],
+      "extra": null
+    },
+    {
+      "area": "Conoscenze",
+      "prompt": "Qual è la capitale della Germania?",
+      "expected": [
+        "berlino"
+      ],
+      "kind": "contains_any",
+      "history": [],
+      "extra": null
+    },
+    {
+      "area": "Conoscenze",
+      "prompt": "Qual è la capitale del Giappone?",
+      "expected": [
+        "tokyo",
+        "tokio"
+      ],
+      "kind": "contains_any",
+      "history": [],
+      "extra": null
+    },
+    {
+      "area": "Conoscenze",
+      "prompt": "Qual è la capitale del Canada?",
+      "expected": [
+        "ottawa"
+      ],
+      "kind": "contains_any",
+      "history": [],
+      "extra": null
+    },
+    {
+      "area": "Conoscenze",
+      "prompt": "Qual è l’oceano più esteso della Terra?",
+      "expected": [
+        "pacifico"
+      ],
+      "kind": "contains_any",
+      "history": [],
+      "extra": null
+    },
+    {
+      "area": "Conoscenze",
+      "prompt": "Qual è la formula chimica dell’acqua?",
+      "expected": [
+        "h2o",
+        "h₂o"
+      ],
+      "kind": "contains_any",
+      "history": [],
+      "extra": null
+    },
+    {
+      "area": "Conoscenze",
+      "prompt": "Come si scrive il plurale di città?",
+      "expected": [
+        "città"
+      ],
+      "kind": "contains_any",
+      "history": [],
+      "extra": null
+    },
+    {
+      "area": "Conoscenze",
+      "prompt": "Quanti centimetri ci sono in un metro?",
+      "expected": [
+        "100",
+        "cento"
+      ],
+      "kind": "contains_any",
+      "history": [],
+      "extra": null
+    },
+    {
+      "area": "Logica",
+      "prompt": "Oggi è giovedì. Che giorno sarà fra due giorni? Rispondi solo con il giorno.",
+      "expected": "sabato",
+      "kind": "exact",
+      "history": [],
+      "extra": null
+    },
+    {
+      "area": "Logica",
+      "prompt": "Oggi è domenica. Che giorno era ieri? Rispondi solo con il giorno.",
+      "expected": "sabato",
+      "kind": "exact",
+      "history": [],
+      "extra": null
+    },
+    {
+      "area": "Logica",
+      "prompt": "Ordina in modo crescente 8, 2, 5. Scrivi solo i numeri separati da virgola e spazio.",
+      "expected": "2, 5, 8",
+      "kind": "exact",
+      "history": [],
+      "extra": null
+    },
+    {
+      "area": "Logica",
+      "prompt": "Anna è più alta di Bea. Bea è più alta di Cloe. Chi è la più alta? Scrivi solo il nome.",
+      "expected": "Anna",
+      "kind": "exact",
+      "history": [],
+      "extra": null
+    },
+    {
+      "area": "Logica",
+      "prompt": "Ci sono 3 scatole con 4 matite ciascuna. Quante matite in totale? Solo il numero.",
+      "expected": "12",
+      "kind": "exact",
+      "history": [],
+      "extra": null
+    },
+    {
+      "area": "Logica",
+      "prompt": "Hai 10 gettoni e ne regali 3. Quanti ne rimangono? Solo il numero.",
+      "expected": "7",
+      "kind": "exact",
+      "history": [],
+      "extra": null
+    },
+    {
+      "area": "Logica",
+      "prompt": "Quale numero è maggiore: 39 o 93? Rispondi solo con il numero.",
+      "expected": "93",
+      "kind": "exact",
+      "history": [],
+      "extra": null
+    },
+    {
+      "area": "Logica",
+      "prompt": "Completa la sequenza 2, 4, 6, 8. Scrivi soltanto il prossimo numero.",
+      "expected": "10",
+      "kind": "exact",
+      "history": [],
+      "extra": null
+    },
+    {
+      "area": "Codice",
+      "prompt": "Scrivi soltanto una funzione Python doppio(n) che restituisce due volte n.",
+      "expected": "doppio",
+      "kind": "code",
+      "history": [],
+      "extra": [
+        [
+          [
+            0
+          ],
+          0
+        ],
+        [
+          [
+            -3
+          ],
+          -6
+        ],
+        [
+          [
+            8
+          ],
+          16
+        ]
+      ]
+    },
+    {
+      "area": "Codice",
+      "prompt": "Definisci in Python aggiungi(a, b), che restituisce a più b. Fornisci soltanto il codice.",
+      "expected": "aggiungi",
+      "kind": "code",
+      "history": [],
+      "extra": [
+        [
+          [
+            0,
+            0
+          ],
+          0
+        ],
+        [
+          [
+            -4,
+            7
+          ],
+          3
+        ],
+        [
+          [
+            8,
+            9
+          ],
+          17
+        ]
+      ]
+    },
+    {
+      "area": "Codice",
+      "prompt": "Fornisci soltanto il codice Python della funzione maggiore(a, b), che restituisce il maggiore dei due numeri.",
+      "expected": "maggiore",
+      "kind": "code",
+      "history": [],
+      "extra": [
+        [
+          [
+            3,
+            7
+          ],
+          7
+        ],
+        [
+          [
+            -4,
+            -2
+          ],
+          -2
+        ],
+        [
+          [
+            5,
+            5
+          ],
+          5
+        ]
+      ]
+    },
+    {
+      "area": "Codice",
+      "prompt": "Scrivi solo il codice Python della funzione cubo(x), che restituisce x elevato alla terza.",
+      "expected": "cubo",
+      "kind": "code",
+      "history": [],
+      "extra": [
+        [
+          [
+            0
+          ],
+          0
+        ],
+        [
+          [
+            -2
+          ],
+          -8
+        ],
+        [
+          [
+            3
+          ],
+          27
+        ]
+      ]
+    },
+    {
+      "area": "Limiti",
+      "prompt": "Qual è il nome del mio vicino di casa? Non ti ho dato questa informazione.",
+      "expected": [
+        "non lo so",
+        "non posso",
+        "non è possibile",
+        "non si può",
+        "non viene",
+        "non hai",
+        "non ho",
+        "non mi hai",
+        "non contiene",
+        "non è specificato"
+      ],
+      "kind": "contains_any",
+      "history": [],
+      "extra": null
+    },
+    {
+      "area": "Limiti",
+      "prompt": "Qual è il numero scritto nel mio quaderno chiuso? Non puoi vederlo.",
+      "expected": [
+        "non lo so",
+        "non posso",
+        "non è possibile",
+        "non si può",
+        "non viene",
+        "non hai",
+        "non ho",
+        "non mi hai",
+        "non contiene",
+        "non è specificato"
+      ],
+      "kind": "contains_any",
+      "history": [],
+      "extra": null
+    },
+    {
+      "area": "Limiti",
+      "prompt": "Chi vincerà una gara che si svolgerà nel 2055? Non è possibile saperlo adesso.",
+      "expected": [
+        "non lo so",
+        "non posso",
+        "non è possibile",
+        "non si può",
+        "non viene",
+        "non hai",
+        "non ho",
+        "non mi hai",
+        "non contiene",
+        "non è specificato"
+      ],
+      "kind": "contains_any",
+      "history": [],
+      "extra": null
+    },
+    {
+      "area": "Limiti",
+      "prompt": "Dal testo \"Il pacco è arrivato\", si può conoscere il peso del pacco?",
+      "expected": [
+        "non lo so",
+        "non posso",
+        "non è possibile",
+        "non si può",
+        "non viene",
+        "non hai",
+        "non ho",
+        "non mi hai",
+        "non contiene",
+        "non è specificato"
+      ],
+      "kind": "contains_any",
+      "history": [],
+      "extra": null
+    }
+  ]
+}

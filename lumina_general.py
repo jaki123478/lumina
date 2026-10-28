@@ -12,7 +12,8 @@ _lock=threading.RLock()
 _model=None
 _tokenizer=None
 SYSTEM=("Sei Lumina, assistente in italiano eseguito sul computer dell'utente con supporto Qwen locale. "
-        "Rispondi direttamente alla domanda, senza preamboli. Rispetta esattamente nomi, numeri, formato e numero di elementi richiesti. "
+        "Rispondi direttamente alla domanda, senza preamboli. Per domande puntuali restituisci solo il dato richiesto, senza aggiungere statistiche, date o dettagli non richiesti. "
+        "Rispetta esattamente nomi, numeri, formato e numero di elementi richiesti. "
         "Usa tutti i messaggi precedenti per recuperare i dati della conversazione. Non inventare nomi, dati privati, eventi futuri o fonti. "
         "Se un dato manca, dichiara precisamente quale informazione manca. Per codice restituisci la funzione completa con il nome richiesto; "
         "non aggiungere stampe, test o spiegazioni quando è richiesto solo codice. Non fingere di avere accesso a Internet o sensori.")
@@ -76,6 +77,10 @@ def generate(messages,max_tokens=200,*,use_calculator=True,system=None):
            if m.get('role') in ('user','assistant')]
     if not turns or turns[-1]['role']!='user':raise ValueError('Serve un messaggio utente finale')
     if use_calculator:
+        from lumina_answer_checks import local_answer
+        result,tool=local_answer(turns)
+        if result is not None:
+            return result,{'engine':tool,'model_id':None,'local':True,'assisted':True}
         answer=calculate(turns[-1]['content'])
         if answer is not None:
             return answer,{'engine':'calcolatrice locale','model_id':None,'local':True,'assisted':True}
@@ -93,6 +98,8 @@ def generate(messages,max_tokens=200,*,use_calculator=True,system=None):
         with torch.inference_mode():
             out=model.generate(**inputs,max_new_tokens=max(1,min(512,max_tokens)),do_sample=False,pad_token_id=tok.eos_token_id)
         answer=tok.decode(out[0,inputs.input_ids.shape[1]:],skip_special_tokens=True).strip()
+        from lumina_answer_checks import enforce_format
+        answer=enforce_format(answer,turns[-1]['content'])
         return answer,{'engine':'Qwen locale','model_id':MODEL_ID,'local':True,'assisted':True,
                        'completion_tokens':out.shape[1]-inputs.input_ids.shape[1],
                        'finished':int(out[0,-1])==tok.eos_token_id}

@@ -317,4 +317,5 @@ def main():
             time.sleep(2.0)
 
 if __name__ == "__main__":
-    main()
+    from qwen_verified_trainer import main as verified_main
+    verified_main()

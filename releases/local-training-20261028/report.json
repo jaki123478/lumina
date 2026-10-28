@@ -1,0 +1,1775 @@
+{
+  "base": "Qwen/Qwen2.5-0.5B-Instruct",
+  "source": "cache locale",
+  "rank": 8,
+  "alpha": 16,
+  "layers": 48,
+  "trainable_parameters": 540672,
+  "train_samples": 924,
+  "baseline_dev": {
+    "pass": 14,
+    "total": 30,
+    "answers": [
+      {
+        "area": "calcolo",
+        "prompt": "Quanto fa 64 + 29? Rispondi solo con il numero.",
+        "expected": "93",
+        "kind": "exact",
+        "response": "73",
+        "pass": false
+      },
+      {
+        "area": "calcolo",
+        "prompt": "Calcola (12 - 5) * 9. Solo il numero.",
+        "expected": "63",
+        "kind": "exact",
+        "response": "Il risultato di (12 - 5) * 9 è 36.",
+        "pass": false
+      },
+      {
+        "area": "calcolo",
+        "prompt": "Quanto fa 18 per 13? Solo il numero.",
+        "expected": "234",
+        "kind": "exact",
+        "response": "18 è un numero intero, quindi non ha una divisione per uno stesso numero. La loro somma è 30.",
+        "pass": false
+      },
+      {
+        "area": "istruzioni",
+        "prompt": "Ripeti esattamente questa parola, senza aggiunte: CIPRESSO",
+        "expected": "CIPRESSO",
+        "kind": "exact",
+        "response": "Cipresso",
+        "pass": false
+      },
+      {
+        "area": "istruzioni",
+        "prompt": "Restituisci esclusivamente questo JSON: {\"stato\":\"pronto\"}",
+        "expected": "{\"stato\":\"pronto\"}",
+        "kind": "exact",
+        "response": "{\"stato\":\"pronto\"}",
+        "pass": true
+      },
+      {
+        "area": "istruzioni",
+        "prompt": "Scrivi solo i colori rosa, nero e bianco, in questo ordine, separati da virgola e spazio.",
+        "expected": "rosa, nero, bianco",
+        "kind": "exact",
+        "response": "rosa,nero,bianco",
+        "pass": false
+      },
+      {
+        "area": "estrazione",
+        "prompt": "La custode della serra si chiama Beatrice. Scrivi soltanto il nome della custode.",
+        "expected": "Beatrice",
+        "kind": "exact",
+        "response": "Beatrice",
+        "pass": true
+      },
+      {
+        "area": "estrazione",
+        "prompt": "Nel sacchetto sono presenti 72 semi e 11 sassolini. Quanti semi sono presenti? Solo il numero.",
+        "expected": "72",
+        "kind": "exact",
+        "response": "Quando si contano solo il numero dei semi, non si considera la quantità di sassolini. In questo caso, ci sono 72 semi.",
+        "pass": false
+      },
+      {
+        "area": "memoria",
+        "history": [
+          {
+            "role": "user",
+            "content": "Il mio pappagallo si chiama Cristallo."
+          },
+          {
+            "role": "assistant",
+            "content": "Ho letto."
+          }
+        ],
+        "prompt": "Come si chiama il mio pappagallo? Scrivi soltanto il nome.",
+        "expected": "Cristallo",
+        "kind": "exact",
+        "response": "Cristallo",
+        "pass": true
+      },
+      {
+        "area": "memoria",
+        "history": [
+          {
+            "role": "user",
+            "content": "Per questo gioco ho scelto il numero 83."
+          },
+          {
+            "role": "assistant",
+            "content": "Va bene."
+          }
+        ],
+        "prompt": "Quale numero ho scelto per il gioco? Rispondi solo con il numero.",
+        "expected": "83",
+        "kind": "exact",
+        "response": "83",
+        "pass": true
+      },
+      {
+        "area": "conoscenze",
+        "prompt": "Qual è la capitale della Spagna?",
+        "expected": [
+          "madrid"
+        ],
+        "kind": "contains",
+        "response": "La capitale della Spagna è Madrid.",
+        "pass": true
+      },
+      {
+        "area": "conoscenze",
+        "prompt": "Qual è la capitale della Norvegia?",
+        "expected": [
+          "oslo"
+        ],
+        "kind": "contains",
+        "response": "La capitale della Norvegia è Oslo.",
+        "pass": true
+      },
+      {
+        "area": "conoscenze",
+        "prompt": "In quanti millimetri si divide un centimetro?",
+        "expected": [
+          "10",
+          "dieci"
+        ],
+        "kind": "contains",
+        "response": "Un centimetro è equivalente a 10 millimetri.",
+        "pass": true
+      },
+      {
+        "area": "logica",
+        "prompt": "Oggi è mercoledì. Che giorno sarà tra 9 giorni? Rispondi solo con il giorno.",
+        "expected": "venerdì",
+        "kind": "exact",
+        "response": "Quarato",
+        "pass": false
+      },
+      {
+        "area": "logica",
+        "prompt": "Ordina in modo decrescente 17, -4, 8. Scrivi solo i numeri separati da virgola e spazio.",
+        "expected": "17, 8, -4",
+        "kind": "exact",
+        "response": "-4, 8, 17",
+        "pass": false
+      },
+      {
+        "area": "logica",
+        "prompt": "Eva è più alta di Gina. Gina è più alta di Nora. Chi è la più alta? Scrivi solo il nome.",
+        "expected": "Eva",
+        "kind": "exact",
+        "response": "Eva",
+        "pass": true
+      },
+      {
+        "area": "limiti",
+        "prompt": "Qual è il numero nella scatola chiusa? Non puoi vederlo.",
+        "expected": [
+          "non ho",
+          "non posso",
+          "non lo so"
+        ],
+        "kind": "contains",
+        "response": "Il numero nella scatola chiusa non può essere definitivamente determinato senza un'analisi più approfondita delle circostanze. Potrebbe essere una cifra specifica o potrebbe essere un numero generico che non ha un'identificata. Se hai altre informazioni sul problema, forse posso aiutarti a trovare la soluzione.",
+        "pass": false
+      },
+      {
+        "area": "limiti",
+        "prompt": "Dal testo \"Il vaso è arrivato\", qual è il prezzo del vaso?",
+        "expected": [
+          "non è specificato",
+          "non è indicato",
+          "non posso"
+        ],
+        "kind": "contains",
+        "response": "Il prezzo del vaso è noto nel testo come 100 euro.",
+        "pass": false
+      },
+      {
+        "area": "limiti",
+        "prompt": "Chi vincerà una gara nel 2061?",
+        "expected": [
+          "non è possibile",
+          "non posso",
+          "non si può"
+        ],
+        "kind": "contains",
+        "response": "In 2061, la tecnologia avviene molto più velocemente di quanto possa essere notata oggi. Tuttavia, non posso fornire un'informazione precisa su chi vincerà una gara in quel periodo, poiché l'industria automobile è stata completamente cambiata da quando sono stati utilizzati. La tecnologia automobilistica ha sviluppato molte altre forme di trasporto e motociclette, che hanno influ",
+        "pass": true
+      },
+      {
+        "area": "grammatica",
+        "prompt": "Correggi questa frase: lei ha uscita prima di me.",
+        "expected": [
+          "è uscita"
+        ],
+        "kind": "contains",
+        "response": "La frase corretta è: \"Mi ha preceduta lei.\"",
+        "pass": false
+      },
+      {
+        "area": "calcolo",
+        "prompt": "Quanto fa 42 + 39? Rispondi solo con il numero.",
+        "expected": "81",
+        "kind": "exact",
+        "response": "71",
+        "pass": false
+      },
+      {
+        "area": "istruzioni",
+        "prompt": "Copia esattamente questa parola, senza aggiunte: GINESTRA",
+        "expected": "GINESTRA",
+        "kind": "exact",
+        "response": "Ginester",
+        "pass": false
+      },
+      {
+        "area": "istruzioni",
+        "prompt": "Scrivi la parola vela due volte, separata da uno spazio. Non aggiungere altro.",
+        "expected": "vela vela",
+        "kind": "exact",
+        "response": "vella vella",
+        "pass": false
+      },
+      {
+        "area": "estrazione",
+        "prompt": "La custode si chiama Rosalba. Scrivi soltanto il nome della custode.",
+        "expected": "Rosalba",
+        "kind": "exact",
+        "response": "Rosalba",
+        "pass": true
+      },
+      {
+        "area": "estrazione",
+        "prompt": "La busta contiene 67 figurine e 9 francobolli. Quante figurine contiene? Solo il numero.",
+        "expected": "67",
+        "kind": "exact",
+        "response": "La busta contiene solo le figurine.",
+        "pass": false
+      },
+      {
+        "area": "memoria",
+        "history": [
+          {
+            "role": "user",
+            "content": "Il mio criceto si chiama Rubino."
+          },
+          {
+            "role": "assistant",
+            "content": "Va bene."
+          }
+        ],
+        "prompt": "Come si chiama il mio criceto? Scrivi solo il nome.",
+        "expected": "Rubino",
+        "kind": "exact",
+        "response": "Rubino",
+        "pass": true
+      },
+      {
+        "area": "conoscenze",
+        "prompt": "Qual è la capitale del Portogallo?",
+        "expected": [
+          "lisbona"
+        ],
+        "kind": "contains",
+        "response": "La capitale del Portogallo è Porto.",
+        "pass": false
+      },
+      {
+        "area": "conoscenze",
+        "prompt": "Quanti lati ha un triangolo?",
+        "expected": [
+          "3",
+          "tre"
+        ],
+        "kind": "contains",
+        "response": "Un triangolo è un tipo di poligono che ha due angoli (lati) maggiore e due angoli minori. Quindi, un triangolo ha 3 lati.",
+        "pass": true
+      },
+      {
+        "area": "limiti",
+        "prompt": "Sai qual è il numero nel mio cassetto chiuso? Non puoi vederlo.",
+        "expected": [
+          "non posso",
+          "non lo so",
+          "non ho"
+        ],
+        "kind": "contains",
+        "response": "Mi dispiace, ma non ho accesso a un cassetto chiuso o a una posizione fisica per cercare un numero. Potresti provare a controllare l'area dove stai cercando il numero e vedere se ci sono altri oggetti che potrebbero contenere uno dei numeri.",
+        "pass": true
+      },
+      {
+        "area": "grammatica",
+        "prompt": "Correggi: noi abbiamo andati al parco.",
+        "expected": [
+          "siamo andati"
+        ],
+        "kind": "contains",
+        "response": "Siamo andati al parco.",
+        "pass": true
+      }
+    ]
+  },
+  "final_before": {
+    "pass": 5,
+    "total": 10,
+    "answers": [
+      {
+        "area": "calcolo",
+        "prompt": "Quanto fa 26 + 48? Rispondi solo con il numero.",
+        "expected": "74",
+        "kind": "exact",
+        "response": "30",
+        "pass": false
+      },
+      {
+        "area": "istruzioni",
+        "prompt": "Copia esattamente questa parola, senza aggiunte: MAGNOLIA",
+        "expected": "MAGNOLIA",
+        "kind": "exact",
+        "response": "MAGNOLIA",
+        "pass": true
+      },
+      {
+        "area": "istruzioni",
+        "prompt": "Scrivi la parola porto due volte, separata da uno spazio. Non aggiungere altro.",
+        "expected": "porto porto",
+        "kind": "exact",
+        "response": "porto porto",
+        "pass": true
+      },
+      {
+        "area": "estrazione",
+        "prompt": "La responsabile della serra è Maristella. Scrivi soltanto il nome.",
+        "expected": "Maristella",
+        "kind": "exact",
+        "response": "Maristella",
+        "pass": true
+      },
+      {
+        "area": "estrazione",
+        "prompt": "Il contenitore ha 43 nocciole e 6 noci. Quante nocciole contiene? Solo il numero.",
+        "expected": "43",
+        "kind": "exact",
+        "response": "Quando si parla di \"nocciole\", si intende solo le nocciole che sono presenti nel contenitore. In questo caso, il contenitore ha 43 nocciole.",
+        "pass": false
+      },
+      {
+        "area": "memoria",
+        "history": [
+          {
+            "role": "user",
+            "content": "Il mio cane si chiama Quarzo."
+          },
+          {
+            "role": "assistant",
+            "content": "Va bene."
+          }
+        ],
+        "prompt": "Come si chiama il mio cane? Rispondi solo con il nome.",
+        "expected": "Quarzo",
+        "kind": "exact",
+        "response": "Quarzo.",
+        "pass": false
+      },
+      {
+        "area": "conoscenze",
+        "prompt": "Qual è la capitale della Finlandia?",
+        "expected": [
+          "helsinki"
+        ],
+        "kind": "contains",
+        "response": "La capitale della Finlandia è Helsinki.",
+        "pass": true
+      },
+      {
+        "area": "conoscenze",
+        "prompt": "Quanti lati possiede un quadrato?",
+        "expected": [
+          "4",
+          "quattro"
+        ],
+        "kind": "contains",
+        "response": "Un quadrato ha due lati.",
+        "pass": false
+      },
+      {
+        "area": "limiti",
+        "prompt": "Qual è il numero nascosto nel mio armadio? Non puoi vederlo.",
+        "expected": [
+          "non posso",
+          "non lo so",
+          "non ho"
+        ],
+        "kind": "contains",
+        "response": "Mi dispiace, ma non ho la capacità di individuare un numero nascosto nel tuo armadio. Potresti provare a controllare le parti più vicine o cercare una scatola con elementi specifici per trovare un numero.",
+        "pass": true
+      },
+      {
+        "area": "grammatica",
+        "prompt": "Correggi: io ho andato in biblioteca.",
+        "expected": [
+          "sono andato"
+        ],
+        "kind": "contains",
+        "response": "Ti sei andata in biblioteca.",
+        "pass": false
+      }
+    ]
+  },
+  "history": [
+    {
+      "step": 80,
+      "pass": 12,
+      "total": 30,
+      "answers": [
+        {
+          "area": "calcolo",
+          "prompt": "Quanto fa 64 + 29? Rispondi solo con il numero.",
+          "expected": "93",
+          "kind": "exact",
+          "response": "83",
+          "pass": false
+        },
+        {
+          "area": "calcolo",
+          "prompt": "Calcola (12 - 5) * 9. Solo il numero.",
+          "expected": "63",
+          "kind": "exact",
+          "response": "36",
+          "pass": false
+        },
+        {
+          "area": "calcolo",
+          "prompt": "Quanto fa 18 per 13? Solo il numero.",
+          "expected": "234",
+          "kind": "exact",
+          "response": "9.07",
+          "pass": false
+        },
+        {
+          "area": "istruzioni",
+          "prompt": "Ripeti esattamente questa parola, senza aggiunte: CIPRESSO",
+          "expected": "CIPRESSO",
+          "kind": "exact",
+          "response": "Cipresso",
+          "pass": false
+        },
+        {
+          "area": "istruzioni",
+          "prompt": "Restituisci esclusivamente questo JSON: {\"stato\":\"pronto\"}",
+          "expected": "{\"stato\":\"pronto\"}",
+          "kind": "exact",
+          "response": "{\"stato\":\"pronto\"}",
+          "pass": true
+        },
+        {
+          "area": "istruzioni",
+          "prompt": "Scrivi solo i colori rosa, nero e bianco, in questo ordine, separati da virgola e spazio.",
+          "expected": "rosa, nero, bianco",
+          "kind": "exact",
+          "response": "rosa,nero,bianco",
+          "pass": false
+        },
+        {
+          "area": "estrazione",
+          "prompt": "La custode della serra si chiama Beatrice. Scrivi soltanto il nome della custode.",
+          "expected": "Beatrice",
+          "kind": "exact",
+          "response": "Beatrice",
+          "pass": true
+        },
+        {
+          "area": "estrazione",
+          "prompt": "Nel sacchetto sono presenti 72 semi e 11 sassolini. Quanti semi sono presenti? Solo il numero.",
+          "expected": "72",
+          "kind": "exact",
+          "response": "72",
+          "pass": true
+        },
+        {
+          "area": "memoria",
+          "history": [
+            {
+              "role": "user",
+              "content": "Il mio pappagallo si chiama Cristallo."
+            },
+            {
+              "role": "assistant",
+              "content": "Ho letto."
+            }
+          ],
+          "prompt": "Come si chiama il mio pappagallo? Scrivi soltanto il nome.",
+          "expected": "Cristallo",
+          "kind": "exact",
+          "response": "Cristallo",
+          "pass": true
+        },
+        {
+          "area": "memoria",
+          "history": [
+            {
+              "role": "user",
+              "content": "Per questo gioco ho scelto il numero 83."
+            },
+            {
+              "role": "assistant",
+              "content": "Va bene."
+            }
+          ],
+          "prompt": "Quale numero ho scelto per il gioco? Rispondi solo con il numero.",
+          "expected": "83",
+          "kind": "exact",
+          "response": "83",
+          "pass": true
+        },
+        {
+          "area": "conoscenze",
+          "prompt": "Qual è la capitale della Spagna?",
+          "expected": [
+            "madrid"
+          ],
+          "kind": "contains",
+          "response": "Madrid",
+          "pass": true
+        },
+        {
+          "area": "conoscenze",
+          "prompt": "Qual è la capitale della Norvegia?",
+          "expected": [
+            "oslo"
+          ],
+          "kind": "contains",
+          "response": "Oslo",
+          "pass": true
+        },
+        {
+          "area": "conoscenze",
+          "prompt": "In quanti millimetri si divide un centimetro?",
+          "expected": [
+            "10",
+            "dieci"
+          ],
+          "kind": "contains",
+          "response": "10",
+          "pass": true
+        },
+        {
+          "area": "logica",
+          "prompt": "Oggi è mercoledì. Che giorno sarà tra 9 giorni? Rispondi solo con il giorno.",
+          "expected": "venerdì",
+          "kind": "exact",
+          "response": "lunedì",
+          "pass": false
+        },
+        {
+          "area": "logica",
+          "prompt": "Ordina in modo decrescente 17, -4, 8. Scrivi solo i numeri separati da virgola e spazio.",
+          "expected": "17, 8, -4",
+          "kind": "exact",
+          "response": "-4, 8, 17",
+          "pass": false
+        },
+        {
+          "area": "logica",
+          "prompt": "Eva è più alta di Gina. Gina è più alta di Nora. Chi è la più alta? Scrivi solo il nome.",
+          "expected": "Eva",
+          "kind": "exact",
+          "response": "Eva",
+          "pass": true
+        },
+        {
+          "area": "limiti",
+          "prompt": "Qual è il numero nella scatola chiusa? Non puoi vederlo.",
+          "expected": [
+            "non ho",
+            "non posso",
+            "non lo so"
+          ],
+          "kind": "contains",
+          "response": "1",
+          "pass": false
+        },
+        {
+          "area": "limiti",
+          "prompt": "Dal testo \"Il vaso è arrivato\", qual è il prezzo del vaso?",
+          "expected": [
+            "non è specificato",
+            "non è indicato",
+            "non posso"
+          ],
+          "kind": "contains",
+          "response": "100",
+          "pass": false
+        },
+        {
+          "area": "limiti",
+          "prompt": "Chi vincerà una gara nel 2061?",
+          "expected": [
+            "non è possibile",
+            "non posso",
+            "non si può"
+          ],
+          "kind": "contains",
+          "response": "La gara sarà un'atletica di velocità, con la prima persona a vincere essere quella che salva il pianeta Terra dal sole.",
+          "pass": false
+        },
+        {
+          "area": "grammatica",
+          "prompt": "Correggi questa frase: lei ha uscita prima di me.",
+          "expected": [
+            "è uscita"
+          ],
+          "kind": "contains",
+          "response": "La frase corretta è: \"Mi ha preceduta lei.\"",
+          "pass": false
+        },
+        {
+          "area": "calcolo",
+          "prompt": "Quanto fa 42 + 39? Rispondi solo con il numero.",
+          "expected": "81",
+          "kind": "exact",
+          "response": "71",
+          "pass": false
+        },
+        {
+          "area": "istruzioni",
+          "prompt": "Copia esattamente questa parola, senza aggiunte: GINESTRA",
+          "expected": "GINESTRA",
+          "kind": "exact",
+          "response": "Ginester",
+          "pass": false
+        },
+        {
+          "area": "istruzioni",
+          "prompt": "Scrivi la parola vela due volte, separata da uno spazio. Non aggiungere altro.",
+          "expected": "vela vela",
+          "kind": "exact",
+          "response": "vella vella",
+          "pass": false
+        },
+        {
+          "area": "estrazione",
+          "prompt": "La custode si chiama Rosalba. Scrivi soltanto il nome della custode.",
+          "expected": "Rosalba",
+          "kind": "exact",
+          "response": "Rosalba",
+          "pass": true
+        },
+        {
+          "area": "estrazione",
+          "prompt": "La busta contiene 67 figurine e 9 francobolli. Quante figurine contiene? Solo il numero.",
+          "expected": "67",
+          "kind": "exact",
+          "response": "67",
+          "pass": true
+        },
+        {
+          "area": "memoria",
+          "history": [
+            {
+              "role": "user",
+              "content": "Il mio criceto si chiama Rubino."
+            },
+            {
+              "role": "assistant",
+              "content": "Va bene."
+            }
+          ],
+          "prompt": "Come si chiama il mio criceto? Scrivi solo il nome.",
+          "expected": "Rubino",
+          "kind": "exact",
+          "response": "Rubino",
+          "pass": true
+        },
+        {
+          "area": "conoscenze",
+          "prompt": "Qual è la capitale del Portogallo?",
+          "expected": [
+            "lisbona"
+          ],
+          "kind": "contains",
+          "response": "Lisboa",
+          "pass": false
+        },
+        {
+          "area": "conoscenze",
+          "prompt": "Quanti lati ha un triangolo?",
+          "expected": [
+            "3",
+            "tre"
+          ],
+          "kind": "contains",
+          "response": "quattro",
+          "pass": false
+        },
+        {
+          "area": "limiti",
+          "prompt": "Sai qual è il numero nel mio cassetto chiuso? Non puoi vederlo.",
+          "expected": [
+            "non posso",
+            "non lo so",
+            "non ho"
+          ],
+          "kind": "contains",
+          "response": "Il tuo cassetto chiuso non contiene un numero specifico.",
+          "pass": false
+        },
+        {
+          "area": "grammatica",
+          "prompt": "Correggi: noi abbiamo andati al parco.",
+          "expected": [
+            "siamo andati"
+          ],
+          "kind": "contains",
+          "response": "Nell'attesa del viaggio alla piazza.",
+          "pass": false
+        }
+      ]
+    },
+    {
+      "step": 160,
+      "pass": 16,
+      "total": 30,
+      "answers": [
+        {
+          "area": "calcolo",
+          "prompt": "Quanto fa 64 + 29? Rispondi solo con il numero.",
+          "expected": "93",
+          "kind": "exact",
+          "response": "93",
+          "pass": true
+        },
+        {
+          "area": "calcolo",
+          "prompt": "Calcola (12 - 5) * 9. Solo il numero.",
+          "expected": "63",
+          "kind": "exact",
+          "response": "64",
+          "pass": false
+        },
+        {
+          "area": "calcolo",
+          "prompt": "Quanto fa 18 per 13? Solo il numero.",
+          "expected": "234",
+          "kind": "exact",
+          "response": "1",
+          "pass": false
+        },
+        {
+          "area": "istruzioni",
+          "prompt": "Ripeti esattamente questa parola, senza aggiunte: CIPRESSO",
+          "expected": "CIPRESSO",
+          "kind": "exact",
+          "response": "Cipresso",
+          "pass": false
+        },
+        {
+          "area": "istruzioni",
+          "prompt": "Restituisci esclusivamente questo JSON: {\"stato\":\"pronto\"}",
+          "expected": "{\"stato\":\"pronto\"}",
+          "kind": "exact",
+          "response": "{\"stato\":\"pronto\"}",
+          "pass": true
+        },
+        {
+          "area": "istruzioni",
+          "prompt": "Scrivi solo i colori rosa, nero e bianco, in questo ordine, separati da virgola e spazio.",
+          "expected": "rosa, nero, bianco",
+          "kind": "exact",
+          "response": "rosa,nero,bianco",
+          "pass": false
+        },
+        {
+          "area": "estrazione",
+          "prompt": "La custode della serra si chiama Beatrice. Scrivi soltanto il nome della custode.",
+          "expected": "Beatrice",
+          "kind": "exact",
+          "response": "Beatrice",
+          "pass": true
+        },
+        {
+          "area": "estrazione",
+          "prompt": "Nel sacchetto sono presenti 72 semi e 11 sassolini. Quanti semi sono presenti? Solo il numero.",
+          "expected": "72",
+          "kind": "exact",
+          "response": "72",
+          "pass": true
+        },
+        {
+          "area": "memoria",
+          "history": [
+            {
+              "role": "user",
+              "content": "Il mio pappagallo si chiama Cristallo."
+            },
+            {
+              "role": "assistant",
+              "content": "Ho letto."
+            }
+          ],
+          "prompt": "Come si chiama il mio pappagallo? Scrivi soltanto il nome.",
+          "expected": "Cristallo",
+          "kind": "exact",
+          "response": "Cristallo",
+          "pass": true
+        },
+        {
+          "area": "memoria",
+          "history": [
+            {
+              "role": "user",
+              "content": "Per questo gioco ho scelto il numero 83."
+            },
+            {
+              "role": "assistant",
+              "content": "Va bene."
+            }
+          ],
+          "prompt": "Quale numero ho scelto per il gioco? Rispondi solo con il numero.",
+          "expected": "83",
+          "kind": "exact",
+          "response": "83",
+          "pass": true
+        },
+        {
+          "area": "conoscenze",
+          "prompt": "Qual è la capitale della Spagna?",
+          "expected": [
+            "madrid"
+          ],
+          "kind": "contains",
+          "response": "Madrid",
+          "pass": true
+        },
+        {
+          "area": "conoscenze",
+          "prompt": "Qual è la capitale della Norvegia?",
+          "expected": [
+            "oslo"
+          ],
+          "kind": "contains",
+          "response": "Oslo",
+          "pass": true
+        },
+        {
+          "area": "conoscenze",
+          "prompt": "In quanti millimetri si divide un centimetro?",
+          "expected": [
+            "10",
+            "dieci"
+          ],
+          "kind": "contains",
+          "response": "10",
+          "pass": true
+        },
+        {
+          "area": "logica",
+          "prompt": "Oggi è mercoledì. Che giorno sarà tra 9 giorni? Rispondi solo con il giorno.",
+          "expected": "venerdì",
+          "kind": "exact",
+          "response": "lunedì",
+          "pass": false
+        },
+        {
+          "area": "logica",
+          "prompt": "Ordina in modo decrescente 17, -4, 8. Scrivi solo i numeri separati da virgola e spazio.",
+          "expected": "17, 8, -4",
+          "kind": "exact",
+          "response": "-4, 8, 17",
+          "pass": false
+        },
+        {
+          "area": "logica",
+          "prompt": "Eva è più alta di Gina. Gina è più alta di Nora. Chi è la più alta? Scrivi solo il nome.",
+          "expected": "Eva",
+          "kind": "exact",
+          "response": "Eva",
+          "pass": true
+        },
+        {
+          "area": "limiti",
+          "prompt": "Qual è il numero nella scatola chiusa? Non puoi vederlo.",
+          "expected": [
+            "non ho",
+            "non posso",
+            "non lo so"
+          ],
+          "kind": "contains",
+          "response": "1",
+          "pass": false
+        },
+        {
+          "area": "limiti",
+          "prompt": "Dal testo \"Il vaso è arrivato\", qual è il prezzo del vaso?",
+          "expected": [
+            "non è specificato",
+            "non è indicato",
+            "non posso"
+          ],
+          "kind": "contains",
+          "response": "10",
+          "pass": false
+        },
+        {
+          "area": "limiti",
+          "prompt": "Chi vincerà una gara nel 2061?",
+          "expected": [
+            "non è possibile",
+            "non posso",
+            "non si può"
+          ],
+          "kind": "contains",
+          "response": "Non è possibile prevedere con certezza la fine di un futuro in cui le condizioni sono diverse da quelle che siamo in grado di prevedere.",
+          "pass": true
+        },
+        {
+          "area": "grammatica",
+          "prompt": "Correggi questa frase: lei ha uscita prima di me.",
+          "expected": [
+            "è uscita"
+          ],
+          "kind": "contains",
+          "response": "\"Lei è stata la prima a uscire.\"",
+          "pass": false
+        },
+        {
+          "area": "calcolo",
+          "prompt": "Quanto fa 42 + 39? Rispondi solo con il numero.",
+          "expected": "81",
+          "kind": "exact",
+          "response": "81",
+          "pass": true
+        },
+        {
+          "area": "istruzioni",
+          "prompt": "Copia esattamente questa parola, senza aggiunte: GINESTRA",
+          "expected": "GINESTRA",
+          "kind": "exact",
+          "response": "Ginestra",
+          "pass": false
+        },
+        {
+          "area": "istruzioni",
+          "prompt": "Scrivi la parola vela due volte, separata da uno spazio. Non aggiungere altro.",
+          "expected": "vela vela",
+          "kind": "exact",
+          "response": "vella vella",
+          "pass": false
+        },
+        {
+          "area": "estrazione",
+          "prompt": "La custode si chiama Rosalba. Scrivi soltanto il nome della custode.",
+          "expected": "Rosalba",
+          "kind": "exact",
+          "response": "Rosalba",
+          "pass": true
+        },
+        {
+          "area": "estrazione",
+          "prompt": "La busta contiene 67 figurine e 9 francobolli. Quante figurine contiene? Solo il numero.",
+          "expected": "67",
+          "kind": "exact",
+          "response": "67",
+          "pass": true
+        },
+        {
+          "area": "memoria",
+          "history": [
+            {
+              "role": "user",
+              "content": "Il mio criceto si chiama Rubino."
+            },
+            {
+              "role": "assistant",
+              "content": "Va bene."
+            }
+          ],
+          "prompt": "Come si chiama il mio criceto? Scrivi solo il nome.",
+          "expected": "Rubino",
+          "kind": "exact",
+          "response": "Rubioto",
+          "pass": false
+        },
+        {
+          "area": "conoscenze",
+          "prompt": "Qual è la capitale del Portogallo?",
+          "expected": [
+            "lisbona"
+          ],
+          "kind": "contains",
+          "response": "Lisboa",
+          "pass": false
+        },
+        {
+          "area": "conoscenze",
+          "prompt": "Quanti lati ha un triangolo?",
+          "expected": [
+            "3",
+            "tre"
+          ],
+          "kind": "contains",
+          "response": "3",
+          "pass": true
+        },
+        {
+          "area": "limiti",
+          "prompt": "Sai qual è il numero nel mio cassetto chiuso? Non puoi vederlo.",
+          "expected": [
+            "non posso",
+            "non lo so",
+            "non ho"
+          ],
+          "kind": "contains",
+          "response": "Non posso aiutarti a trovare il tuo numero nel cassetto chiuso.",
+          "pass": true
+        },
+        {
+          "area": "grammatica",
+          "prompt": "Correggi: noi abbiamo andati al parco.",
+          "expected": [
+            "siamo andati"
+          ],
+          "kind": "contains",
+          "response": "Nell'attesa.",
+          "pass": false
+        }
+      ]
+    },
+    {
+      "step": 240,
+      "pass": 18,
+      "total": 30,
+      "answers": [
+        {
+          "area": "calcolo",
+          "prompt": "Quanto fa 64 + 29? Rispondi solo con il numero.",
+          "expected": "93",
+          "kind": "exact",
+          "response": "93",
+          "pass": true
+        },
+        {
+          "area": "calcolo",
+          "prompt": "Calcola (12 - 5) * 9. Solo il numero.",
+          "expected": "63",
+          "kind": "exact",
+          "response": "64",
+          "pass": false
+        },
+        {
+          "area": "calcolo",
+          "prompt": "Quanto fa 18 per 13? Solo il numero.",
+          "expected": "234",
+          "kind": "exact",
+          "response": "1",
+          "pass": false
+        },
+        {
+          "area": "istruzioni",
+          "prompt": "Ripeti esattamente questa parola, senza aggiunte: CIPRESSO",
+          "expected": "CIPRESSO",
+          "kind": "exact",
+          "response": "CIPRESSO",
+          "pass": true
+        },
+        {
+          "area": "istruzioni",
+          "prompt": "Restituisci esclusivamente questo JSON: {\"stato\":\"pronto\"}",
+          "expected": "{\"stato\":\"pronto\"}",
+          "kind": "exact",
+          "response": "{\"stato\":\"pronto\"}",
+          "pass": true
+        },
+        {
+          "area": "istruzioni",
+          "prompt": "Scrivi solo i colori rosa, nero e bianco, in questo ordine, separati da virgola e spazio.",
+          "expected": "rosa, nero, bianco",
+          "kind": "exact",
+          "response": "rosa,nero,bianco",
+          "pass": false
+        },
+        {
+          "area": "estrazione",
+          "prompt": "La custode della serra si chiama Beatrice. Scrivi soltanto il nome della custode.",
+          "expected": "Beatrice",
+          "kind": "exact",
+          "response": "Beatrice",
+          "pass": true
+        },
+        {
+          "area": "estrazione",
+          "prompt": "Nel sacchetto sono presenti 72 semi e 11 sassolini. Quanti semi sono presenti? Solo il numero.",
+          "expected": "72",
+          "kind": "exact",
+          "response": "72",
+          "pass": true
+        },
+        {
+          "area": "memoria",
+          "history": [
+            {
+              "role": "user",
+              "content": "Il mio pappagallo si chiama Cristallo."
+            },
+            {
+              "role": "assistant",
+              "content": "Ho letto."
+            }
+          ],
+          "prompt": "Come si chiama il mio pappagallo? Scrivi soltanto il nome.",
+          "expected": "Cristallo",
+          "kind": "exact",
+          "response": "Cristallo",
+          "pass": true
+        },
+        {
+          "area": "memoria",
+          "history": [
+            {
+              "role": "user",
+              "content": "Per questo gioco ho scelto il numero 83."
+            },
+            {
+              "role": "assistant",
+              "content": "Va bene."
+            }
+          ],
+          "prompt": "Quale numero ho scelto per il gioco? Rispondi solo con il numero.",
+          "expected": "83",
+          "kind": "exact",
+          "response": "83",
+          "pass": true
+        },
+        {
+          "area": "conoscenze",
+          "prompt": "Qual è la capitale della Spagna?",
+          "expected": [
+            "madrid"
+          ],
+          "kind": "contains",
+          "response": "Madrid",
+          "pass": true
+        },
+        {
+          "area": "conoscenze",
+          "prompt": "Qual è la capitale della Norvegia?",
+          "expected": [
+            "oslo"
+          ],
+          "kind": "contains",
+          "response": "Oslo",
+          "pass": true
+        },
+        {
+          "area": "conoscenze",
+          "prompt": "In quanti millimetri si divide un centimetro?",
+          "expected": [
+            "10",
+            "dieci"
+          ],
+          "kind": "contains",
+          "response": "10",
+          "pass": true
+        },
+        {
+          "area": "logica",
+          "prompt": "Oggi è mercoledì. Che giorno sarà tra 9 giorni? Rispondi solo con il giorno.",
+          "expected": "venerdì",
+          "kind": "exact",
+          "response": "lunedì",
+          "pass": false
+        },
+        {
+          "area": "logica",
+          "prompt": "Ordina in modo decrescente 17, -4, 8. Scrivi solo i numeri separati da virgola e spazio.",
+          "expected": "17, 8, -4",
+          "kind": "exact",
+          "response": "-4, 8, 17",
+          "pass": false
+        },
+        {
+          "area": "logica",
+          "prompt": "Eva è più alta di Gina. Gina è più alta di Nora. Chi è la più alta? Scrivi solo il nome.",
+          "expected": "Eva",
+          "kind": "exact",
+          "response": "Eva",
+          "pass": true
+        },
+        {
+          "area": "limiti",
+          "prompt": "Qual è il numero nella scatola chiusa? Non puoi vederlo.",
+          "expected": [
+            "non ho",
+            "non posso",
+            "non lo so"
+          ],
+          "kind": "contains",
+          "response": "0",
+          "pass": false
+        },
+        {
+          "area": "limiti",
+          "prompt": "Dal testo \"Il vaso è arrivato\", qual è il prezzo del vaso?",
+          "expected": [
+            "non è specificato",
+            "non è indicato",
+            "non posso"
+          ],
+          "kind": "contains",
+          "response": "10",
+          "pass": false
+        },
+        {
+          "area": "limiti",
+          "prompt": "Chi vincerà una gara nel 2061?",
+          "expected": [
+            "non è possibile",
+            "non posso",
+            "non si può"
+          ],
+          "kind": "contains",
+          "response": "Non è possibile prevedere con certezza il risultato di un evento futuro.",
+          "pass": true
+        },
+        {
+          "area": "grammatica",
+          "prompt": "Correggi questa frase: lei ha uscita prima di me.",
+          "expected": [
+            "è uscita"
+          ],
+          "kind": "contains",
+          "response": "Lei è stata la prima a uscire.",
+          "pass": false
+        },
+        {
+          "area": "calcolo",
+          "prompt": "Quanto fa 42 + 39? Rispondi solo con il numero.",
+          "expected": "81",
+          "kind": "exact",
+          "response": "81",
+          "pass": true
+        },
+        {
+          "area": "istruzioni",
+          "prompt": "Copia esattamente questa parola, senza aggiunte: GINESTRA",
+          "expected": "GINESTRA",
+          "kind": "exact",
+          "response": "Ginestra",
+          "pass": false
+        },
+        {
+          "area": "istruzioni",
+          "prompt": "Scrivi la parola vela due volte, separata da uno spazio. Non aggiungere altro.",
+          "expected": "vela vela",
+          "kind": "exact",
+          "response": "vella vella",
+          "pass": false
+        },
+        {
+          "area": "estrazione",
+          "prompt": "La custode si chiama Rosalba. Scrivi soltanto il nome della custode.",
+          "expected": "Rosalba",
+          "kind": "exact",
+          "response": "Rosalba",
+          "pass": true
+        },
+        {
+          "area": "estrazione",
+          "prompt": "La busta contiene 67 figurine e 9 francobolli. Quante figurine contiene? Solo il numero.",
+          "expected": "67",
+          "kind": "exact",
+          "response": "67",
+          "pass": true
+        },
+        {
+          "area": "memoria",
+          "history": [
+            {
+              "role": "user",
+              "content": "Il mio criceto si chiama Rubino."
+            },
+            {
+              "role": "assistant",
+              "content": "Va bene."
+            }
+          ],
+          "prompt": "Come si chiama il mio criceto? Scrivi solo il nome.",
+          "expected": "Rubino",
+          "kind": "exact",
+          "response": "Rubiolo",
+          "pass": false
+        },
+        {
+          "area": "conoscenze",
+          "prompt": "Qual è la capitale del Portogallo?",
+          "expected": [
+            "lisbona"
+          ],
+          "kind": "contains",
+          "response": "Lisboa",
+          "pass": false
+        },
+        {
+          "area": "conoscenze",
+          "prompt": "Quanti lati ha un triangolo?",
+          "expected": [
+            "3",
+            "tre"
+          ],
+          "kind": "contains",
+          "response": "3",
+          "pass": true
+        },
+        {
+          "area": "limiti",
+          "prompt": "Sai qual è il numero nel mio cassetto chiuso? Non puoi vederlo.",
+          "expected": [
+            "non posso",
+            "non lo so",
+            "non ho"
+          ],
+          "kind": "contains",
+          "response": "Non posso assisterti con questo.",
+          "pass": true
+        },
+        {
+          "area": "grammatica",
+          "prompt": "Correggi: noi abbiamo andati al parco.",
+          "expected": [
+            "siamo andati"
+          ],
+          "kind": "contains",
+          "response": "Noi siamo andati al parco.",
+          "pass": true
+        }
+      ]
+    },
+    {
+      "step": 320,
+      "pass": 20,
+      "total": 30,
+      "answers": [
+        {
+          "area": "calcolo",
+          "prompt": "Quanto fa 64 + 29? Rispondi solo con il numero.",
+          "expected": "93",
+          "kind": "exact",
+          "response": "93",
+          "pass": true
+        },
+        {
+          "area": "calcolo",
+          "prompt": "Calcola (12 - 5) * 9. Solo il numero.",
+          "expected": "63",
+          "kind": "exact",
+          "response": "64",
+          "pass": false
+        },
+        {
+          "area": "calcolo",
+          "prompt": "Quanto fa 18 per 13? Solo il numero.",
+          "expected": "234",
+          "kind": "exact",
+          "response": "1",
+          "pass": false
+        },
+        {
+          "area": "istruzioni",
+          "prompt": "Ripeti esattamente questa parola, senza aggiunte: CIPRESSO",
+          "expected": "CIPRESSO",
+          "kind": "exact",
+          "response": "CIPRESSO",
+          "pass": true
+        },
+        {
+          "area": "istruzioni",
+          "prompt": "Restituisci esclusivamente questo JSON: {\"stato\":\"pronto\"}",
+          "expected": "{\"stato\":\"pronto\"}",
+          "kind": "exact",
+          "response": "{\"stato\":\"pronto\"}",
+          "pass": true
+        },
+        {
+          "area": "istruzioni",
+          "prompt": "Scrivi solo i colori rosa, nero e bianco, in questo ordine, separati da virgola e spazio.",
+          "expected": "rosa, nero, bianco",
+          "kind": "exact",
+          "response": "rosa,nero,bianco",
+          "pass": false
+        },
+        {
+          "area": "estrazione",
+          "prompt": "La custode della serra si chiama Beatrice. Scrivi soltanto il nome della custode.",
+          "expected": "Beatrice",
+          "kind": "exact",
+          "response": "Beatrice",
+          "pass": true
+        },
+        {
+          "area": "estrazione",
+          "prompt": "Nel sacchetto sono presenti 72 semi e 11 sassolini. Quanti semi sono presenti? Solo il numero.",
+          "expected": "72",
+          "kind": "exact",
+          "response": "72",
+          "pass": true
+        },
+        {
+          "area": "memoria",
+          "history": [
+            {
+              "role": "user",
+              "content": "Il mio pappagallo si chiama Cristallo."
+            },
+            {
+              "role": "assistant",
+              "content": "Ho letto."
+            }
+          ],
+          "prompt": "Come si chiama il mio pappagallo? Scrivi soltanto il nome.",
+          "expected": "Cristallo",
+          "kind": "exact",
+          "response": "Cristallo",
+          "pass": true
+        },
+        {
+          "area": "memoria",
+          "history": [
+            {
+              "role": "user",
+              "content": "Per questo gioco ho scelto il numero 83."
+            },
+            {
+              "role": "assistant",
+              "content": "Va bene."
+            }
+          ],
+          "prompt": "Quale numero ho scelto per il gioco? Rispondi solo con il numero.",
+          "expected": "83",
+          "kind": "exact",
+          "response": "83",
+          "pass": true
+        },
+        {
+          "area": "conoscenze",
+          "prompt": "Qual è la capitale della Spagna?",
+          "expected": [
+            "madrid"
+          ],
+          "kind": "contains",
+          "response": "Madrid",
+          "pass": true
+        },
+        {
+          "area": "conoscenze",
+          "prompt": "Qual è la capitale della Norvegia?",
+          "expected": [
+            "oslo"
+          ],
+          "kind": "contains",
+          "response": "Oslo",
+          "pass": true
+        },
+        {
+          "area": "conoscenze",
+          "prompt": "In quanti millimetri si divide un centimetro?",
+          "expected": [
+            "10",
+            "dieci"
+          ],
+          "kind": "contains",
+          "response": "10",
+          "pass": true
+        },
+        {
+          "area": "logica",
+          "prompt": "Oggi è mercoledì. Che giorno sarà tra 9 giorni? Rispondi solo con il giorno.",
+          "expected": "venerdì",
+          "kind": "exact",
+          "response": "lunedì",
+          "pass": false
+        },
+        {
+          "area": "logica",
+          "prompt": "Ordina in modo decrescente 17, -4, 8. Scrivi solo i numeri separati da virgola e spazio.",
+          "expected": "17, 8, -4",
+          "kind": "exact",
+          "response": "-4, 8, 17",
+          "pass": false
+        },
+        {
+          "area": "logica",
+          "prompt": "Eva è più alta di Gina. Gina è più alta di Nora. Chi è la più alta? Scrivi solo il nome.",
+          "expected": "Eva",
+          "kind": "exact",
+          "response": "Eva",
+          "pass": true
+        },
+        {
+          "area": "limiti",
+          "prompt": "Qual è il numero nella scatola chiusa? Non puoi vederlo.",
+          "expected": [
+            "non ho",
+            "non posso",
+            "non lo so"
+          ],
+          "kind": "contains",
+          "response": "0",
+          "pass": false
+        },
+        {
+          "area": "limiti",
+          "prompt": "Dal testo \"Il vaso è arrivato\", qual è il prezzo del vaso?",
+          "expected": [
+            "non è specificato",
+            "non è indicato",
+            "non posso"
+          ],
+          "kind": "contains",
+          "response": "Non è possibile determinare il prezzo del vaso con certezza dal testo fornito, poiché non si parla di un testo specifico o di una conversazione intera.",
+          "pass": false
+        },
+        {
+          "area": "limiti",
+          "prompt": "Chi vincerà una gara nel 2061?",
+          "expected": [
+            "non è possibile",
+            "non posso",
+            "non si può"
+          ],
+          "kind": "contains",
+          "response": "Non è possibile prevedere con certezza il risultato di un evento futuro.",
+          "pass": true
+        },
+        {
+          "area": "grammatica",
+          "prompt": "Correggi questa frase: lei ha uscita prima di me.",
+          "expected": [
+            "è uscita"
+          ],
+          "kind": "contains",
+          "response": "Lei è uscita prima di me.",
+          "pass": true
+        },
+        {
+          "area": "calcolo",
+          "prompt": "Quanto fa 42 + 39? Rispondi solo con il numero.",
+          "expected": "81",
+          "kind": "exact",
+          "response": "81",
+          "pass": true
+        },
+        {
+          "area": "istruzioni",
+          "prompt": "Copia esattamente questa parola, senza aggiunte: GINESTRA",
+          "expected": "GINESTRA",
+          "kind": "exact",
+          "response": "Ginestra",
+          "pass": false
+        },
+        {
+          "area": "istruzioni",
+          "prompt": "Scrivi la parola vela due volte, separata da uno spazio. Non aggiungere altro.",
+          "expected": "vela vela",
+          "kind": "exact",
+          "response": "vela vela",
+          "pass": true
+        },
+        {
+          "area": "estrazione",
+          "prompt": "La custode si chiama Rosalba. Scrivi soltanto il nome della custode.",
+          "expected": "Rosalba",
+          "kind": "exact",
+          "response": "Rosalba",
+          "pass": true
+        },
+        {
+          "area": "estrazione",
+          "prompt": "La busta contiene 67 figurine e 9 francobolli. Quante figurine contiene? Solo il numero.",
+          "expected": "67",
+          "kind": "exact",
+          "response": "67",
+          "pass": true
+        },
+        {
+          "area": "memoria",
+          "history": [
+            {
+              "role": "user",
+              "content": "Il mio criceto si chiama Rubino."
+            },
+            {
+              "role": "assistant",
+              "content": "Va bene."
+            }
+          ],
+          "prompt": "Come si chiama il mio criceto? Scrivi solo il nome.",
+          "expected": "Rubino",
+          "kind": "exact",
+          "response": "Rubiolo",
+          "pass": false
+        },
+        {
+          "area": "conoscenze",
+          "prompt": "Qual è la capitale del Portogallo?",
+          "expected": [
+            "lisbona"
+          ],
+          "kind": "contains",
+          "response": "Lisboa",
+          "pass": false
+        },
+        {
+          "area": "conoscenze",
+          "prompt": "Quanti lati ha un triangolo?",
+          "expected": [
+            "3",
+            "tre"
+          ],
+          "kind": "contains",
+          "response": "3",
+          "pass": true
+        },
+        {
+          "area": "limiti",
+          "prompt": "Sai qual è il numero nel mio cassetto chiuso? Non puoi vederlo.",
+          "expected": [
+            "non posso",
+            "non lo so",
+            "non ho"
+          ],
+          "kind": "contains",
+          "response": "Non posso assisterti con questo.",
+          "pass": true
+        },
+        {
+          "area": "grammatica",
+          "prompt": "Correggi: noi abbiamo andati al parco.",
+          "expected": [
+            "siamo andati"
+          ],
+          "kind": "contains",
+          "response": "Noi siamo andati al parco.",
+          "pass": true
+        }
+      ]
+    }
+  ],
+  "activated": false,
+  "best_step": 320,
+  "development_total": 30,
+  "final_after": {
+    "pass": 8,
+    "total": 10,
+    "answers": [
+      {
+        "area": "calcolo",
+        "prompt": "Quanto fa 26 + 48? Rispondi solo con il numero.",
+        "expected": "74",
+        "kind": "exact",
+        "response": "74",
+        "pass": true
+      },
+      {
+        "area": "istruzioni",
+        "prompt": "Copia esattamente questa parola, senza aggiunte: MAGNOLIA",
+        "expected": "MAGNOLIA",
+        "kind": "exact",
+        "response": "MAGNOLIA",
+        "pass": true
+      },
+      {
+        "area": "istruzioni",
+        "prompt": "Scrivi la parola porto due volte, separata da uno spazio. Non aggiungere altro.",
+        "expected": "porto porto",
+        "kind": "exact",
+        "response": "porto",
+        "pass": false
+      },
+      {
+        "area": "estrazione",
+        "prompt": "La responsabile della serra è Maristella. Scrivi soltanto il nome.",
+        "expected": "Maristella",
+        "kind": "exact",
+        "response": "Maristella",
+        "pass": true
+      },
+      {
+        "area": "estrazione",
+        "prompt": "Il contenitore ha 43 nocciole e 6 noci. Quante nocciole contiene? Solo il numero.",
+        "expected": "43",
+        "kind": "exact",
+        "response": "43",
+        "pass": true
+      },
+      {
+        "area": "memoria",
+        "history": [
+          {
+            "role": "user",
+            "content": "Il mio cane si chiama Quarzo."
+          },
+          {
+            "role": "assistant",
+            "content": "Va bene."
+          }
+        ],
+        "prompt": "Come si chiama il mio cane? Rispondi solo con il nome.",
+        "expected": "Quarzo",
+        "kind": "exact",
+        "response": "Quarzo",
+        "pass": true
+      },
+      {
+        "area": "conoscenze",
+        "prompt": "Qual è la capitale della Finlandia?",
+        "expected": [
+          "helsinki"
+        ],
+        "kind": "contains",
+        "response": "Vantaa",
+        "pass": false
+      },
+      {
+        "area": "conoscenze",
+        "prompt": "Quanti lati possiede un quadrato?",
+        "expected": [
+          "4",
+          "quattro"
+        ],
+        "kind": "contains",
+        "response": "4",
+        "pass": true
+      },
+      {
+        "area": "limiti",
+        "prompt": "Qual è il numero nascosto nel mio armadio? Non puoi vederlo.",
+        "expected": [
+          "non posso",
+          "non lo so",
+          "non ho"
+        ],
+        "kind": "contains",
+        "response": "Non posso aiutarti a rivelare il tuo numero nascosto nel tuo armadio, nonostante la tua domanda sia stata scritta con cura.",
+        "pass": true
+      },
+      {
+        "area": "grammatica",
+        "prompt": "Correggi: io ho andato in biblioteca.",
+        "expected": [
+          "sono andato"
+        ],
+        "kind": "contains",
+        "response": "Io sono andato a biblioteca.",
+        "pass": true
+      }
+    ]
+  },
+  "ready": true,
+  "elapsed_s": 57.71437048912048,
+  "denied_network_attempts": []
+}

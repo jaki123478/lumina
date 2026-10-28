@@ -1,5 +1,5 @@
 // Service Worker per Lumina AI PWA (Funzionamento 100% Offline)
-const CACHE_NAME = 'lumina-cache-v4';
+const CACHE_NAME = 'lumina-cache-v5';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',

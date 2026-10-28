@@ -510,12 +510,16 @@ class Handler(SimpleHTTPRequestHandler):
                 # Step B: Generazione con Lumina se sicuro
                 if not reply_text:
                     if requested_model.lower() in ('lumina-assisted','lumina-general','auto','lumina'):
-                        from lumina_general import generate
+                        from lumina_general import generate, SYSTEM
                         context_messages=[dict(m) for m in messages if m.get('role') in ('user','assistant')]
                         if context_messages and context_messages[-1]['role']=='user':
                             context_messages[-1]['content']=user_msg
                         else:context_messages.append({'role':'user','content':user_msg})
-                        reply_text,backend=generate(context_messages,max_tokens=max_tokens)
+                        teacher_prompt=None
+                        if data.get('purpose')=='teacher_lesson':
+                            from qwen_precision import precision_instruction
+                            teacher_prompt=SYSTEM+'\n'+precision_instruction()
+                        reply_text,backend=generate(context_messages,max_tokens=max_tokens,system=teacher_prompt)
                     elif "coder" in requested_model.lower():
                         try:
                             import torch

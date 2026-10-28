@@ -1,0 +1,26 @@
+[
+  {
+    "file": "C:\\Users\\Jaki1\\Desktop\\ai lumina\\audio_neurale\\prova_locale_20261028\\piu_rapida.wav",
+    "length_scale": 0.98,
+    "duration_s": 8.78875283446712,
+    "peak": 0.849945068359375,
+    "rms": 0.1318445554230311,
+    "clipped_samples": 0
+  },
+  {
+    "file": "C:\\Users\\Jaki1\\Desktop\\ai lumina\\audio_neurale\\prova_locale_20261028\\equilibrata.wav",
+    "length_scale": 1.08,
+    "duration_s": 9.334421768707482,
+    "peak": 0.849945068359375,
+    "rms": 0.13743452865595152,
+    "clipped_samples": 0
+  },
+  {
+    "file": "C:\\Users\\Jaki1\\Desktop\\ai lumina\\audio_neurale\\prova_locale_20261028\\piu_calma.wav",
+    "length_scale": 1.18,
+    "duration_s": 9.601451247165533,
+    "peak": 0.849945068359375,
+    "rms": 0.13798279077899678,
+    "clipped_samples": 0
+  }
+]

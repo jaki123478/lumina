@@ -25,7 +25,7 @@ from lumina_guardrails import LuminaSentinel
 
 
 class LuminaVoiceAssistant:
-    def __init__(self, api_url="http://localhost:8000/v1/chat/completions", model="lumina-next"):
+    def __init__(self, api_url="http://localhost:8000/v1/chat/completions", model="lumina-assisted"):
         self.api_url = api_url
         self.model = model
         self.history = []
