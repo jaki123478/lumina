@@ -484,7 +484,8 @@ class Handler(SimpleHTTPRequestHandler):
                 weather_requested=bool(re.search(r'\b(meteo|tempo|previsioni|piove|temperatura)\b', user_msg_lower))
                 # La chat live usa Internet per impostazione predefinita; `offline: true`
                 # mantiene disponibile una risposta locale senza inviare la domanda online.
-                always_web_requested = not bool(data.get('offline', False))
+                casual_chat = bool(re.match(r'^\s*(?:ciao|salve|buongiorno|buonasera|grazie|prego|come stai|chiacchieriamo)\s*[!.?]*\s*$', user_msg_lower))
+                always_web_requested = not bool(data.get('offline', False)) and not casual_chat
                 web_requested=web_requested or public_web_requested or research_requested or weather_requested or always_web_requested
                 from lumina_web_sources import enabled as web_enabled, set_enabled as set_web_enabled
 
