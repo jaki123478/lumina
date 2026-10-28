@@ -56,9 +56,10 @@ def main():
             print('MICROFONO ATTIVO: fai la tua domanda adesso.',flush=True)
             samples=sd.rec(160000,samplerate=16000,channels=1,dtype='int16');sd.wait()
             info=transcribe(samples.reshape(-1),16000,with_info=True);query=info['text']
-            print('Trascrizione:',query,'| affidabilità:',round(info['confidence'],2),flush=True)
-            if query and needs_confirmation(query,info['confidence']):
-                speak('La domanda riconosciuta non è abbastanza chiara. Controlla il testo nella console, poi conferma o ripeti.',folder/'conferma.wav')
+            print('Trascrizione:',query,flush=True)
+            if query:
+                warning='Il riconoscimento è incerto. ' if needs_confirmation(query,info['confidence']) else ''
+                speak(warning+'Ho capito: '+query+'. Controlla la domanda nella console e conferma, oppure ripeti.',folder/'conferma.wav')
                 confirm=input('INVIO per confermare, r per ripetere, oppure digita la domanda corretta > ').strip()
                 if confirm.lower()=='r':continue
                 if confirm:query=confirm
