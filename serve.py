@@ -204,7 +204,17 @@ class Handler(SimpleHTTPRequestHandler):
             self.wfile.write(body)
             return
 
-        # 3. API Ufficiale OpenAI: Lista Modelli (/v1/models)
+        # 3. API Ufficiale OpenAI: indice informativo (/v1)
+        if self.path in ("/v1", "/api/v1"):
+            body = json.dumps({"service":"Lumina","status":"ok","api":"OpenAI-compatible","models":"/v1/models","chat":"POST /v1/chat/completions","voice":"POST /api/tts"}, ensure_ascii=False).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+            return
+
+        # 4. API Ufficiale OpenAI: Lista Modelli (/v1/models)
         if self.path in ("/v1/models", "/api/v1/models"):
             models_payload = {
                 "object": "list",
