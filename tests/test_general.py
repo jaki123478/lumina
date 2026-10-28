@@ -31,5 +31,16 @@ class GeneralTests(unittest.TestCase):
         for q in ['Qual è la capitale della Francia?','Calcola __import__("os")',
                   'Calcola 2 + 2e3','Calcola 1 / 0','Calcola 9 ** 999999','Calcola (2+3).real']:
             self.assertIsNone(calculate(q),q)
+    def test_verified_short_answers(self):
+        cases = [
+            ('Quanto fa 17 per 6?', '102'),
+            ('Correggi la frase: io ho andato al mare.', 'La forma corretta è: io sono andato al mare.'),
+            ('In Python, come si scrive il comando per stampare la parola ciao?', "print('ciao')"),
+            ('Scrivi una frase di cinque parole sul mare.', 'Il mare oggi è calmo.'),
+        ]
+        for prompt, expected in cases:
+            self.assertEqual(local_answer([{'role':'user','content':prompt}])[0], expected)
+        self.assertIn('fotosintesi', local_answer([{'role':'user','content':'Cos’è la fotosintesi?'}])[0].lower())
+        self.assertIn('Garda', local_answer([{'role':'user','content':'Qual è il lago più grande d’Italia?'}])[0])
 
 if __name__=='__main__':unittest.main()
