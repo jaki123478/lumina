@@ -9,6 +9,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import subprocess
 import time
 import urllib.request
 from datetime import datetime, timezone
@@ -18,6 +19,7 @@ ROOT = Path(__file__).resolve().parent
 STATE_DIR = ROOT / "data" / "autonomy"
 HEARTBEAT = STATE_DIR / "heartbeat.json"
 EVENT_LOG = STATE_DIR / "events.jsonl"
+REPORT = STATE_DIR / "status_report.md"
 
 
 def _now() -> str:
@@ -46,6 +48,9 @@ def record(state: dict) -> dict:
     STATE_DIR.mkdir(parents=True, exist_ok=True)
     with EVENT_LOG.open("a", encoding="utf-8") as handle:
         handle.write(json.dumps(event, ensure_ascii=False) + "\n")
+    status = "ONLINE" if event.get("online") else "OFFLINE"
+    provider = event.get("payload", {}).get("provider", "non disponibile")
+    _atomic_write(REPORT, f"# Lumina autonomo\n\n- Stato: **{status}**\n- Ora UTC: `{event['timestamp']}`\n- Provider: `{provider}`\n")
     return event
 
 
@@ -53,16 +58,37 @@ def run_once() -> dict:
     return record(check_server())
 
 
+def restart_server() -> int:
+    """Avvia solo il server locale previsto, senza shell o comandi esterni."""
+    command = [str(ROOT / ".venv" / "Scripts" / "python.exe"),
+               str(ROOT / "lumina_desktop" / "server.py")]
+    process = subprocess.Popen(command, cwd=str(ROOT),
+                               creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+    return process.pid
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Supervisore locale di Lumina")
     parser.add_argument("--interval", type=float, default=10.0, help="secondi tra i controlli")
     parser.add_argument("--once", action="store_true", help="esegue un solo controllo")
+    parser.add_argument("--restart", action="store_true", help="riavvia il server se offline")
     args = parser.parse_args()
     if args.once:
-        print(json.dumps(run_once(), ensure_ascii=False))
+        event = run_once()
+        if args.restart and not event.get("online"):
+            event["restart_pid"] = restart_server()
+            time.sleep(2)
+            event["recovery"] = check_server()
+            record({**event, "online": event["recovery"].get("online", False)})
+        print(json.dumps(event, ensure_ascii=False))
         return
     while True:
         event = run_once()
+        if args.restart and not event.get("online"):
+            event["restart_pid"] = restart_server()
+            time.sleep(2)
+            event["recovery"] = check_server()
+            record({**event, "online": event["recovery"].get("online", False)})
         print(json.dumps(event, ensure_ascii=False), flush=True)
         time.sleep(max(1.0, args.interval))
 

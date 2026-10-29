@@ -28,6 +28,18 @@ class AutonomyTests(unittest.TestCase):
             self.assertEqual(len((target / 'events.jsonl').read_text().splitlines()), 1)
             self.assertTrue(event['online'])
 
+    def test_record_creates_human_report(self):
+        with tempfile.TemporaryDirectory() as folder:
+            target = Path(folder)
+            with patch.object(autonomy, 'STATE_DIR', target), \
+                 patch.object(autonomy, 'HEARTBEAT', target / 'heartbeat.json'), \
+                 patch.object(autonomy, 'EVENT_LOG', target / 'events.jsonl'), \
+                 patch.object(autonomy, 'REPORT', target / 'status_report.md'):
+                autonomy.record({'online': True, 'payload': {'provider': 'CPU'}})
+            report = (target / 'status_report.md').read_text()
+            self.assertIn('ONLINE', report)
+            self.assertIn('CPU', report)
+
 
 if __name__ == '__main__':
     unittest.main()
