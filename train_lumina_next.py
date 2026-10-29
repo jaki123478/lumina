@@ -45,9 +45,13 @@ def load_dataset_tokens(tokenizer: ByteLevelBPETokenizer, dataset_path: str = "d
     print(f"[*] File dataset utilizzato: {ds_file}")
 
     extra = os.environ.get("LUMINA_EXTRA_DATASET")
-    paths = [Path("data/lumina_coding_curriculum.jsonl"), ds_file]
-    if extra:
-        paths.insert(0, Path(extra))
+    if extra and os.environ.get("LUMINA_ONLY_EXTRA", "0") == "1":
+        paths = [Path(extra)]
+        print("[*] Modalità supervisionata: uso esclusivo degli esempi verificati")
+    else:
+        paths = [Path("data/lumina_coding_curriculum.jsonl"), ds_file]
+        if extra:
+            paths.insert(0, Path(extra))
     extra_samples = []
     for path in paths:
         if not path.exists():
@@ -110,7 +114,13 @@ def train(
     grad_accum_steps: int = 8,
     lr: float = 4e-4,
     use_checkpointing: bool = True,
+    seed: int = 42,
 ):
+    random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
+    print(f"[*] Seed riproducibile: {seed}")
     print("=" * 75)
     print("      🚀 LUMINA-NEXT 135M: ADDESTRAMENTO LONG-CONTEXT ACCELERATO")
     print("=" * 75)
@@ -267,6 +277,7 @@ if __name__ == "__main__":
     parser.add_argument("--batch-size", type=int, default=2, help="Batch size per step")
     parser.add_argument("--lr", type=float, default=4e-4, help="Learning rate")
     parser.add_argument("--grad-accum", type=int, default=8, help="Step di accumulo gradiente")
+    parser.add_argument("--seed", type=int, default=42, help="Seed riproducibile")
     args = parser.parse_args()
 
-    train(seq_len=args.seq_len, steps=args.steps, batch_size=args.batch_size, lr=args.lr, grad_accum_steps=args.grad_accum)
+    train(seq_len=args.seq_len, steps=args.steps, batch_size=args.batch_size, lr=args.lr, grad_accum_steps=args.grad_accum, seed=args.seed)
