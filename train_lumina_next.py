@@ -48,6 +48,7 @@ def load_dataset_tokens(tokenizer: ByteLevelBPETokenizer, dataset_path: str = "d
     paths = [Path("data/lumina_coding_curriculum.jsonl"), ds_file]
     if extra:
         paths.insert(0, Path(extra))
+    extra_samples = []
     for path in paths:
         if not path.exists():
             continue
@@ -63,12 +64,19 @@ def load_dataset_tokens(tokenizer: ByteLevelBPETokenizer, dataset_path: str = "d
                         text = f"<|im_start|>user\n{u}<|im_end|>\n<|im_start|>assistant\n{a}<|im_end|>"
                         ids = tokenizer.encode(text).ids
                         if len(ids) >= 8:
-                            tokenized_samples.append(torch.tensor(ids, dtype=torch.long))
+                            sample = torch.tensor(ids, dtype=torch.long)
+                            tokenized_samples.append(sample)
+                            if extra and path == Path(extra):
+                                extra_samples.append(sample)
                             if len(tokenized_samples) >= max_samples:
                                 break
                 except Exception:
                     continue
 
+    repeat = max(1, int(os.environ.get("LUMINA_EXTRA_REPEAT", "1")))
+    if extra_samples and repeat > 1:
+        tokenized_samples.extend(extra_samples * (repeat - 1))
+        print(f"[*] Curriculum extra sovracampionato: {len(extra_samples)} esempi x{repeat}")
     print(f"[+] Caricati {len(tokenized_samples):,} campioni tokenizzati con successo.")
     return tokenized_samples
 
