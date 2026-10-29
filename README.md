@@ -114,6 +114,18 @@ Il progetto include e mantiene aperto il dataset sintetico di distillazione ital
 
 ## Addestramento e voce in locale
 
+### Gate del checkpoint
+
+Prima di attivare un candidato CUDA, confrontalo con la versione stabile:
+
+```powershell
+\.venv\Scripts\python.exe benchmark_gate.py checkpoints_lumina_next_cuda_accuracy_v2
+```
+
+Il comando rifiuta automaticamente i pesi se il benchmark scende rispetto al
+checkpoint di riferimento. I candidati restano separati finché non superano
+questa verifica.
+
 ### Ciclo locale Qwen con verifica dei miglioramenti
 
 Esegui `.venv\Scripts\python.exe qwen_max_power_trainer.py --steps 240`.
