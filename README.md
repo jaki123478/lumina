@@ -126,6 +126,23 @@ Il comando rifiuta automaticamente i pesi se il benchmark scende rispetto al
 checkpoint di riferimento. I candidati restano separati finché non superano
 questa verifica.
 
+Per un ciclo CUDA controllato che parte dal checkpoint stabile, usa cartelle
+separate e il curriculum verificato:
+
+```powershell
+$env:LUMINA_INIT_CHECKPOINT="checkpoints_lumina_next"
+$env:LUMINA_CHECKPOINT_DIR="checkpoints_lumina_next_cuda_candidate"
+$env:LUMINA_EXPORT_DIR="exports_lumina_next_cuda_candidate"
+$env:LUMINA_EXTRA_DATASET="data/cuda_accuracy_curriculum.jsonl"
+$env:LUMINA_EXTRA_REPEAT="10"
+.venv\Scripts\python.exe train_lumina_next.py --steps 10 --lr 1e-6 --grad-accum 1
+.venv\Scripts\python.exe benchmark_gate.py checkpoints_lumina_next_cuda_candidate
+```
+
+`LUMINA_EXTRA_REPEAT` è opzionale e serve solo a dare più peso agli esempi
+verificati. Il gate deve sempre approvare il candidato prima di qualsiasi
+pubblicazione o attivazione.
+
 ### Ciclo locale Qwen con verifica dei miglioramenti
 
 Esegui `.venv\Scripts\python.exe qwen_max_power_trainer.py --steps 240`.
