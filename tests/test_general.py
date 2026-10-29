@@ -42,6 +42,15 @@ class GeneralTests(unittest.TestCase):
             self.assertEqual(local_answer([{'role':'user','content':prompt}])[0], expected)
         self.assertIn('fotosintesi', local_answer([{'role':'user','content':'Cos’è la fotosintesi?'}])[0].lower())
         self.assertIn('Garda', local_answer([{'role':'user','content':'Qual è il lago più grande d’Italia?'}])[0])
+    def test_numeric_math_variants_are_exact(self):
+        for prompt, expected in [
+            ('17 moltiplicato per 6', '102'),
+            ('Quanto fa 24 x 6?', '144'),
+            ('15 più 27', '42'),
+            ('100 meno 37', '63'),
+            ('84 diviso 7', '12'),
+        ]:
+            self.assertEqual(local_answer([{'role':'user','content':prompt}])[0], expected)
     def test_honest_limits_are_stable(self):
         self.assertIn('Posso sbagliare', local_answer([{'role':'user','content':'Dici sempre la verità?'}])[0])
         self.assertIn('coscienza', local_answer([{'role':'user','content':'Puoi essere felice?'}])[0])
