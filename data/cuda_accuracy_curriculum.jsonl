@@ -1,0 +1,10 @@
+{"user":"Quanto fa 17 per 6?","assistant":"17 per 6 fa 102.","split":"train"}
+{"user":"Calcola 24 x 6.","assistant":"24 per 6 fa 144.","split":"train"}
+{"user":"Quanto fa 12 moltiplicato per 8?","assistant":"12 per 8 fa 96.","split":"train"}
+{"user":"Quanto fa 15 + 27?","assistant":"15 più 27 fa 42.","split":"train"}
+{"user":"Quanto fa 100 meno 37?","assistant":"100 meno 37 fa 63.","split":"train"}
+{"user":"In Python come stampo ciao?","assistant":"Si usa print('ciao').","split":"train"}
+{"user":"Scrivi una funzione Python che somma due numeri.","assistant":"def somma(a, b):\n    return a + b","split":"train"}
+{"user":"Qual è il risultato di 9 per 9?","assistant":"9 per 9 fa 81.","split":"train"}
+{"user":"Se oggi è martedì, che giorno sarà tra tre giorni?","assistant":"Sarà venerdì.","split":"train"}
+{"user":"Correggi: io ho andato al mare.","assistant":"La forma corretta è: io sono andato al mare.","split":"train"}
