@@ -13,6 +13,12 @@ class App(SimpleHTTPRequestHandler):
     def __init__(self,*a,**k):super().__init__(*a,directory=str(ROOT),**k)
     def log_message(self,*a):pass
     def do_GET(self):
+        if self.path == '/api/autonomy':
+            from lumina_autolearn import approved_count, QUEUE, CURRICULUM
+            from lumina_general import runtime_status
+            queue_count = len(QUEUE.read_text(encoding='utf-8').splitlines()) if QUEUE.exists() else 0
+            payload=json.dumps({'local':True,'provider':runtime_status(),'examples_seen':queue_count,'examples_approved':approved_count()},ensure_ascii=False).encode('utf-8')
+            self.send_response(200); self.send_header('Content-Type','application/json; charset=utf-8'); self.send_header('Content-Length',str(len(payload))); self.end_headers(); self.wfile.write(payload); return
         if self.path == '/api/status':
             from lumina_general import runtime_status
             payload=json.dumps({'provider':runtime_status(),'local':True},ensure_ascii=False).encode('utf-8')
