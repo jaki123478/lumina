@@ -1,7 +1,7 @@
 import sys,unittest
 from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
-from lumina_general import calculate
+from lumina_general import calculate,generate
 from lumina_answer_checks import local_answer,enforce_format
 
 class GeneralTests(unittest.TestCase):
@@ -51,5 +51,15 @@ class GeneralTests(unittest.TestCase):
         self.assertIn('funzione', local_answer([{'role':'user','content':'Che cosa fa una funzione?'}])[0])
         self.assertIn('browser', local_answer([{'role':'user','content':'Che cosa fa il browser?'}])[0])
         self.assertIn('HTML', local_answer([{'role':'user','content':'Che significa HTML?'}])[0])
+    def test_app_path_uses_verified_answers(self):
+        checks = [
+            ('Quanto fa 17 per 6?', '102'),
+            ('In Python, come si scrive il comando per stampare la parola ciao?', "print('ciao')"),
+            ('Scrivi una frase di cinque parole sul mare.', 'Il mare oggi è calmo.'),
+        ]
+        for prompt, expected in checks:
+            answer, meta = generate([{'role':'user','content':prompt}])
+            self.assertEqual(answer, expected)
+            self.assertTrue(meta.get('local'))
 
 if __name__=='__main__':unittest.main()
