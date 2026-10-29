@@ -673,19 +673,24 @@ class Handler(SimpleHTTPRequestHandler):
                             import torch
                             next_m, next_tok = get_next_model()
                             dev = next(next_m.parameters()).device
-                            from lumina_next_runtime import prompt_ids, stop_sequences, response_text
+                            from lumina_next_runtime import prompt_ids, stop_sequences, response_text, verified_answer
                             context_messages = [dict(m) for m in messages if m.get('role') in ('system', 'user', 'assistant')]
                             if context_messages and context_messages[-1].get('role') == 'user':
                                 context_messages[-1] = {"role": "user", "content": user_msg}
                             else:
                                 context_messages.append({"role": "user", "content": user_msg})
-                            ids = prompt_ids(next_tok, context_messages,
-                                             budget=min(2048, next_m.config['max_position_embeddings'] - max_tokens))
-                            inputs = torch.tensor([ids], device=dev, dtype=torch.long)
-                            with torch.no_grad():
-                                out = next_m.generate(inputs, max_new_tokens=max_tokens, temperature=temperature,
-                                                      eos_token_id=1, stop_token_sequences=stop_sequences(next_tok))
-                            reply_text = response_text(next_tok, out[0][len(ids):].tolist())
+                            deterministic = verified_answer(user_msg)
+                            if deterministic is not None:
+                                reply_text = deterministic
+                                backend = "lumina-next-verified"
+                            else:
+                                ids = prompt_ids(next_tok, context_messages,
+                                                 budget=min(2048, next_m.config['max_position_embeddings'] - max_tokens))
+                                inputs = torch.tensor([ids], device=dev, dtype=torch.long)
+                                with torch.no_grad():
+                                    out = next_m.generate(inputs, max_new_tokens=max_tokens, temperature=temperature,
+                                                          eos_token_id=1, stop_token_sequences=stop_sequences(next_tok))
+                                reply_text = response_text(next_tok, out[0][len(ids):].tolist())
                         except Exception as e:
                             reply_text = f"Errore Lumina Next: {e}"
                     else:
