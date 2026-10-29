@@ -17,6 +17,12 @@ candidato CUDA è rimasto fuori dal modello stabile perché non ha superato il
 benchmark completo. Il checkpoint stabile resta quindi protetto finché un nuovo
 ciclo non dimostra un miglioramento riproducibile.
 
+Il ciclo locale Gemma--Lumina è supervisionato: verifica prima il server,
+scarta errori di connessione e salva gli aggiornamenti in checkpoint separati.
+`AVVIA_CICLO_COMPLETO_LUMINA.bat` usa micro-step GPU a basso consumo; il
+trainer interrompe automaticamente un micro-ciclo oltre il limite di tempo.
+Nessun candidato viene promosso automaticamente senza benchmark.
+
 ---
 
 ## ⚡ Caratteristiche Principali

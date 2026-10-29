@@ -36,3 +36,14 @@ voices/*.onnx
 /audio_neurale/attualita_locale/
 /audio_neurale/ricerche_online/
 /voices/vosk-it/
+
+# Local credentials, caches and experimental desktop builds
+chiave emma ai/
+.venv_cuda/
+tmp/
+models/
+build*/
+dist*/
+odysseus/
+odysseus_rebuilt/
+exports_*/

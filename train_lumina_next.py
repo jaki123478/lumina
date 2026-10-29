@@ -247,8 +247,11 @@ def train(
     test_prompt = "<|im_start|>user\nCome creo una funzione somma in Python?<|im_end|>\n<|im_start|>assistant\n"
     test_ids = torch.tensor([tokenizer.encode(test_prompt).ids], device=device)
     print(f"\n[*] Test Generativo (Prompt: 'Come creo una funzione somma in Python?'):")
-    gen_out = model.generate(test_ids, max_new_tokens=40, temperature=0.3)
-    gen_text = tokenizer.decode(gen_out[0].tolist())
+    # Valutazione deterministica: il campione casuale può far sembrare peggiore
+    # un candidato e non è adatto al gate di promozione.
+    gen_out = model.generate(test_ids, max_new_tokens=40, temperature=0.0)
+    from lumina_next_runtime import response_text
+    gen_text = response_text(tokenizer, gen_out[0][len(test_ids[0]):].tolist())
     print(gen_text)
     print("=" * 75)
 
