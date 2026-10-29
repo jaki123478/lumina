@@ -122,7 +122,7 @@ def train(
 
     tokenizer = ByteLevelBPETokenizer(str(tok_dir / "vocab.json"), str(tok_dir / "merges.txt"))
 
-    out_dir = Path("checkpoints_lumina_next")
+    out_dir = Path(os.environ.get("LUMINA_CHECKPOINT_DIR", "checkpoints_lumina_next"))
     out_dir.mkdir(parents=True, exist_ok=True)
 
     # 2. Inizializza o riprendi Modello Lumina-Next
@@ -200,7 +200,7 @@ def train(
     torch.save({"state_dict": model.state_dict(), "steps": cum_steps, "config": config, "loss_history": loss_history}, versioned_ckpt)
     print(f"[+] Pesi, configurazione e checkpoint versionato salvati in '{versioned_ckpt}'!")
 
-    hf_dir = Path("hf_export_lumina_next")
+    hf_dir = Path(os.environ.get("LUMINA_EXPORT_DIR", "hf_export_lumina_next"))
     hf_dir.mkdir(parents=True, exist_ok=True)
     model.save_pretrained(hf_dir)
     try:

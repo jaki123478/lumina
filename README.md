@@ -8,6 +8,15 @@
 
 > **Lumina** è un ecosistema completo di modelli linguistici e strumenti open-source in lingua italiana. Il modello, la memoria e la voce restano locali; la ricerca web è una funzione esplicita e controllabile, disattivabile con `offline: true`.
 
+### Stato verificato (29 ottobre 2026)
+
+L'inferenza locale Windows usa ONNX Runtime con DirectML quando disponibile e
+ricade automaticamente su CPU/PyTorch in caso di errore. PyTorch CUDA è stato
+verificato sulla RTX 5060 con un ciclo di forward/backward separato; il primo
+candidato CUDA è rimasto fuori dal modello stabile perché non ha superato il
+benchmark completo. Il checkpoint stabile resta quindi protetto finché un nuovo
+ciclo non dimostra un miglioramento riproducibile.
+
 ---
 
 ## ⚡ Caratteristiche Principali

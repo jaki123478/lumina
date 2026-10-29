@@ -403,6 +403,11 @@ class LuminaApp(ctk.CTk):
                     self.voice_status.configure(text="Microfono non disponibile", text_color=ERR)
                     self.voice_transcript.configure(text="Controlla il microfono e premi Voce live per riprovare.")
             self.after(0, retry)
+            # Un errore transitorio del dispositivo non deve lasciare la voce
+            # in uno stato morto: riprova solo se l'utente ha ancora la voce
+            # attiva e dopo aver lasciato tempo al driver di liberarsi.
+            if self.voice_enabled:
+                threading.Timer(1.5, self._listen).start()
 
     def _speak(self, text):
         try:

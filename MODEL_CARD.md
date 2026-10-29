@@ -1,5 +1,13 @@
 # Lumina 50K
 
+## Stato del progetto
+
+Il modello 50K è un modello sperimentale leggero per esecuzione locale. Le
+funzioni voce, ricerca e DirectML appartengono all'applicazione e non aumentano
+il numero di parametri del checkpoint. I candidati prodotti dall'addestramento
+GPU vengono valutati separatamente e non sostituiscono il checkpoint stabile se
+introducono regressioni su aritmetica, coding, grammatica o onestà epistemica.
+
 Modello sperimentale di generazione del testo, costruito e addestrato da zero.
 Non importa pesi preaddestrati, non chiama servizi di generazione e non usa Ollama.
 È un Transformer minuscolo, non un modello con capacità paragonabili ai chatbot
