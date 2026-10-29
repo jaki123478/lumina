@@ -244,8 +244,12 @@ def train(
     print(f"[+] Storico metriche aggiornato per il monitoraggio GitHub (Step cumulativi: {cum_steps})!")
 
     # 7. Test Generativo Finale
-    test_prompt = "<|im_start|>user\nCome creo una funzione somma in Python?<|im_end|>\n<|im_start|>assistant\n"
-    test_ids = torch.tensor([tokenizer.encode(test_prompt).ids], device=device)
+    # Usa lo stesso formatter dell'inferenza per evitare divergenze tra benchmark
+    # e richieste reali della chat.
+    from lumina_next_runtime import prompt_ids
+    test_ids = torch.tensor([prompt_ids(tokenizer, [
+        {"role": "user", "content": "Come creo una funzione somma in Python?"}
+    ])], device=device)
     print(f"\n[*] Test Generativo (Prompt: 'Come creo una funzione somma in Python?'):")
     # Valutazione deterministica: il campione casuale può far sembrare peggiore
     # un candidato e non è adatto al gate di promozione.

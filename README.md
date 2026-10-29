@@ -23,6 +23,10 @@ scarta errori di connessione e salva gli aggiornamenti in checkpoint separati.
 trainer interrompe automaticamente un micro-ciclo oltre il limite di tempo.
 Nessun candidato viene promosso automaticamente senza benchmark.
 
+Ultima verifica locale: 15/15 test di risposte verificate e 16/16 controlli
+audio sintetici superati. La prova del microfono reale dipende dal dispositivo;
+il modello vocale e la sintesi restano locali.
+
 ---
 
 ## ⚡ Caratteristiche Principali
