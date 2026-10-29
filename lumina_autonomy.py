@@ -49,7 +49,7 @@ def record(state: dict) -> dict:
     with EVENT_LOG.open("a", encoding="utf-8") as handle:
         handle.write(json.dumps(event, ensure_ascii=False) + "\n")
     status = "ONLINE" if event.get("online") else "OFFLINE"
-    provider = event.get("payload", {}).get("provider", "non disponibile")
+    provider = event.get("payload", {}).get("provider") or event.get("recovery", {}).get("payload", {}).get("provider", "non disponibile")
     _atomic_write(REPORT, f"# Lumina autonomo\n\n- Stato: **{status}**\n- Ora UTC: `{event['timestamp']}`\n- Provider: `{provider}`\n")
     return event
 
