@@ -61,5 +61,9 @@ class GeneralTests(unittest.TestCase):
             answer, meta = generate([{'role':'user','content':prompt}])
             self.assertEqual(answer, expected)
             self.assertTrue(meta.get('local'))
+    def test_extraction_and_list_constraints(self):
+        self.assertEqual(local_answer([{'role':'user','content':'Scrivi soltanto questi tre colori separati da virgole: rosso, verde, blu.'}])[0], 'rosso, verde, blu')
+        prompt='Nel testo: "Marta ha 4 mele e Luca ha 9 pere". Quante pere ha Luca?'
+        self.assertEqual(local_answer([{'role':'user','content':prompt}])[0], '9')
 
 if __name__=='__main__':unittest.main()

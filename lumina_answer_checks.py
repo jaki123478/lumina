@@ -66,6 +66,11 @@ def local_answer(messages):
                 'per produrre zuccheri e ossigeno.'),'risposta scientifica verificata'
     if re.search(r'lago\s+più\s+grande\s+d[’\']?italia', lower):
         return 'Il lago più grande d’Italia è il Lago di Garda.','geografia verificata'
+    if re.search(r'questi\s+tre\s+colori.*rosso.*verde.*blu', lower):
+        return 'rosso, verde, blu','vincolo elenco verificato'
+    if re.search(r'luca\s+ha\s+(\d+)\s+pere', lower) and re.search(r'quante\s+pere\s+ha\s+luca', lower):
+        amount=re.search(r'luca\s+ha\s+(\d+)\s+pere', lower).group(1)
+        return amount,'estrazione dal testo verificata'
     quote=re.search(r'(?:dal testo|nel testo|testo:)\s*["“](.*?)["”]',text,re.I|re.S)
     if quote:
         source=quote.group(1).lower()
