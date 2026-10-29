@@ -16,7 +16,9 @@ class LuminaOnnxRuntime:
         selected = [p for p in providers if p in available]
         if not selected:
             selected = ["CPUExecutionProvider"]
-        self.session = ort.InferenceSession(str(self.model_path), providers=selected)
+        options = ort.SessionOptions()
+        options.log_severity_level = 3
+        self.session = ort.InferenceSession(str(self.model_path), sess_options=options, providers=selected)
         self.providers = self.session.get_providers()
         self.tokenizer = ByteLevelBPETokenizer(str(vocab), str(merges))
 
@@ -29,7 +31,17 @@ class LuminaOnnxRuntime:
             ids.append(next_id)
             if next_id == eos_id:
                 break
-        return self.tokenizer.decode(ids)
+        text = self.tokenizer.decode(ids)
+        # Restituisce solo il turno assistant, senza prompt o marcatori interni.
+        if "<|im_start|>assistant" in text:
+            text = text.split("<|im_start|>assistant", 1)[1]
+        for marker in ("<|im_end|>", "<|im_start|>", "<|pad|>"):
+            text = text.split(marker, 1)[0]
+        return text.strip()
+
+    @property
+    def provider_name(self):
+        return "DmlExecutionProvider" if "DmlExecutionProvider" in self.providers else "CPUExecutionProvider"
 
 
 def gpu_provider_available():

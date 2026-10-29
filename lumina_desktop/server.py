@@ -6,13 +6,19 @@ ROOT=Path(__file__).parent
 class App(SimpleHTTPRequestHandler):
     def __init__(self,*a,**k):super().__init__(*a,directory=str(ROOT),**k)
     def log_message(self,*a):pass
+    def do_GET(self):
+        if self.path == '/api/status':
+            from lumina_general import runtime_status
+            payload=json.dumps({'provider':runtime_status(),'local':True},ensure_ascii=False).encode('utf-8')
+            self.send_response(200); self.send_header('Content-Type','application/json; charset=utf-8'); self.send_header('Content-Length',str(len(payload))); self.end_headers(); self.wfile.write(payload); return
+        return super().do_GET()
     def do_POST(self):
         if self.path == '/api/chat':
             try:
                 size=int(self.headers.get('Content-Length','0')); data=json.loads(self.rfile.read(size) or b'{}')
                 from lumina_general import generate
-                answer=generate(data.get('messages',[]),max_tokens=int(data.get('max_tokens',200)))
-                payload=json.dumps({'reply':answer},ensure_ascii=False).encode('utf-8')
+                answer,meta=generate(data.get('messages',[]),max_tokens=int(data.get('max_tokens',200)))
+                payload=json.dumps({'reply':answer,'meta':meta,'provider':meta.get('provider',meta.get('engine'))},ensure_ascii=False).encode('utf-8')
                 self.send_response(200); self.send_header('Content-Type','application/json; charset=utf-8'); self.send_header('Content-Length',str(len(payload))); self.end_headers(); self.wfile.write(payload)
             except Exception as exc:
                 payload=json.dumps({'error':str(exc)},ensure_ascii=False).encode('utf-8'); self.send_response(500); self.send_header('Content-Type','application/json; charset=utf-8'); self.send_header('Content-Length',str(len(payload))); self.end_headers(); self.wfile.write(payload)

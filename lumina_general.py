@@ -11,6 +11,7 @@ MODEL_ID='Qwen/Qwen2.5-Coder-1.5B-Instruct'
 _lock=threading.RLock()
 _model=None
 _tokenizer=None
+_onnx_runtime=None
 SYSTEM=("Sei Lumina, assistente in italiano eseguito localmente sul computer dell'utente. "
         "Rispondi direttamente alla domanda, senza preamboli. Per domande puntuali restituisci solo il dato richiesto, senza aggiungere statistiche, date o dettagli non richiesti. "
         "Rispetta esattamente nomi, numeri, formato e numero di elementi richiesti. "
@@ -72,6 +73,21 @@ def get_model():
         return _model,_tokenizer
 
 
+def runtime_status():
+    """Provider attivo per l'inferenza: DirectML, CPU o PyTorch."""
+    mode=os.getenv('LUMINA_RUNTIME','auto').lower()
+    if mode in ('auto','directml'):
+        try:
+            from lumina_onnx_runtime import gpu_provider_available
+            if gpu_provider_available(): return 'DmlExecutionProvider'
+        except Exception: pass
+    try:
+        import torch
+        return 'PyTorch-CUDA' if torch.cuda.is_available() else 'PyTorch-CPU'
+    except Exception:
+        return 'CPU'
+
+
 def generate(messages,max_tokens=200,*,use_calculator=True,system=None):
     turns=[{'role':m['role'],'content':str(m.get('content',''))} for m in messages
            if m.get('role') in ('user','assistant')]
@@ -84,6 +100,24 @@ def generate(messages,max_tokens=200,*,use_calculator=True,system=None):
         answer=calculate(turns[-1]['content'])
         if answer is not None:
             return answer,{'engine':'calcolatrice locale','model_id':None,'local':True,'assisted':True}
+    global _onnx_runtime
+    mode=os.getenv('LUMINA_RUNTIME','auto').lower()
+    if mode in ('auto','directml'):
+        try:
+            if _onnx_runtime is None:
+                from lumina_onnx_runtime import LuminaOnnxRuntime
+                _onnx_runtime=LuminaOnnxRuntime()
+            prompt=''.join(f'<|im_start|>{m["role"]}\n{m["content"]}<|im_end|>\n' for m in turns)
+            prompt += '<|im_start|>assistant\n'
+            answer=_onnx_runtime.generate(prompt,max_new_tokens=max(1,min(256,max_tokens)))
+            from lumina_answer_checks import enforce_format
+            answer=enforce_format(answer,turns[-1]['content'])
+            if answer:
+                return answer,{'engine':'Lumina ONNX DirectML','provider':_onnx_runtime.provider_name,'model_id':'lumina_next_135m.onnx','local':True,'assisted':True}
+        except Exception:
+            if mode=='directml':
+                # Modalità esplicita: fallback comunque sicuro per non interrompere la chat.
+                pass
     with _lock:
         import torch
         model,tok=get_model()
