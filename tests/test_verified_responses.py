@@ -66,7 +66,7 @@ def test_verified_dataset_is_complete_and_unique():
     import json
     rows = [json.loads(line) for line in Path('data/lumina_gemma_approved.jsonl').read_text(encoding='utf-8').splitlines() if line.strip()]
     keys = [' '.join(row['user'].lower().split()) for row in rows]
-    assert len(rows) == 20
+    assert len(rows) == 21
     assert len(keys) == len(set(keys))
     assert all(row.get('assistant', '').strip() for row in rows)
 
