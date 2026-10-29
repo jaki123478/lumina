@@ -44,7 +44,11 @@ def load_dataset_tokens(tokenizer: ByteLevelBPETokenizer, dataset_path: str = "d
         ds_file = Path("data/distilled_dialogues.jsonl")
     print(f"[*] File dataset utilizzato: {ds_file}")
 
-    for path in [Path("data/lumina_coding_curriculum.jsonl"), ds_file]:
+    extra = os.environ.get("LUMINA_EXTRA_DATASET")
+    paths = [Path("data/lumina_coding_curriculum.jsonl"), ds_file]
+    if extra:
+        paths.insert(0, Path(extra))
+    for path in paths:
         if not path.exists():
             continue
         with open(path, "r", encoding="utf-8") as f:
