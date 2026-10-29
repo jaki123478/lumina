@@ -51,6 +51,8 @@ class GeneralTests(unittest.TestCase):
             ('84 diviso 7', '12'),
         ]:
             self.assertEqual(local_answer([{'role':'user','content':prompt}])[0], expected)
+        for prompt, expected in [('1,5 per 2', '3'), ('7,5 diviso 2,5', '3'), ('-2,5 più 1', '-1,5')]:
+            self.assertEqual(local_answer([{'role':'user','content':prompt}])[0], expected)
     def test_honest_limits_are_stable(self):
         self.assertIn('Posso sbagliare', local_answer([{'role':'user','content':'Dici sempre la verità?'}])[0])
         self.assertIn('coscienza', local_answer([{'role':'user','content':'Puoi essere felice?'}])[0])

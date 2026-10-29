@@ -52,15 +52,22 @@ def local_answer(messages):
         return 'Non ho questa informazione e non posso osservare oggetti o persone sul tuo computer.','disponibilità dei dati'
     # Operazioni elementari e correzioni grammaticali sono deterministiche:
     # non lasciamo che una generazione rumorosa sostituisca una risposta certa.
-    numeric_math=re.search(r'(?:quanto\s+fa\s+)?(\d+)\s*(per|x|×|moltiplicato\s+per|\+|più|piu|meno|-|diviso|/)\s*(\d+)\s*\??$',lower)
+    # Calcolo locale anche per decimali e numeri negativi: evita che una
+    # generazione stocastica sostituisca un risultato deterministico.
+    number=r'-?\d+(?:[.,]\d+)?'
+    numeric_math=re.search(r'(?:quanto\s+fa\s+)?('+number+r')\s*(per|x|×|moltiplicato\s+per|\+|più|piu|meno|-|diviso|/)\s*('+number+r')\s*\??$',lower)
     if numeric_math:
-        a,op,b=int(numeric_math.group(1)),numeric_math.group(2),int(numeric_math.group(3))
+        def parse_num(raw):
+            value=float(raw.replace(',','.'))
+            return int(value) if value.is_integer() else value
+        a,op,b=parse_num(numeric_math.group(1)),numeric_math.group(2),parse_num(numeric_math.group(3))
         if op in ('per','x','×','moltiplicato per'): value=a*b
         elif op in ('+','più','piu'): value=a+b
         elif op in ('meno','-'): value=a-b
-        elif b and a%b==0: value=a//b
+        elif b and a % b == 0: value=a//b
         else: value=a/b if b else 'non definito'
-        return str(value),'calcolo aritmetico locale'
+        if isinstance(value,float) and value.is_integer(): value=int(value)
+        return str(value).replace('.',','),'calcolo aritmetico locale'
     if re.search(r'\bio\s+ho\s+andato\s+al\s+mare\b',lower):
         return 'La forma corretta è: io sono andato al mare.','correzione grammaticale locale'
     if re.search(r'come\s+si\s+scrive.*print.*ciao|stampare\s+la\s+parola\s+ciao',lower) and 'python' in lower:
