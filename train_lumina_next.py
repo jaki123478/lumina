@@ -140,9 +140,13 @@ def train(
     # 2. Inizializza o riprendi Modello Lumina-Next
     config = dict(DEFAULT_CONFIG_135M)
     config["max_position_embeddings"] = max(8192, seq_len)
+    init_dir = Path(os.environ.get("LUMINA_INIT_CHECKPOINT", ""))
     if (out_dir / "pytorch_model.bin").exists():
         print(f"[*] Ripresa dell'addestramento dal checkpoint esistente in '{out_dir}'...")
         model = LuminaNextForCausalLM.from_pretrained(out_dir).to(device=device, dtype=dtype)
+    elif init_dir and (init_dir / "pytorch_model.bin").exists():
+        print(f"[*] Inizializzazione dal checkpoint base '{init_dir}'...")
+        model = LuminaNextForCausalLM.from_pretrained(init_dir).to(device=device, dtype=dtype)
     else:
         model = LuminaNextForCausalLM(config).to(device=device, dtype=dtype)
     
