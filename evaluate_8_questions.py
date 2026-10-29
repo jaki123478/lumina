@@ -148,6 +148,10 @@ def score_response(q_id: int, answer: str) -> tuple[int, str]:
 
 
 def evaluate_model(checkpoint_dir: str = "checkpoints_lumina_next", tag: str = "baseline"):
+    # Decoding deterministico: il punteggio deve essere confrontabile tra run.
+    torch.manual_seed(42)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(42)
     print("=" * 70)
     print(f" 🧪 VALUTAZIONE BENCHMARK 8 DOMANDE: {tag.upper()}")
     print(f" Checkpoint: {checkpoint_dir}")
@@ -171,7 +175,7 @@ def evaluate_model(checkpoint_dir: str = "checkpoints_lumina_next", tag: str = "
         input_ids = torch.tensor([tokenizer.encode(prompt_text).ids], device=device)
         
         with torch.no_grad():
-            output_ids = model.generate(input_ids, max_new_tokens=90, temperature=0.2, top_p=0.9)
+            output_ids = model.generate(input_ids, max_new_tokens=90, temperature=0.0, top_p=1.0)
         
         gen_tokens = output_ids[0][len(input_ids[0]):].tolist()
         ans = tokenizer.decode(gen_tokens).strip()
