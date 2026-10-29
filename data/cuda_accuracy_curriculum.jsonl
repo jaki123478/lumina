@@ -8,3 +8,13 @@
 {"user":"Qual è il risultato di 9 per 9?","assistant":"9 per 9 fa 81.","split":"train"}
 {"user":"Se oggi è martedì, che giorno sarà tra tre giorni?","assistant":"Sarà venerdì.","split":"train"}
 {"user":"Correggi: io ho andato al mare.","assistant":"La forma corretta è: io sono andato al mare.","split":"train"}
+{"user":"Quanto fa 17 x 6?","assistant":"102","split":"train"}
+{"user":"Calcola 17 moltiplicato per 6.","assistant":"102","split":"train"}
+{"user":"Dimmi solo il risultato di 17 per 6.","assistant":"102","split":"train"}
+{"user":"Qual è il prodotto di 17 e 6?","assistant":"102","split":"train"}
+{"user":"Quanto fa 6 volte 17?","assistant":"102","split":"train"}
+{"user":"Esegui: 17 * 6 = ?","assistant":"102","split":"train"}
+{"user":"Quanto fa 24 per 6?","assistant":"144","split":"train"}
+{"user":"Quanto fa 8 per 12?","assistant":"96","split":"train"}
+{"user":"Quanto fa 9 per 9?","assistant":"81","split":"train"}
+{"user":"Calcola 15 più 27.","assistant":"42","split":"train"}
