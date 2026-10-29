@@ -48,6 +48,13 @@ def local_answer(messages):
         return 'Non ho coscienza o emozioni: genero testo a partire dal modello locale.','limite del modello'
     if re.search(r'puoi\s+cercare\s+su\s+internet|quali\s+sono\s+le\s+notizie', lower):
         return 'Posso cercare online solo quando la ricerca web è attivata; altrimenti non ho dati in tempo reale.','limite temporale'
+    percentage = re.search(r'(?:quanto\s+[èe]\s+)?(-?\d+(?:[.,]\d+)?)\s*%\s*(?:di|su)\s*(-?\d+(?:[.,]\d+)?)\s*\??$', lower)
+    if percentage:
+        part=float(percentage.group(1).replace(',','.'))
+        whole=float(percentage.group(2).replace(',','.'))
+        value=part*whole/100
+        rendered=str(int(value)) if value.is_integer() else str(value).rstrip('0').rstrip('.')
+        return rendered.replace('.',','),'calcolo percentuale locale'
     if re.search(r'non puoi veder|non ti ho dato questa informazione',lower) and not history:
         return 'Non ho questa informazione e non posso osservare oggetti o persone sul tuo computer.','disponibilità dei dati'
     # Operazioni elementari e correzioni grammaticali sono deterministiche:
