@@ -19,6 +19,16 @@ class App(SimpleHTTPRequestHandler):
             self.send_response(200); self.send_header('Content-Type','application/json; charset=utf-8'); self.send_header('Content-Length',str(len(payload))); self.end_headers(); self.wfile.write(payload); return
         return super().do_GET()
     def do_POST(self):
+        if self.path == '/api/feedback':
+            try:
+                size=int(self.headers.get('Content-Length','0')); data=json.loads(self.rfile.read(size) or b'{}')
+                from lumina_autolearn import record_example, approved_count
+                item=record_example(data.get('user',''), data.get('assistant',''), bool(data.get('approved',False)), data.get('topic','general'))
+                payload=json.dumps({'ok':True,'approved_count':approved_count(),'timestamp':item['timestamp']},ensure_ascii=False).encode('utf-8')
+                self.send_response(200); self.send_header('Content-Type','application/json; charset=utf-8'); self.send_header('Content-Length',str(len(payload))); self.end_headers(); self.wfile.write(payload)
+            except Exception as exc:
+                payload=json.dumps({'error':str(exc)},ensure_ascii=False).encode('utf-8'); self.send_response(400); self.send_header('Content-Type','application/json'); self.send_header('Content-Length',str(len(payload))); self.end_headers(); self.wfile.write(payload)
+            return
         if self.path == '/api/chat':
             try:
                 size=int(self.headers.get('Content-Length','0')); data=json.loads(self.rfile.read(size) or b'{}')
