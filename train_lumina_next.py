@@ -246,6 +246,8 @@ if __name__ == "__main__":
     parser.add_argument("--seq-len", type=int, default=2048, help="Lunghezza sequenza di addestramento (es. 2048 o 4096)")
     parser.add_argument("--steps", type=int, default=500, help="Numero di step")
     parser.add_argument("--batch-size", type=int, default=2, help="Batch size per step")
+    parser.add_argument("--lr", type=float, default=4e-4, help="Learning rate")
+    parser.add_argument("--grad-accum", type=int, default=8, help="Step di accumulo gradiente")
     args = parser.parse_args()
 
-    train(seq_len=args.seq_len, steps=args.steps, batch_size=args.batch_size)
+    train(seq_len=args.seq_len, steps=args.steps, batch_size=args.batch_size, lr=args.lr, grad_accum_steps=args.grad_accum)

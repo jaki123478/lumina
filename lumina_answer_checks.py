@@ -52,9 +52,15 @@ def local_answer(messages):
         return 'Non ho questa informazione e non posso osservare oggetti o persone sul tuo computer.','disponibilità dei dati'
     # Operazioni elementari e correzioni grammaticali sono deterministiche:
     # non lasciamo che una generazione rumorosa sostituisca una risposta certa.
-    product=re.search(r'quanto\s+fa\s+(\d+)\s*(?:per|x|×)\s*(\d+)\s*\??$',lower)
-    if product:
-        return str(int(product.group(1))*int(product.group(2))),'calcolo aritmetico locale'
+    numeric_math=re.search(r'(?:quanto\s+fa\s+)?(\d+)\s*(per|x|×|moltiplicato\s+per|\+|più|piu|meno|-|diviso|/)\s*(\d+)\s*\??$',lower)
+    if numeric_math:
+        a,op,b=int(numeric_math.group(1)),numeric_math.group(2),int(numeric_math.group(3))
+        if op in ('per','x','×','moltiplicato per'): value=a*b
+        elif op in ('+','più','piu'): value=a+b
+        elif op in ('meno','-'): value=a-b
+        elif b and a%b==0: value=a//b
+        else: value=a/b if b else 'non definito'
+        return str(value),'calcolo aritmetico locale'
     if re.search(r'\bio\s+ho\s+andato\s+al\s+mare\b',lower):
         return 'La forma corretta è: io sono andato al mare.','correzione grammaticale locale'
     if re.search(r'come\s+si\s+scrive.*print.*ciao|stampare\s+la\s+parola\s+ciao',lower) and 'python' in lower:
