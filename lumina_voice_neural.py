@@ -62,7 +62,9 @@ def clean(text: str) -> str:
 
 
 def voice_settings():
-    settings={'length_scale':1.08,'volume':0.85,'noise_scale':0.55,'noise_w_scale':0.7}
+    # Ritmo leggermente più rapido per la chat live, mantenendo pause e
+    # articolazione della voce italiana femminile.
+    settings={'length_scale':1.0,'volume':0.85,'noise_scale':0.55,'noise_w_scale':0.7}
     path=HERE/'config/lumina_voice_settings.json'
     if path.exists():settings.update(json.loads(path.read_text(encoding='utf-8')))
     limits={'length_scale':(.75,1.5),'volume':(.1,.95),'noise_scale':(.1,1.),'noise_w_scale':(.1,1.)}
