@@ -53,7 +53,18 @@ def main():
         event = {'prompt':p,'lumina':lumina,'gemma':answer,'accepted':accepted,'time':time.time()}
         with LOG.open('a',encoding='utf-8') as f: f.write(json.dumps(event,ensure_ascii=False)+'\n')
         if accepted:
-            with OUT.open('a',encoding='utf-8') as f: f.write(json.dumps({'user':p,'assistant':answer,'kind':'teacher_verified'},ensure_ascii=False)+'\n')
+            # Evita che i cicli ripetuti gonfino il dataset con la stessa domanda.
+            seen = set()
+            if OUT.exists():
+                for line in OUT.read_text(encoding='utf-8').splitlines():
+                    try:
+                        seen.add(' '.join(json.loads(line).get('user', '').lower().split()))
+                    except Exception:
+                        continue
+            key = ' '.join(p.lower().split())
+            if key not in seen:
+                with OUT.open('a',encoding='utf-8') as f:
+                    f.write(json.dumps({'user':p,'assistant':answer,'kind':'teacher_verified'},ensure_ascii=False)+'\n')
         print(f'\nDOMANDA DI LUMINA: {p}', flush=True)
         print(f'RISPOSTA DI LUMINA: {lumina}', flush=True)
         print(f'RISPOSTA DI GEMMA: {answer}', flush=True)
