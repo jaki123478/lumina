@@ -48,7 +48,7 @@ def local_answer(messages):
         return 'Non ho coscienza o emozioni: genero testo a partire dal modello locale.','limite del modello'
     if re.search(r'puoi\s+cercare\s+su\s+internet|quali\s+sono\s+le\s+notizie', lower):
         return 'Posso cercare online solo quando la ricerca web è attivata; altrimenti non ho dati in tempo reale.','limite temporale'
-    percentage = re.search(r'(?:quanto\s+[èe]\s+)?(-?\d+(?:[.,]\d+)?)\s*%\s*(?:di|su)\s*(-?\d+(?:[.,]\d+)?)\s*\??$', lower)
+    percentage = re.search(r'(?:quanto\s+[èe]\s+|calcola\s+(?:il\s+)?)?(-?\d+(?:[.,]\d+)?)\s*%\s*(?:di|su)\s*(-?\d+(?:[.,]\d+)?)\s*\??$', lower)
     if percentage:
         part=float(percentage.group(1).replace(',','.'))
         whole=float(percentage.group(2).replace(',','.'))

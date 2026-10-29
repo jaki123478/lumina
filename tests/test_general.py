@@ -55,7 +55,7 @@ class GeneralTests(unittest.TestCase):
             self.assertEqual(local_answer([{'role':'user','content':prompt}])[0], expected)
 
     def test_percentage_is_exact(self):
-        for prompt, expected in [('20% di 150', '30'), ('12,5% di 80', '10')]:
+        for prompt, expected in [('20% di 150', '30'), ('12,5% di 80', '10'), ('Calcola il 15% di 200', '30')]:
             self.assertEqual(local_answer([{'role':'user','content':prompt}])[0], expected)
     def test_honest_limits_are_stable(self):
         self.assertIn('Posso sbagliare', local_answer([{'role':'user','content':'Dici sempre la verità?'}])[0])
