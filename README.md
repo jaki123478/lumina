@@ -136,7 +136,7 @@ $env:LUMINA_EXPORT_DIR="exports_lumina_next_cuda_candidate"
 $env:LUMINA_EXTRA_DATASET="data/cuda_accuracy_curriculum.jsonl"
 $env:LUMINA_EXTRA_REPEAT="10"
 .venv\Scripts\python.exe train_lumina_next.py --steps 10 --lr 1e-6 --grad-accum 1
-.venv\Scripts\python.exe benchmark_gate.py checkpoints_lumina_next_cuda_candidate
+.venv\Scripts\python.exe benchmark_gate.py checkpoints_lumina_next_cuda_candidate --require-improvement
 ```
 
 `LUMINA_EXTRA_REPEAT` è opzionale e serve solo a dare più peso agli esempi
