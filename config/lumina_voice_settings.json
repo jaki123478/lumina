@@ -1,6 +1,6 @@
 {
-  "length_scale": 1.08,
-  "volume": 0.9,
+  "length_scale": 1.0,
+  "volume": 0.85,
   "noise_scale": 0.3,
   "noise_w_scale": 0.45
 }
