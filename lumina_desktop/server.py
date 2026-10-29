@@ -2,7 +2,13 @@ from http.server import ThreadingHTTPServer,SimpleHTTPRequestHandler
 import json
 from urllib.parse import urlparse
 from pathlib import Path
+import sys
 ROOT=Path(__file__).parent
+# Il server può essere avviato da qualunque cartella (anche da un collegamento
+# desktop): rendiamo sempre importabili i moduli della radice del progetto.
+PROJECT_ROOT=ROOT.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 class App(SimpleHTTPRequestHandler):
     def __init__(self,*a,**k):super().__init__(*a,directory=str(ROOT),**k)
     def log_message(self,*a):pass
