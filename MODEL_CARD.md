@@ -8,6 +8,14 @@ il numero di parametri del checkpoint. I candidati prodotti dall'addestramento
 GPU vengono valutati separatamente e non sostituiscono il checkpoint stabile se
 introducono regressioni su aritmetica, coding, grammatica o onestà epistemica.
 
+## Aggiornamento tecnico
+
+L'app desktop può usare DirectML per l'inferenza GPU su Windows, con fallback
+automatico a CPU/PyTorch. CUDA è stato verificato separatamente sulla RTX 5060
+con forward e backward reali. Il training GPU viene eseguito in cartelle di
+prova e accettato solo dopo il benchmark; il candidato breve che ha perso
+accuratezza aritmetica non è stato pubblicato.
+
 Modello sperimentale di generazione del testo, costruito e addestrato da zero.
 Non importa pesi preaddestrati, non chiama servizi di generazione e non usa Ollama.
 È un Transformer minuscolo, non un modello con capacità paragonabili ai chatbot

@@ -21,10 +21,10 @@ ciclo non dimostra un miglioramento riproducibile.
 
 ## ⚡ Caratteristiche Principali
 
-* **🛡️ Privacy Assoluta (Zero Cloud)**: Tutti i modelli e i dati restano sul dispositivo locale. Ideale per aziende, professionisti, medici e avvocati nel rispetto del GDPR.
-* **📄 RAG Documentale Integrato ("Parla con i tuoi PDF")**: Trascina un file PDF, TXT o codice sorgente per fare domande ed estrarre informazioni con **zero allucinazioni** e citazione automatica dei passaggi.
+* **🛡️ Privacy locale**: i modelli e i dati della modalità offline restano sul dispositivo. La ricerca web è separata e disattivabile.
+* **📄 RAG documentale**: analizza PDF, TXT e codice sorgente con riferimenti ai passaggi recuperati; verifica sempre le risposte importanti.
 * **📱 Web App PWA Universale**: Interfaccia reattiva in stile moderno, installabile con un click su Android, iOS e Windows per funzionare anche offline in aereo.
-* **💻 Specializzazione nel Coding**: Assistente Python esperto in grado di generare funzioni, spiegare algoritmi, debuggare errori e operare dentro **VS Code** via Copilot/Continue.
+* **💻 Coding locale**: supporto a Python, algoritmi, debugging e integrazione con editor compatibili.
 * **🦙 Integrazione Ollama a 1-Click**: Pacchetti GGUF pronti all'uso per Ollama, LM Studio e Jan.ai.
 * **🛡️ Lumina Sentinel**: Sistema di guardrails integrato a difesa contro attacchi di prompt injection, jailbreak ed esfiltrazione di dati privati.
 
