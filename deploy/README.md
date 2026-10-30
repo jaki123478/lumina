@@ -18,3 +18,9 @@ Il modello completo richiede risorse adeguate; il piano gratuito è adatto solo 
 4. Il comando mostrerà il link HTTPS temporaneo da condividere.
 
 Non inserire mai il token del tunnel nei file versionati.
+
+## Trasferimento su un altro PC
+
+Copia la cartella completa e avvia `AVVIA_PC_FISSO_LUMINA.bat`.
+Il launcher prepara l'ambiente Python, avvia il server locale e, se `cloudflared` è installato, apre il tunnel HTTPS.
+La prima installazione richiede una connessione Internet; il modello resta sul PC fisso.
