@@ -200,7 +200,7 @@ function sendMessage(content, fromVoice = false) {
   if (!chat) { chat = { id: uid(), title: text.slice(0, 44), updatedAt: Date.now(), messages: [] }; selectedId = chat.id; conversations.unshift(chat); }
   chat.messages.push({ role: 'user', content: text });
   const response = { role: 'assistant', content: '' }; chat.messages.push(response); chat.updatedAt = Date.now();
-  const id = uid(); active = { id, chat, response, fromVoice };
+  const id = uid(); active = { id, chat, response, fromVoice, startedAt: Date.now(), requestController: null };
   $('prompt').value = ''; resizePrompt(); renderHistory(); renderConversation();
   const article = $('messages').lastElementChild; article.setAttribute('aria-busy', 'true');
   article.querySelector('.message-text').innerHTML = '<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>'; active.element = article.querySelector('.message-text');
@@ -244,9 +244,16 @@ function sendMessage(content, fromVoice = false) {
   // 2. Gestione Selezione Modello
   const selectedModel = $('model-selector')?.value || 'auto';
   if (selectedModel !== 'lumina-50k') {
+    const requestController = new AbortController();
+    active.requestController = requestController;
+    // Voice requests must never leave the live dialog waiting indefinitely.
+    // Keep normal chat tolerant, but give voice a shorter, explicit deadline.
+    const requestTimeout = fromVoice ? 12000 : 30000;
+    const requestTimer = setTimeout(() => requestController.abort(), requestTimeout);
     fetch('/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      signal: requestController.signal,
       body: JSON.stringify({
         model: selectedModel === 'auto' ? 'lumina-assisted' : selectedModel,
         messages: chat.messages.slice(0, -1).map(m => ({ role: m.role, content: m.content })),
@@ -254,8 +261,9 @@ function sendMessage(content, fromVoice = false) {
         temperature: settings.temperature ?? 0.2
       })
     })
-    .then(r => r.json())
+    .then(r => { if (!r.ok) throw new Error(`server ${r.status}`); return r.json(); })
     .then(data => {
+      clearTimeout(requestTimer);
       const run = active; active = null;
       const reply = data.choices?.[0]?.message?.content || "";
       run.response.content = reply;
@@ -265,9 +273,13 @@ function sendMessage(content, fromVoice = false) {
       if (fromVoice && voice.live) speakReply(run.response.content);
     })
     .catch(() => {
+      clearTimeout(requestTimer);
       const run = active; active = null;
-      run.response.content = 'Server Lumina locale non disponibile. Avvialo oppure scegli Lumina Mini nel menu.';
+      run.response.content = fromVoice
+        ? 'La risposta vocale ha superato il tempo massimo. Premi il microfono e riprova con una frase più breve.'
+        : 'Lumina non ha risposto entro 30 secondi. Riprova con una domanda più breve.';
       saveChats(); renderConversation(); updateComposer();
+      if (fromVoice) { voice.live = false; voice.speaking = false; voice.recognizer?.stop(); setVoiceState('idle', 'Risposta scaduta. Premi il microfono per riprovare.'); }
     });
     return;
   }
@@ -278,6 +290,7 @@ function sendMessage(content, fromVoice = false) {
 }
 function stopGeneration() {
   if (!active) return; const run = active; worker.postMessage({ type: 'cancel', id: run.id }); active = null;
+  try { run.requestController?.abort(); } catch (_) {}
   if (!run.response.content) run.chat.messages = run.chat.messages.filter(m => m !== run.response);
   saveChats(); renderConversation(); updateComposer();
   if (run.fromVoice && voice.live) { voice.live = false; setVoiceState('idle', 'Risposta interrotta. Premi il microfono per riprendere.'); }
@@ -314,7 +327,7 @@ try {
 
 function setVoiceState(state, text) {
   $('voice-orb').className = `voice-orb ${state}`; $('voice-state').textContent = text;
-  $('voice-title').textContent = state === 'listening' ? 'Ti ascolto.' : state === 'thinking' ? 'Un attimo per pensare.' : state === 'speaking' ? 'Ecco cosa penso.' : state === 'recording' ? 'Insegna la tua voce.' : 'La parola a te.';
+  $('voice-title').textContent = state === 'requesting' ? 'Richiesta permesso.' : state === 'listening' ? 'Ti ascolto.' : state === 'thinking' ? 'Sto elaborando.' : state === 'speaking' ? 'Lumina risponde.' : state === 'recording' ? 'Insegna la tua voce.' : state === 'error' ? 'Errore voce.' : 'La parola a te.';
   $('voice-control').classList.toggle('active', ['listening', 'speaking'].includes(state));
   $('voice-control').setAttribute('aria-label', state === 'listening' ? 'Ferma microfono' : state === 'speaking' ? 'Interrompi voce' : 'Avvia microfono'); setIcon($('voice-control').querySelector('.icon'), state === 'speaking' ? 'stop' : 'mic');
 }
@@ -341,9 +354,14 @@ async function unlockAudio() { if (typeof voice.synth.unlock === 'function') awa
 async function startListening() {
   // La voce deve poter partire anche mentre il modello testuale completa il caricamento.
   // Il riconoscimento è locale e indipendente dal worker di chat.
-  if (!setupRecognizer() || !microphoneAvailable()) return;
-  if (active) { setVoiceState('thinking', 'Attendi che Lumina termini la risposta in chat.'); return; }
-  const epoch = ++voice.epoch; voice.live = true; voice.speaking = false;
+  if (!setupRecognizer() || !microphoneAvailable()) { setVoiceState('error', 'Microfono non disponibile: controlla il permesso del browser.'); return; }
+  // A timed-out/stale request must not permanently lock the live dialog.
+  if (active) {
+    const age = Date.now() - (active.startedAt || Date.now());
+    if (age > 10000 || active.fromVoice) stopGeneration();
+    else { setVoiceState('thinking', 'Attendi che Lumina termini la risposta in chat.'); return; }
+  }
+  const epoch = ++voice.epoch; voice.live = true; voice.speaking = false; setVoiceState('requesting', 'Richiedo l’accesso al microfono…');
   // Fallback immediato: se non sono ancora presenti campioni personali,
   // usa il riconoscimento italiano integrato nel browser per permettere la
   // prima conversazione senza una schermata tecnica di addestramento.
@@ -353,15 +371,15 @@ async function startListening() {
     const speech = new SpeechRecognition();
     speech.lang = 'it-IT'; speech.interimResults = false; speech.continuous = false;
     speech.onstart = () => setVoiceState('listening', 'Ti ascolto… parla con Lumina.');
-    speech.onerror = event => { if (voice.epoch !== epoch) return; voice.live = false; setVoiceState('idle', event.error === 'not-allowed' ? 'Microfono bloccato: autorizza l’accesso nel browser.' : 'Non ho sentito nulla. Riprova.'); };
+    speech.onerror = event => { if (voice.epoch !== epoch) return; voice.live = false; setVoiceState('error', event.error === 'not-allowed' ? 'Microfono bloccato: premi l’icona del lucchetto e consenti il microfono.' : 'Non ho sentito nulla. Riprova.'); };
     speech.onresult = event => { const text = event.results?.[0]?.[0]?.transcript?.trim(); if (!text || voice.epoch !== epoch) return; voice.live = false; $('voice-transcript').textContent = `Riconosciuto: ${text}`; sendMessage(text, true); };
     speech.onend = () => { if (voice.live && voice.epoch === epoch) { voice.live = false; setVoiceState('idle', 'Premi il microfono per riprovare.'); } };
     voice.browserSpeech = speech;
-    try { await unlockAudio(); speech.start(); } catch (error) { voice.live = false; setVoiceState('idle', error.message || 'Microfono non disponibile.'); }
+    try { await unlockAudio(); speech.start(); } catch (error) { voice.live = false; setVoiceState('error', error.message || 'Microfono non disponibile.'); }
     return;
   }
   try { await unlockAudio(); if (!voice.live || voice.epoch !== epoch) return; await voice.recognizer.start(); if (voice.epoch === epoch && voice.live) setVoiceState('listening', 'Ti ascolto… parla con Lumina.'); }
-  catch (error) { if (voice.epoch === epoch) { voice.live = false; setVoiceState('idle', error.message || 'Microfono non disponibile. Controlla il permesso nel browser.'); } }
+  catch (error) { if (voice.epoch === epoch) { voice.live = false; setVoiceState('error', error.message || 'Microfono non disponibile. Controlla il permesso nel browser.'); } }
 }
 async function speakReply(text) {
   const epoch = voice.epoch; if (!text) { if (voice.live) await startListening(); return; }
@@ -375,7 +393,14 @@ function stopVoice() {
   $('record-sample').querySelector('span:last-child').textContent = 'Registra esempio'; $('record-sample').classList.remove('recording'); $('voice-control').disabled = false; setVoiceState('idle', 'Premi il microfono per iniziare.');
 }
 function openVoice() { $('voice-dialog').showModal(); setupRecognizer(); setVoiceState('idle', 'Premi il microfono e parla con Lumina.'); }
-function closeVoice() { stopVoice(); $('voice-dialog').close(); }
+function closeVoice() {
+  try { stopVoice(); }
+  catch (_) { /* la finestra deve comunque potersi chiudere */ }
+  finally { const dialog = $('voice-dialog'); if (dialog?.open) dialog.close(); }
+}
+// Chiusura esposta anche agli handler HTML: resta disponibile se la live ha
+// avuto un errore prima di completare il binding degli eventi.
+window.closeLuminaVoice = closeVoice;
 
 $('chat-form').addEventListener('submit', event => { event.preventDefault(); if (active) stopGeneration(); else sendMessage($('prompt').value); });
 $('prompt').addEventListener('input', resizePrompt);

@@ -290,7 +290,13 @@
     async _open(mode) {
       if (!scope.navigator?.mediaDevices?.getUserMedia) throw new Error("Microfono non disponibile. Apri l'app su localhost o tramite HTTPS.");
       const epoch = this._epoch;
-      const stream = await scope.navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true }, video: false });
+      // Chrome can leave getUserMedia pending forever when the permission
+      // prompt is blocked or ignored. Never let that freeze the live dialog.
+      const permissionTimeout = new Promise((_, reject) => setTimeout(() => reject(new Error("Permesso microfono non ricevuto. Premi l’icona del lucchetto, consenti il microfono e riprova.")), 7000));
+      const stream = await Promise.race([
+        scope.navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true }, video: false }),
+        permissionTimeout
+      ]);
       if (epoch !== this._epoch) {
         stream.getTracks().forEach(track => track.stop());
         throw new Error("Registrazione annullata.");

@@ -49,6 +49,8 @@ def clean(text: str) -> str:
     text = re.sub(r'\bAI\b', 'intelligenza artificiale', text, flags=re.I)
     text = re.sub(r'\bURL\b', 'indirizzo web', text, flags=re.I)
     text = text.replace('%', ' percento ')
+    # Pronuncia italiana più affidabile del nome inglese del gioco.
+    text = re.sub(r'\brocket\s+league\b', 'Rochet Liig', text, flags=re.I)
     text = ' '.join(text.split())
     # Ritmo conversazionale: pause brevi tra le frasi e dopo i due punti,
     # così la voce non recita tutto in un unico blocco uniforme.
