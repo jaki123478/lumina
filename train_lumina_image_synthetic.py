@@ -329,6 +329,155 @@ def scene_geometric(size: int = 96) -> tuple[Image.Image, str]:
     return img, prompt
 
 
+def scene_pine_forest(size: int = 128) -> tuple[Image.Image, str]:
+    img = _vertical_gradient(size, _jitter((125, 195, 245), 8), _jitter((195, 228, 235), 8))
+    d = ImageDraw.Draw(img)
+    gy = int(size * 0.76)
+    d.rectangle((0, gy, size, size), fill=_jitter((42, 118, 56), 10))
+    for tx in (int(size * 0.22), int(size * 0.50), int(size * 0.78)):
+        tw = max(4, int(size * 0.05))
+        d.rectangle((tx - tw // 2, gy - int(size * 0.14), tx + tw // 2, gy + 2), fill=(96, 62, 36))
+        for tier, (w_mul, y_top, y_bot) in enumerate([(0.22, 0.44, 0.66), (0.18, 0.30, 0.52), (0.13, 0.18, 0.38)]):
+            hw = int(size * w_mul)
+            gcol = _jitter((28 + tier * 10, 115 + tier * 16, 52 + tier * 8), 8)
+            d.polygon([(tx - hw, int(size * y_bot)), (tx, int(size * y_top)), (tx + hw, int(size * y_bot))], fill=gcol)
+    prompt = random.choice(["foresta di pini verdi", "bosco di abeti sotto il cielo azzurro", "alberi di pino nella natura"])
+    return img, prompt
+
+
+def scene_lighthouse(size: int = 128) -> tuple[Image.Image, str]:
+    img = _vertical_gradient(size, _jitter((70, 145, 230), 8), _jitter((175, 218, 250), 8))
+    d = ImageDraw.Draw(img)
+    sea_y = int(size * 0.68)
+    d.rectangle((0, sea_y, size, size), fill=_jitter((22, 88, 175), 10))
+    # Scogliera e faro a strisce bianche e rosse
+    d.polygon([(int(size * 0.18), size), (int(size * 0.30), sea_y - 4), (int(size * 0.56), sea_y - 4), (int(size * 0.66), size)], fill=(86, 82, 78))
+    lx = int(size * 0.43)
+    bw = int(size * 0.08)
+    top_y = int(size * 0.24)
+    d.polygon([(lx - bw, sea_y - 4), (lx - int(bw * 0.7), top_y), (lx + int(bw * 0.7), top_y), (lx + bw, sea_y - 4)], fill=(245, 245, 248))
+    for sy in (0.34, 0.50):
+        y1, y2 = int(size * sy), int(size * (sy + 0.08))
+        d.rectangle((lx - int(bw * 0.82), y1, lx + int(bw * 0.82), y2), fill=(215, 48, 52))
+    d.rectangle((lx - int(bw * 0.75), top_y - int(size * 0.07), lx + int(bw * 0.75), top_y), fill=(255, 232, 115))
+    d.polygon([(lx - bw, top_y - int(size * 0.07)), (lx, top_y - int(size * 0.14)), (lx + bw, top_y - int(size * 0.07))], fill=(195, 42, 46))
+    prompt = random.choice(["faro sul mare", "faro bianco e rosso sulla scogliera", "faro marittimo con oceano blu"])
+    return img, prompt
+
+
+def scene_aurora(size: int = 128) -> tuple[Image.Image, str]:
+    img = _vertical_gradient(size, (8, 14, 34), (16, 38, 58))
+    d = ImageDraw.Draw(img)
+    for _ in range(35):
+        d.point((random.randrange(size), random.randrange(int(size * 0.7))), fill=(235, 245, 255))
+    # Onde luminose dell'aurora boreale
+    for band, col in [(0.26, (45, 235, 145)), (0.36, (65, 210, 195)), (0.20, (125, 95, 235))]:
+        pts = []
+        for x in range(0, size, 4):
+            y = int(size * band + math.sin(x * 0.08) * (size * 0.07))
+            pts.append((x, y))
+        for x, y in pts:
+            d.line((x, y - int(size * 0.09), x, y + int(size * 0.07)), fill=col, width=3)
+    hy = int(size * 0.75)
+    d.polygon([(0, size), (0, hy), (int(size * 0.32), int(size * 0.58)), (int(size * 0.65), hy), (int(size * 0.86), int(size * 0.62)), (size, hy), (size, size)], fill=(14, 20, 32))
+    prompt = random.choice(["aurora boreale nel cielo notturno", "luci del nord verdi sulle montagne", "aurora boreale artica"])
+    return img, prompt
+
+
+def scene_volcano(size: int = 128) -> tuple[Image.Image, str]:
+    img = _vertical_gradient(size, _jitter((36, 18, 32), 6), _jitter((98, 36, 28), 8))
+    d = ImageDraw.Draw(img)
+    gy = int(size * 0.82)
+    cx = size // 2
+    cw = int(size * 0.11)
+    top_y = int(size * 0.38)
+    # Pennacchio e bagliore lavico
+    d.ellipse((cx - int(size * 0.18), int(size * 0.14), cx + int(size * 0.18), top_y + 10), fill=(255, 135, 42))
+    d.ellipse((cx - int(size * 0.10), int(size * 0.22), cx + int(size * 0.10), top_y + 8), fill=(255, 220, 85))
+    # Cono vulcanico
+    d.polygon([(int(size * 0.08), gy), (cx - cw, top_y), (cx + cw, top_y), (int(size * 0.92), gy)], fill=(48, 42, 46))
+    # Colate di lava
+    d.line((cx - 3, top_y + 2, cx - int(size * 0.14), gy), fill=(255, 115, 32), width=4)
+    d.line((cx + 3, top_y + 2, cx + int(size * 0.10), gy), fill=(255, 165, 48), width=3)
+    d.rectangle((0, gy, size, size), fill=(26, 22, 26))
+    prompt = random.choice(["vulcano in eruzione con lava", "eruzione vulcanica di notte", "vulcano attivo con lava arancione"])
+    return img, prompt
+
+
+def scene_castle(size: int = 128) -> tuple[Image.Image, str]:
+    img = _vertical_gradient(size, _jitter((95, 168, 242), 8), _jitter((195, 225, 250), 8))
+    d = ImageDraw.Draw(img)
+    gy = int(size * 0.72)
+    d.ellipse((-int(size * 0.15), gy - int(size * 0.08), int(size * 1.15), size + int(size * 0.25)), fill=(62, 148, 68))
+    stone = _jitter((188, 184, 176), 8)
+    stone_dark = _jitter((156, 152, 145), 8)
+    d.rectangle((int(size * 0.28), int(size * 0.44), int(size * 0.72), gy), fill=stone)
+    for tx1, tx2 in [(int(size * 0.20), int(size * 0.33)), (int(size * 0.67), int(size * 0.80))]:
+        ty = int(size * 0.30)
+        d.rectangle((tx1, ty, tx2, gy), fill=stone_dark)
+        d.polygon([(tx1 - 3, ty), ((tx1 + tx2) // 2, int(size * 0.18)), (tx2 + 3, ty)], fill=(65, 92, 168))
+    d.chord((int(size * 0.43), int(size * 0.56), int(size * 0.57), gy + 12), 180, 360, fill=(92, 58, 36))
+    prompt = random.choice(["castello medievale sulla collina", "castello con torri sotto il cielo azzurro", "fortezza medievale nel prato"])
+    return img, prompt
+
+
+def scene_butterfly(size: int = 128) -> tuple[Image.Image, str]:
+    cname = random.choice(["blu", "arancione", "rosa", "viola", "giallo"])
+    wrgb, cwords = PALETTE[cname]
+    img = _vertical_gradient(size, _jitter((62, 148, 86), 8), _jitter((34, 96, 52), 8))
+    d = ImageDraw.Draw(img)
+    cx, cy = size // 2, size // 2
+    wcol = _jitter(wrgb, 10)
+    # Ali superiori e inferiori simmetriche
+    d.ellipse((cx - int(size * 0.34), cy - int(size * 0.28), cx - 3, cy + 4), fill=wcol)
+    d.ellipse((cx + 3, cy - int(size * 0.28), cx + int(size * 0.34), cy + 4), fill=wcol)
+    d.ellipse((cx - int(size * 0.26), cy - 2, cx - 3, cy + int(size * 0.26)), fill=tuple(max(0, c - 25) for c in wcol))
+    d.ellipse((cx + 3, cy - 2, cx + int(size * 0.26), cy + int(size * 0.26)), fill=tuple(max(0, c - 25) for c in wcol))
+    # Corpo e antenne
+    d.ellipse((cx - 4, cy - int(size * 0.20), cx + 4, cy + int(size * 0.22)), fill=(28, 26, 32))
+    d.line((cx - 2, cy - int(size * 0.18), cx - 12, cy - int(size * 0.30)), fill=(28, 26, 32), width=2)
+    d.line((cx + 2, cy - int(size * 0.18), cx + 12, cy - int(size * 0.30)), fill=(28, 26, 32), width=2)
+    prompt = random.choice([f"una farfalla {random.choice(cwords)}", f"farfalla {random.choice(cwords)} nel giardino"])
+    return img, prompt
+
+
+def scene_robot(size: int = 128) -> tuple[Image.Image, str]:
+    img = _vertical_gradient(size, (18, 26, 48), (32, 48, 86))
+    d = ImageDraw.Draw(img)
+    cx = size // 2
+    metal = _jitter((182, 196, 214), 8)
+    metal_dark = _jitter((128, 144, 168), 8)
+    # Antenna, testa, visore luminoso e busto
+    d.line((cx, int(size * 0.14), cx, int(size * 0.24)), fill=metal, width=3)
+    d.ellipse((cx - 5, int(size * 0.10), cx + 5, int(size * 0.17)), fill=(75, 225, 255))
+    d.rounded_rectangle((cx - int(size * 0.22), int(size * 0.24), cx + int(size * 0.22), int(size * 0.54)), radius=10, fill=metal)
+    d.rounded_rectangle((cx - int(size * 0.16), int(size * 0.31), cx + int(size * 0.16), int(size * 0.43)), radius=6, fill=(22, 34, 52))
+    d.ellipse((cx - int(size * 0.10), int(size * 0.34), cx - int(size * 0.03), int(size * 0.41)), fill=(75, 232, 255))
+    d.ellipse((cx + int(size * 0.03), int(size * 0.34), cx + int(size * 0.10), int(size * 0.41)), fill=(75, 232, 255))
+    d.rounded_rectangle((cx - int(size * 0.26), int(size * 0.57), cx + int(size * 0.26), int(size * 0.92)), radius=10, fill=metal_dark)
+    d.rectangle((cx - int(size * 0.10), int(size * 0.66), cx + int(size * 0.10), int(size * 0.76)), fill=(75, 225, 255))
+    prompt = random.choice(["un robot futuristico", "androide metallico con occhi azzurri luminosi", "ritratto di robot amichevole"])
+    return img, prompt
+
+
+def scene_beach(size: int = 128) -> tuple[Image.Image, str]:
+    img = _vertical_gradient(size, _jitter((88, 188, 252), 8), _jitter((188, 238, 255), 8))
+    d = ImageDraw.Draw(img)
+    sea_y = int(size * 0.56)
+    sand_y = int(size * 0.74)
+    d.ellipse((int(size * 0.70), int(size * 0.12), int(size * 0.88), int(size * 0.30)), fill=(255, 232, 95))
+    d.rectangle((0, sea_y, size, sand_y), fill=_jitter((24, 178, 198), 10))
+    d.polygon([(0, sand_y), (size, sand_y - 6), (size, size), (0, size)], fill=_jitter((242, 214, 148), 10))
+    # Palma
+    px, py = int(size * 0.26), int(size * 0.82)
+    tx, ty = int(size * 0.34), int(size * 0.36)
+    d.line((px, py, tx, ty), fill=(132, 84, 44), width=5)
+    for dx, dy in [(-24, -4), (-16, 12), (22, -6), (20, 10), (0, -18)]:
+        d.line((tx, ty, tx + dx, ty + dy), fill=(38, 158, 64), width=4)
+    prompt = random.choice(["spiaggia tropicale con palma e mare turchese", "isola estiva con sabbia dorata e palma", "mare cristallino e spiaggia"])
+    return img, prompt
+
+
 SCENE_GENERATORS = [
     scene_cat,
     scene_sunset_sea,
@@ -342,7 +491,42 @@ SCENE_GENERATORS = [
     scene_planet_space,
     scene_sailboat,
     scene_geometric,
+    scene_pine_forest,
+    scene_lighthouse,
+    scene_aurora,
+    scene_volcano,
+    scene_castle,
+    scene_butterfly,
+    scene_robot,
+    scene_beach,
 ]
+
+
+def load_real_image_pairs(real_dir: str = "data/immagini_reali") -> list[tuple[Path, str]]:
+    folder = Path(real_dir)
+    if not folder.exists():
+        return []
+    pairs = []
+    for p in folder.iterdir():
+        if p.is_file() and p.suffix.lower() in {".png", ".jpg", ".jpeg", ".webp", ".bmp"}:
+            txt = p.with_suffix(".txt")
+            if txt.exists():
+                cap = txt.read_text(encoding="utf-8", errors="ignore").strip()
+            else:
+                cap = p.stem.replace("_", " ").replace("-", " ").strip()
+            if cap:
+                pairs.append((p, cap))
+    return pairs
+
+
+def _load_and_crop_real(path: Path, size: int) -> Image.Image:
+    with Image.open(path) as raw:
+        im = raw.convert("RGB")
+        w, h = im.size
+        side = min(w, h)
+        left = (w - side) // 2
+        top = (h - side) // 2
+        return im.crop((left, top, left + side, top + side)).resize((size, size), Image.Resampling.LANCZOS)
 
 
 def sample(size: int = 64) -> torch.Tensor:
@@ -355,12 +539,25 @@ def sample_orange_cat(size: int = 64) -> torch.Tensor:
     return _img_to_tensor(img)
 
 
-def sample_batch(batch_size: int, size: int = 96, vocab_size: int = 32000, cfg_drop: float = 0.10):
+def sample_batch(
+    batch_size: int,
+    size: int = 128,
+    vocab_size: int = 32000,
+    cfg_drop: float = 0.10,
+    real_pairs: list[tuple[Path, str]] | None = None,
+):
     imgs = []
     toks = []
     for _ in range(batch_size):
-        fn = random.choice(SCENE_GENERATORS)
-        img, prompt = fn(size)
+        if real_pairs and random.random() < 0.50:
+            rpath, prompt = random.choice(real_pairs)
+            try:
+                img = _load_and_crop_real(rpath, size)
+            except Exception:
+                img, prompt = random.choice(SCENE_GENERATORS)(size)
+        else:
+            fn = random.choice(SCENE_GENERATORS)
+            img, prompt = fn(size)
         imgs.append(_img_to_tensor(img))
         if random.random() < cfg_drop:
             toks.append(torch.zeros((1, 24), dtype=torch.long))
@@ -391,6 +588,9 @@ def train(
             pass
 
     ema_model = copy.deepcopy(model).eval()
+    real_pairs = load_real_image_pairs("data/immagini_reali")
+    if real_pairs:
+        print(f"[+] Trovate {len(real_pairs)} immagini reali locali in data/immagini_reali/ (mix 50/50 attivo)", flush=True)
     opt = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=1e-4)
     sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=max(1, steps), eta_min=lr * 0.1)
 
@@ -408,7 +608,7 @@ def train(
             x_0 = torch.stack(clean_list).to(device)
             token_ids = torch.cat(tok_list, dim=0).to(device)
         else:
-            x_0, token_ids = sample_batch(batch_size, size=size, vocab_size=model.vocab_size)
+            x_0, token_ids = sample_batch(batch_size, size=size, vocab_size=model.vocab_size, real_pairs=real_pairs)
             x_0, token_ids = x_0.to(device), token_ids.to(device)
 
         # Rectified Flow: x_t = (1 - t) * x_0 + t * z, target velocity v = z - x_0
@@ -460,22 +660,27 @@ def train(
     demo_prompts = [
         ("gatto_arancione.png", "un gatto arancione nel prato"),
         ("tramonto_mare.png", "tramonto sul mare"),
-        ("notte_stellata.png", "notte stellata con la luna"),
-        ("montagne_innevate.png", "montagne innevate con cielo azzurro"),
+        ("faro_mare.png", "faro sul mare"),
+        ("aurora_boreale.png", "aurora boreale nel cielo notturno"),
         ("citta_notte.png", "città di notte illuminata"),
-        ("fiore_rosso.png", "un fiore rosso nel giardino"),
+        ("castello_collina.png", "castello medievale sulla collina"),
         ("pianeta_spazio.png", "pianeta blu nello spazio"),
-        ("cuore_luminoso.png", "un cuore rosso luminoso"),
+        ("vulcano_lava.png", "vulcano in eruzione con lava"),
+        ("casa_tetto_rosso.png", "una casa con il tetto rosso"),
+        ("spiaggia_palma.png", "spiaggia tropicale con palma e mare turchese"),
+        ("robot_futuro.png", "un robot futuristico"),
+        ("farfalla_blu.png", "una farfalla blu"),
     ]
     tiles = []
-    for fname, pr in demo_prompts:
-        rgb = generate_rectified_flow(ema_model, pr, steps=36, size=size, cfg_scale=1.45, seed=42)
+    for idx_p, (fname, pr) in enumerate(demo_prompts):
+        rgb = generate_rectified_flow(ema_model, pr, steps=36, size=size, cfg_scale=1.45, seed=42 + idx_p)
         arr = (rgb.permute(1, 2, 0).numpy() * 255.0).clip(0, 255).astype("uint8")
         im = Image.fromarray(arr).resize((384, 384), Image.Resampling.LANCZOS)
         im.save(samples_dir / fname)
         tiles.append(im.resize((192, 192), Image.Resampling.LANCZOS))
 
-    grid = Image.new("RGB", (192 * 4, 192 * 2))
+    rows_g = (len(tiles) + 3) // 4
+    grid = Image.new("RGB", (192 * 4, 192 * rows_g))
     for idx, tile in enumerate(tiles):
         grid.paste(tile, ((idx % 4) * 192, (idx // 4) * 192))
     grid.save(samples_dir / "griglia_validazione_lumina_image.png")
@@ -486,7 +691,7 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--steps", type=int, default=1600)
     ap.add_argument("--batch-size", type=int, default=8)
-    ap.add_argument("--size", type=int, default=96)
+    ap.add_argument("--size", type=int, default=128)
     ap.add_argument("--lr", type=float, default=3e-4)
     ap.add_argument("--out", default="checkpoints_lumina_image/lumina_image_v1.pt")
     args = ap.parse_args()

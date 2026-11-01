@@ -36,6 +36,8 @@ voices/*.onnx
 /audio_neurale/attualita_locale/
 /audio_neurale/ricerche_online/
 /voices/vosk-it/
+voices/whisper-*/
+data/immagini_reali/
 
 # Local credentials, caches and experimental desktop builds
 chiave emma ai/

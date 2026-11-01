@@ -53,12 +53,17 @@ class Extractor(HTMLParser):
 
 def search(query):
     # Solo le parole dell'ultima ricerca vanno al motore, mai la cronologia o l'audio.
-    query=re.sub(r"\b(?:dimmi|spiegami|che\s+cos(?:['’`]è|\s+è)|cos(?:['’`]è|\s+è)|cosa\s+è)\b", " ", query, flags=re.I)
-    query=re.sub(r"\s+", " ", query).strip()
+    # Rimuove preamboli, punteggiatura e stopword discorsive per estrarre il nucleo di ricerca
+    if re.search(r"\b(?:f1|formula\s*1|gran\s+premio)\b", query, flags=re.I):
+        query = "Formula 1 gran premio vincitore risultati notizie"
+    else:
+        query=re.sub(r"\b(?:dimmi|spiegami|che\s+cos(?:['’`]è|\s+è)|cos(?:['’`]è|\s+è)|cosa\s+è|qual\s+[èe]|dimmi\s+di|parlami\s+di|chi\s+ha\s+vinto|chi\s+[èe]|notizie\s+su)\b", " ", query, flags=re.I)
+        query=re.sub(r"[?!.,;:]+", " ", query)
+        query=re.sub(r"\s+", " ", query).strip()
     query=re.sub(r'\b[\w.+-]+@[\w.-]+\.[a-z]{2,}\b','[email rimossa]',query,flags=re.I)
     query=re.sub(r'\b\d{8,}\b','[numero rimosso]',query).strip()[:180]
     if not query:raise ValueError('Inserisci le parole da cercare')
-    raw,_,_=fetch('https://www.bing.com/search?format=rss&q='+quote(query))
+    raw,_,_=fetch('https://www.bing.com/search?format=rss&safeSearch=strict&q='+quote(query))
     root=ET.fromstring(raw);results=[];domains=set();candidates=[]
     sites=re.findall(r'\bsite:([a-z0-9.-]+)',query.lower())
     for node in root.findall('.//item'):

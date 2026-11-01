@@ -10,12 +10,27 @@ from __future__ import annotations
 
 import os
 import re
+import sys
 import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 _NATIVE_IMAGE_MODEL = None
 _NATIVE_IMAGE_SIZE = 96
+
+
+def _resolve_existing(rel: str) -> Path:
+    candidates = [Path.cwd() / rel, ROOT / rel]
+    meipass = getattr(sys, "_MEIPASS", None)
+    if meipass:
+        candidates.append(Path(meipass) / rel)
+    if getattr(sys, "frozen", False):
+        exe_dir = Path(sys.executable).resolve().parent
+        candidates.extend([exe_dir / rel, exe_dir.parent.parent / rel])
+    for c in candidates:
+        if c.exists():
+            return c
+    return ROOT / rel
 
 
 def _clean_visual_prompt(prompt: str) -> str:
@@ -29,6 +44,35 @@ def _clean_visual_prompt(prompt: str) -> str:
     return text or "tramonto sul mare"
 
 
+def _canonicalize_trained_prompt(clean_prompt: str) -> str:
+    low = clean_prompt.lower()
+    colors = ("rosso", "blu", "azzurro", "verde", "giallo", "arancione", "viola", "rosa", "bianco")
+    col = next((c for c in colors if re.search(rf"\b{c}\b", low)), None)
+    rules = [
+        (r"\bfaro\b", "faro sul mare"),
+        (r"\bcastello\b", "castello medievale sulla collina"),
+        (r"\baurora\b", "aurora boreale nel cielo notturno"),
+        (r"\bvulcano\b", "vulcano in eruzione con lava"),
+        (r"\b(?:spiaggia|palma|tropicale)\b", "spiaggia tropicale con palma e mare turchese"),
+        (r"\b(?:citt[àa]|grattaciel)\b", "città di notte illuminata"),
+        (r"\bpianeta\b", f"pianeta {col or 'blu'} nello spazio"),
+        (r"\b(?:gatto|gattino|micio)\b", f"un gatto {col or 'arancione'} nel prato"),
+        (r"\bfarfalla\b", f"una farfalla {col or 'blu'}"),
+        (r"\brobot\b", "un robot futuristico"),
+        (r"\b(?:barca|vela)\b", "barca a vela sul mare"),
+        (r"\b(?:casa|casetta|villa)\b", f"una casa con il tetto {col or 'rosso'}"),
+        (r"\b(?:foresta|pini|bosco)\b", "foresta di pini"),
+        (r"\bmontagn", "montagne innevate"),
+        (r"\balbero\b", "un albero verde nel prato"),
+        (r"\bfiore\b", f"un fiore {col or 'rosso'}"),
+        (r"\bcuore\b", f"un cuore {col or 'rosso'}"),
+        (r"\b(?:notte\s+stellata|stelle|luna)\b", "notte stellata"),
+        (r"\btramonto\b", "tramonto sul mare"),
+    ]
+    for pat, target_p in rules:
+        if re.search(pat, low):
+            return target_p
+    return clean_prompt
 def _load_native_model():
     global _NATIVE_IMAGE_MODEL, _NATIVE_IMAGE_SIZE
     if _NATIVE_IMAGE_MODEL is not None:
@@ -38,8 +82,8 @@ def _load_native_model():
     from lumina_image_experimental import create_model
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    ckpt_v1 = ROOT / "checkpoints_lumina_image" / "lumina_image_v1.pt"
-    ckpt_legacy = ROOT / "checkpoints_lumina_image" / "synthetic.pt"
+    ckpt_v1 = _resolve_existing("checkpoints_lumina_image/lumina_image_v1.pt")
+    ckpt_legacy = _resolve_existing("checkpoints_lumina_image/synthetic.pt")
 
     if ckpt_v1.exists():
         data = torch.load(ckpt_v1, map_location=device)
@@ -75,7 +119,8 @@ def generate_image(
         target = Path(output_path)
     else:
         slug = re.sub(r"[^a-z0-9]+", "_", clean_prompt.lower()).strip("_")[:32] or "immagine"
-        out_dir = ROOT / "audio_neurale" / "immagini_generate"
+        base_out = Path.cwd() if getattr(sys, "frozen", False) else ROOT
+        out_dir = base_out / "audio_neurale" / "immagini_generate"
         out_dir.mkdir(parents=True, exist_ok=True)
         target = out_dir / f"lumina_{slug}_{int(time.time())}.png"
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -97,12 +142,15 @@ def generate_image(
         return str(target)
 
     # Percorso predefinito 2: modello proprietario nativo LuminaImageDenoiser
-    from PIL import Image
+    from PIL import Image, ImageFilter
     from lumina_image_experimental import generate_rectified_flow
 
+    focus_prompt = _canonicalize_trained_prompt(clean_prompt)
+
     model, native_size = _load_native_model()
-    rgb = generate_rectified_flow(model, clean_prompt, steps=steps, size=native_size, cfg_scale=1.45)
+    rgb = generate_rectified_flow(model, focus_prompt, steps=steps, size=native_size, cfg_scale=1.45)
     arr = (rgb.permute(1, 2, 0).numpy() * 255.0).clip(0, 255).astype("uint8")
     img = Image.fromarray(arr).resize((out_size, out_size), Image.Resampling.LANCZOS)
+    img = img.filter(ImageFilter.GaussianBlur(radius=0.8)).filter(ImageFilter.UnsharpMask(radius=1.5, percent=115, threshold=2))
     img.save(target)
     return str(target)

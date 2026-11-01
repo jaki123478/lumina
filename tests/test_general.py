@@ -80,5 +80,16 @@ class GeneralTests(unittest.TestCase):
         self.assertEqual(local_answer([{'role':'user','content':'Scrivi soltanto questi tre colori separati da virgole: rosso, verde, blu.'}])[0], 'rosso, verde, blu')
         prompt='Nel testo: "Marta ha 4 mele e Luca ha 9 pere". Quante pere ha Luca?'
         self.assertEqual(local_answer([{'role':'user','content':prompt}])[0], '9')
+    def test_voice_and_conversational_checks(self):
+        self.assertIn('ti sento', local_answer([{'role':'user','content':'lumina mi senti'}])[0].lower())
+        self.assertIn('prego', local_answer([{'role':'user','content':'grazie mille per l aiuto'}])[0].lower() if local_answer([{'role':'user','content':'grazie mille'}])[0] else '')
+        self.assertIn('prego', local_answer([{'role':'user','content':'grazie mille'}])[0].lower())
+        self.assertIn('sono le', local_answer([{'role':'user','content':'che ore sono adesso?'}])[0].lower())
+        self.assertIn('oggi è', local_answer([{'role':'user','content':'che giorno è oggi?'}])[0].lower())
+    def test_identity_and_sentence_trim(self):
+        from lumina_general import _sanitize_public_identity, _trim_unfinished_sentence
+        self.assertEqual(_sanitize_public_identity('Ciao, sono Gemma 3, addestrata da Google DeepMind.'), 'Ciao, sono Lumina, eseguita localmente sul tuo computer.')
+        trimmed = _trim_unfinished_sentence('Prima frase completa. Seconda frase a metà senza punto', 'length')
+        self.assertEqual(trimmed, 'Prima frase completa.')
 
 if __name__=='__main__':unittest.main()

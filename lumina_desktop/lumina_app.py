@@ -146,7 +146,7 @@ class LuminaBackend:
                 }
                 req = urllib.request.Request(endpoint, data=json.dumps(body).encode(),
                                               headers={"Content-Type":"application/json"})
-                with urllib.request.urlopen(req, timeout=4) as res:
+                with urllib.request.urlopen(req, timeout=25) as res:
                     data = json.loads(res.read().decode("utf-8"))
                 answer = data.get("choices", [{}])[0].get("message", {}).get("content", "") or data.get("reply", "")
                 if answer: break
@@ -535,63 +535,30 @@ class LuminaApp(ctk.CTk):
     def _listen(self):
         if not self.voice_enabled or self.voice_speaking: return
         try:
-            import sounddevice as sd
-            from vosk import Model, KaldiRecognizer
-            import queue as audio_queue, time as time_module
-            # Il modello italiano distribuito con Lumina vive nella cartella
-            # voices/vosk-it; il vecchio percorso artifacts/vosk_italiano faceva
-            # fallire il ciclo live prima ancora di aprire il microfono.
-            model_path = ROOT_DIR / "voices" / "vosk-it"
-            if not model_path.exists(): raise FileNotFoundError("modello italiano per il microfono non trovato")
-            rec = KaldiRecognizer(Model(str(model_path)), 16000)
-            # Migliora il risultato finale: Vosk restituisce anche i confini
-            # delle parole e non chiude la frase mentre l'utente sta ancora
-            # articolando l'ultima parola.
-            try:
-                rec.SetWords(True)
-                rec.SetPartialWords(True)
-                rec.SetMaxAlternatives(3)
-            except AttributeError:
-                pass
+            from lumina_stt import listen_utterance
             self.after(0, lambda: self.voice_status.configure(text="Registrazione in corso…", text_color=ACCENT) if self.voice_panel and self.voice_panel.winfo_exists() else None)
-            # Acquisizione a blocchi: non tronca la frase a 6 secondi e
-            # termina automaticamente dopo un breve silenzio.
-            audio = audio_queue.Queue()
-            started = False
-            last_voice = time_module.monotonic()
-            def callback(indata, frames, _time, status):
-                # Pre-enfasi leggera per il microfono integrato: riduce il
-                # ronzio costante e rende le consonanti più leggibili per Vosk.
-                try:
-                    import numpy as np
-                    samples = np.frombuffer(indata, dtype=np.int16).astype(np.float32)
-                    samples -= samples.mean()
-                    rms = float(np.sqrt(np.mean(samples * samples)) + 1.0)
-                    gain = min(2.0, max(1.0, 900.0 / rms))
-                    samples = np.clip(samples * gain, -32768, 32767).astype(np.int16)
-                    audio.put(samples.tobytes())
-                except Exception:
-                    audio.put(bytes(indata))
-            with sd.RawInputStream(samplerate=16000, blocksize=1600, dtype="int16", channels=1, callback=callback):
-                deadline = time_module.monotonic() + 12.0
-                while time_module.monotonic() < deadline:
-                    try: chunk = audio.get(timeout=0.25)
-                    except audio_queue.Empty: continue
-                    rec.AcceptWaveform(chunk)
-                    partial = json.loads(rec.PartialResult()).get("partial", "").strip()
-                    if partial:
-                        started = True; last_voice = time_module.monotonic()
-                        self.after(0, lambda p=partial: self.voice_transcript.configure(text="Tu: "+p) if self.voice_panel and self.voice_panel.winfo_exists() else None)
-                    elif started and time_module.monotonic() - last_voice > 0.9:
-                        break
-            final_data = json.loads(rec.FinalResult())
-            alternatives = final_data.get("alternatives") or []
-            if alternatives:
-                # Prefer the hypothesis with the highest acoustic confidence.
-                best = max(alternatives, key=lambda item: float(item.get("confidence", 0.0)))
-                result = str(best.get("text", "")).strip()
-            else:
-                result = str(final_data.get("text", "")).strip()
+            def _on_part(part):
+                self.after(0, lambda part=part: self.voice_transcript.configure(text="Tu: "+part) if self.voice_panel and self.voice_panel.winfo_exists() else None)
+            result = ""
+            try:
+                req = urllib.request.Request(
+                    "http://127.0.0.1:8000/api/listen_mic",
+                    data=b'{"max_seconds":14}',
+                    headers={"Content-Type": "application/json"},
+                )
+                with urllib.request.urlopen(req, timeout=20) as res:
+                    resp = json.loads(res.read().decode("utf-8"))
+                if resp.get("status") in ("ok", "empty", "stopped"):
+                    result = str(resp.get("text", "")).strip()
+                else:
+                    raise RuntimeError("fallback_local_stt")
+            except Exception:
+                stt_out = listen_utterance(
+                    max_seconds=14.0,
+                    stop_check=lambda: (not self.voice_enabled) or self.voice_speaking,
+                    on_partial=_on_part,
+                )
+                result = str(stt_out.get("text", "")).strip()
             if not result:
                 def no_voice():
                     if self.voice_panel and self.voice_panel.winfo_exists():

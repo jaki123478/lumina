@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import hashlib
 import math
+import sys
 from pathlib import Path
 import torch
 from torch import nn
@@ -16,6 +17,17 @@ import torch.nn.functional as F
 
 ROOT = Path(__file__).resolve().parent
 _BPE_TOK = None
+
+
+def _find_resource(rel: str) -> Path:
+    candidates = [ROOT / rel, Path.cwd() / rel]
+    meipass = getattr(sys, "_MEIPASS", None)
+    if meipass:
+        candidates.insert(0, Path(meipass) / rel)
+    for c in candidates:
+        if c.exists():
+            return c
+    return ROOT / rel
 
 
 def encode_prompt(prompt: str, max_len: int = 24, vocab_size: int = 32000) -> torch.Tensor:
@@ -26,8 +38,8 @@ def encode_prompt(prompt: str, max_len: int = 24, vocab_size: int = 32000) -> to
 
     global _BPE_TOK
     if _BPE_TOK is None:
-        vocab = ROOT / "tokenizer_lumina_next" / "vocab.json"
-        merges = ROOT / "tokenizer_lumina_next" / "merges.txt"
+        vocab = _find_resource("tokenizer_lumina_next/vocab.json")
+        merges = _find_resource("tokenizer_lumina_next/merges.txt")
         if vocab.exists() and merges.exists():
             try:
                 from tokenizers import ByteLevelBPETokenizer

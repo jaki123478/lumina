@@ -116,7 +116,7 @@ const voice = { live: false, recording: false, speaking: false, preview: false, 
 
 try {
   const stored = JSON.parse(localStorage.getItem(STORAGE) || '[]');
-  if (Array.isArray(stored)) conversations = stored.slice(0, 100).filter(c => c && typeof c.id === 'string' && Array.isArray(c.messages)).map(c => ({ id: c.id, title: typeof c.title === 'string' ? c.title.slice(0, 80) : 'Conversazione', updatedAt: Number(c.updatedAt) || 0, messages: c.messages.slice(-100).filter(m => m && ['user', 'assistant'].includes(m.role) && typeof m.content === 'string' && (m.role !== 'assistant' || m.content.trim())).map(m => ({ role: m.role, content: m.content.slice(0, 10000), tokens: m.tokens, durationMs: m.durationMs })) }));
+  if (Array.isArray(stored)) conversations = stored.slice(0, 100).filter(c => c && typeof c.id === 'string' && Array.isArray(c.messages)).map(c => ({ id: c.id, title: typeof c.title === 'string' ? c.title.slice(0, 80) : 'Conversazione', updatedAt: Number(c.updatedAt) || 0, messages: c.messages.slice(-100).filter(m => m && ['user', 'assistant'].includes(m.role) && typeof m.content === 'string' && (m.role !== 'assistant' || m.content.trim())).map(m => ({ role: m.role, content: m.content.slice(0, 10000), imageB64: typeof m.imageB64 === 'string' && m.imageB64.length < 250000 ? m.imageB64 : undefined, tokens: m.tokens, durationMs: m.durationMs })) }));
   const saved = JSON.parse(localStorage.getItem(SETTINGS_STORAGE) || '{}');
   if (Number.isFinite(saved.temperature)) settings.temperature = Math.max(0.1, Math.min(1.1, saved.temperature));
   if ([128, 256, 384].includes(saved.maxTokens)) settings.maxTokens = saved.maxTokens;
@@ -160,7 +160,9 @@ function createMessage(message) {
   }
   const body = document.createElement('div'); body.className = 'message-body';
   const author = document.createElement('div'); author.className = 'message-author'; author.textContent = message.role === 'user' ? 'Tu' : 'Lumina';
-  const text = document.createElement('div'); text.className = 'message-text'; text.textContent = message.content; body.append(author, text);
+  const text = document.createElement('div'); text.className = 'message-text'; text.textContent = message.content;
+  if (message.imageB64) { const img = document.createElement('img'); img.onload = () => scrollDown(); img.src = `data:image/png;base64,${message.imageB64}`; img.alt = 'Immagine generata da Lumina Image'; img.style.cssText = 'display:block;max-width:320px;width:100%;border-radius:14px;margin-top:10px;box-shadow:0 6px 20px rgba(0,0,0,0.18);'; text.append(img); }
+  body.append(author, text);
   if (message.role === 'assistant') {
     const meta = document.createElement('div'); meta.className = 'message-meta';
     if (message.content) {
@@ -243,12 +245,30 @@ function sendMessage(content, fromVoice = false) {
 
   // 2. Gestione Selezione Modello
   const selectedModel = $('model-selector')?.value || 'auto';
+  const imgMatch = text.match(/^(?:per favore\s+)?(?:genera|crea|disegna|dipingi)\s+(?:un['\u2019]?\s*immagine|una\s+foto|un\s+disegno)(?:\s+(?:di|con|che\s+mostra|su))?\s*(.*)$/i);
+  if (selectedModel === 'lumina-image' || imgMatch) {
+    const imgPrompt = (imgMatch && imgMatch[1].trim()) ? imgMatch[1].trim() : text;
+    fetch('/api/generate_image', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt: imgPrompt }) })
+      .then(r => { if (!r.ok) throw new Error(`server ${r.status}`); return r.json(); })
+      .then(data => {
+        const run = active; active = null;
+        run.response.content = `Immagine generata localmente su GPU da Lumina Image (${imgPrompt}):`;
+        run.response.imageB64 = data.image_b64 || data.data?.[0]?.b64_json || '';
+        saveChats(); renderConversation(); updateComposer();
+      })
+      .catch(err => {
+        const run = active; active = null;
+        run.response.content = `Errore generazione immagine: ${err.message}`;
+        saveChats(); renderConversation(); updateComposer();
+      });
+    return;
+  }
   if (selectedModel !== 'lumina-50k') {
     const requestController = new AbortController();
     active.requestController = requestController;
     // Voice requests must never leave the live dialog waiting indefinitely.
     // Keep normal chat tolerant, but give voice a shorter, explicit deadline.
-    const requestTimeout = fromVoice ? 12000 : 30000;
+    const requestTimeout = fromVoice ? 20000 : 35000;
     const requestTimer = setTimeout(() => requestController.abort(), requestTimeout);
     fetch('/v1/chat/completions', {
       method: 'POST',
@@ -302,7 +322,7 @@ try {
   worker.addEventListener('message', event => {
     const message = event.data;
     if (message.type === 'progress') { setStatus('loading', `Caricamento ${Math.round(message.progress * 100)}%`); return; }
-    if (message.type === 'ready') { loaded = true; setStatus('ready', 'Pronto · tutto locale'); updateComposer(); $('parameter-count').textContent = 'Qwen locale · Next · Mini'; return; }
+  if (message.type === 'ready') { loaded = true; setStatus('ready', 'Pronto · tutto locale'); updateComposer(); $('parameter-count').textContent = 'Lumina Next · Image · Mini'; return; }
     if (message.type === 'error') {
       if (message.id && active?.id !== message.id) return;
       if (!message.id) { loaded = false; setStatus('error', 'Modello non disponibile'); }
@@ -351,46 +371,104 @@ function setupRecognizer() {
 }
 function microphoneAvailable() { if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) { setVoiceState('idle', 'Il microfono richiede HTTPS oppure localhost e un browser recente.'); return false; } return true; }
 async function unlockAudio() { if (typeof voice.synth.unlock === 'function') await voice.synth.unlock(); }
-async function startListening() {
-  // La voce deve poter partire anche mentre il modello testuale completa il caricamento.
-  // Il riconoscimento è locale e indipendente dal worker di chat.
-  if (!setupRecognizer() || !microphoneAvailable()) { setVoiceState('error', 'Microfono non disponibile: controlla il permesso del browser.'); return; }
-  // A timed-out/stale request must not permanently lock the live dialog.
+async function startListening(silentCount = 0) {
   if (active) {
     const age = Date.now() - (active.startedAt || Date.now());
     if (age > 10000 || active.fromVoice) stopGeneration();
     else { setVoiceState('thinking', 'Attendi che Lumina termini la risposta in chat.'); return; }
   }
-  const epoch = ++voice.epoch; voice.live = true; voice.speaking = false; setVoiceState('requesting', 'Richiedo l’accesso al microfono…');
-  // Fallback immediato: se non sono ancora presenti campioni personali,
-  // usa il riconoscimento italiano integrato nel browser per permettere la
-  // prima conversazione senza una schermata tecnica di addestramento.
-  if (!voice.recognizer.listTemplates().length) {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) { voice.live = false; setVoiceState('idle', 'Riconoscimento vocale non disponibile in questo browser.'); return; }
-    const speech = new SpeechRecognition();
-    speech.lang = 'it-IT'; speech.interimResults = false; speech.continuous = false;
-    speech.onstart = () => setVoiceState('listening', 'Ti ascolto… parla con Lumina.');
-    speech.onerror = event => { if (voice.epoch !== epoch) return; voice.live = false; setVoiceState('error', event.error === 'not-allowed' ? 'Microfono bloccato: premi l’icona del lucchetto e consenti il microfono.' : 'Non ho sentito nulla. Riprova.'); };
-    speech.onresult = event => { const text = event.results?.[0]?.[0]?.transcript?.trim(); if (!text || voice.epoch !== epoch) return; voice.live = false; $('voice-transcript').textContent = `Riconosciuto: ${text}`; sendMessage(text, true); };
-    speech.onend = () => { if (voice.live && voice.epoch === epoch) { voice.live = false; setVoiceState('idle', 'Premi il microfono per riprovare.'); } };
-    voice.browserSpeech = speech;
-    try { await unlockAudio(); speech.start(); } catch (error) { voice.live = false; setVoiceState('error', error.message || 'Microfono non disponibile.'); }
-    return;
+  const epoch = ++voice.epoch;
+  voice.live = true;
+  voice.speaking = false;
+  unlockAudio().catch(() => {});
+  setVoiceState('listening', 'Ti ascolto\u2026 parla ora con Lumina.');
+  if (silentCount === 0) $('voice-transcript').textContent = 'Microfono locale attivo \u00b7 parla in italiano\u2026';
+
+  clearInterval(voice.partialTimer);
+  voice.partialTimer = setInterval(async () => {
+    if (!voice.live || voice.epoch !== epoch || voice.speaking) return;
+    try {
+      const r = await fetch('/api/mic_status');
+      if (!r.ok) return;
+      const st = await r.json();
+      if (voice.epoch === epoch && voice.live && st.partial) {
+        $('voice-transcript').textContent = `Tu: ${st.partial}\u2026`;
+      }
+    } catch (_) {}
+  }, 240);
+
+  const micController = new AbortController();
+  voice.micController = micController;
+  try {
+    const res = await fetch('/api/listen_mic', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ max_seconds: 10 }),
+      signal: micController.signal
+    });
+    clearInterval(voice.partialTimer);
+    if (voice.epoch !== epoch || !voice.live) return;
+    const data = await res.json();
+    if (data.status === 'ok' && data.text?.trim()) {
+      const spokenText = data.text.trim();
+      $('voice-transcript').textContent = `Tu: ${spokenText}`;
+      setVoiceState('thinking', 'Sto elaborando la risposta\u2026');
+      sendMessage(spokenText, true);
+      return;
+    }
+    if (data.status === 'empty') {
+      if (silentCount < 2 && voice.live && $('voice-dialog').open) {
+        $('voice-transcript').textContent = 'In ascolto\u2026 parla vicino al microfono.';
+        await startListening(silentCount + 1);
+      } else {
+        voice.live = false;
+        setVoiceState('idle', 'Nessuna voce rilevata. Premi il microfono per parlare.');
+      }
+      return;
+    }
+    if (data.status === 'stopped') {
+      voice.live = false;
+      setVoiceState('idle', 'Premi il microfono per iniziare.');
+      return;
+    }
+    // Fallback al riconoscitore DSP locale se il server microfono non \u00e8 attivo
+    if (setupRecognizer() && microphoneAvailable() && voice.recognizer.listTemplates().length) {
+      await voice.recognizer.start();
+      if (voice.epoch === epoch && voice.live) setVoiceState('listening', 'Ti ascolto\u2026 parla con Lumina.');
+      return;
+    }
+    voice.live = false;
+    setVoiceState('error', data.message || 'Microfono non disponibile sul dispositivo.');
+  } catch (error) {
+    clearInterval(voice.partialTimer);
+    if (voice.epoch !== epoch || error?.name === 'AbortError') return;
+    if (setupRecognizer() && microphoneAvailable() && voice.recognizer.listTemplates().length) {
+      try {
+        await voice.recognizer.start();
+        if (voice.epoch === epoch && voice.live) setVoiceState('listening', 'Ti ascolto\u2026 parla con Lumina.');
+        return;
+      } catch (_) {}
+    }
+    voice.live = false;
+    setVoiceState('error', error.message || 'Impossibile accedere al microfono locale.');
   }
-  try { await unlockAudio(); if (!voice.live || voice.epoch !== epoch) return; await voice.recognizer.start(); if (voice.epoch === epoch && voice.live) setVoiceState('listening', 'Ti ascolto… parla con Lumina.'); }
-  catch (error) { if (voice.epoch === epoch) { voice.live = false; setVoiceState('error', error.message || 'Microfono non disponibile. Controlla il permesso nel browser.'); } }
 }
 async function speakReply(text) {
   const epoch = voice.epoch; if (!text) { if (voice.live) await startListening(); return; }
-  voice.speaking = true; setVoiceState('speaking', 'Lumina sta leggendo. Premi il pulsante per interrompere.'); $('voice-transcript').textContent = text;
+  voice.speaking = true; setVoiceState('speaking', 'Lumina sta rispondendo. Premi il pulsante per interrompere.'); $('voice-transcript').textContent = text;
   try { await voice.synth.speak(text); } catch (error) { voice.live = false; setVoiceState('idle', `Audio non disponibile: ${error.message}`); } finally { voice.speaking = false; }
   if (voice.live && voice.epoch === epoch && $('voice-dialog').open) await startListening();
 }
 function stopVoice() {
-  voice.live = false; voice.recording = false; voice.speaking = false; voice.preview = false; voice.epoch += 1; voice.recognizer?.stop(); try { voice.browserSpeech?.abort(); } catch {} voice.browserSpeech = null; voice.synth.stop(); if (active?.fromVoice) stopGeneration();
+  voice.live = false; voice.recording = false; voice.speaking = false; voice.preview = false; voice.epoch += 1;
+  clearInterval(voice.partialTimer);
+  try { voice.micController?.abort(); } catch {}
+  voice.micController = null;
+  fetch('/api/stop_mic', { method: 'POST' }).catch(() => {});
+  voice.recognizer?.stop(); voice.synth.stop(); if (active?.fromVoice) stopGeneration();
   $('voice-preview').querySelector('span:last-child').textContent = 'Ascolta la voce';
-  $('record-sample').querySelector('span:last-child').textContent = 'Registra esempio'; $('record-sample').classList.remove('recording'); $('voice-control').disabled = false; setVoiceState('idle', 'Premi il microfono per iniziare.');
+  if ($('record-sample')) { $('record-sample').querySelector('span:last-child').textContent = 'Registra esempio'; $('record-sample').classList.remove('recording'); }
+  $('voice-control').disabled = false; setVoiceState('idle', 'Premi il microfono per iniziare.');
 }
 function openVoice() { $('voice-dialog').showModal(); setupRecognizer(); setVoiceState('idle', 'Premi il microfono e parla con Lumina.'); }
 function closeVoice() {
@@ -405,7 +483,7 @@ window.closeLuminaVoice = closeVoice;
 $('chat-form').addEventListener('submit', event => { event.preventDefault(); if (active) stopGeneration(); else sendMessage($('prompt').value); });
 $('prompt').addEventListener('input', resizePrompt);
 $('prompt').addEventListener('keydown', event => { if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) { event.preventDefault(); if (!active) sendMessage($('prompt').value); } });
-document.querySelectorAll('.suggestion').forEach(button => button.addEventListener('click', () => { if (!loaded) { $('prompt').value = button.dataset.prompt; resizePrompt(); $('prompt').focus(); } else sendMessage(button.dataset.prompt); }));
+document.querySelectorAll('.suggestion').forEach(button => button.addEventListener('click', () => { if (button.dataset.prompt === '__VOICE__') { openVoice(); return; } if (!loaded) { $('prompt').value = button.dataset.prompt; resizePrompt(); $('prompt').focus(); } else sendMessage(button.dataset.prompt); }));
 $('new-chat').addEventListener('click', () => { if (active) stopGeneration(); selectedId = null; showNotice(''); $('prompt').value = ''; resizePrompt(); renderHistory(); renderConversation(); closeSidebar(); $('prompt').focus(); });
 $('mobile-menu').addEventListener('click', () => { const open = !$('sidebar').classList.contains('open'); $('sidebar').classList.toggle('open', open); $('mobile-scrim').hidden = !open; $('mobile-menu').setAttribute('aria-expanded', String(open)); }); $('mobile-scrim').addEventListener('click', closeSidebar);
 function openSettings() { $('clear-confirm').hidden = true; $('settings-dialog').showModal(); }
@@ -426,7 +504,7 @@ $('voice-preview').addEventListener('click', async () => {
   try { await unlockAudio(); if (voice.epoch !== epoch) return; await voice.synth.speak(text); if (voice.epoch === epoch) { voice.preview = false; voice.speaking = false; $('voice-preview').querySelector('span:last-child').textContent = 'Ascolta la voce'; setVoiceState('idle', 'Anteprima terminata. Registra una frase per iniziare a parlare.'); } }
   catch (error) { if (voice.epoch === epoch) { voice.preview = false; voice.speaking = false; $('voice-preview').querySelector('span:last-child').textContent = 'Ascolta la voce'; setVoiceState('idle', error.message || 'Audio non disponibile in questo browser.'); } }
 });
-$('record-sample').addEventListener('click', async () => {
+$('record-sample')?.addEventListener('click', async () => {
   if (voice.recording) { voice.recognizer?.stop(); return; }
   if (active) { $('calibration-status').textContent = 'Attendi che la risposta in chat sia terminata.'; return; }
   if (!setupRecognizer() || !microphoneAvailable()) return; stopVoice(); const epoch = voice.epoch; voice.recording = true; $('voice-control').disabled = true;
@@ -435,9 +513,9 @@ $('record-sample').addEventListener('click', async () => {
   catch (error) { if (voice.epoch === epoch) { $('calibration-status').textContent = error.message || 'Registrazione non riuscita. Riprova.'; setVoiceState('idle', error.message || 'Riprova a registrare la frase.'); } }
   finally { if (voice.epoch === epoch) { voice.recording = false; $('voice-control').disabled = false; $('record-sample').querySelector('span:last-child').textContent = 'Registra esempio'; $('record-sample').classList.remove('recording'); updateTemplates(voice.recognizer.listTemplates()); } }
 });
-$('remove-samples').addEventListener('click', () => { if (!setupRecognizer()) return; const label = $('calibration-phrase').value; voice.recognizer.listTemplates().filter(t => t.label === label).forEach(t => voice.recognizer.deleteTemplate(t.id)); $('calibration-status').textContent = 'Esempi della frase eliminati.'; });
-$('calibration-phrase').addEventListener('change', () => { $('remove-samples').disabled = !voice.recognizer?.listTemplates().some(t => t.label === $('calibration-phrase').value); });
-$('add-phrase-form').addEventListener('submit', event => { event.preventDefault(); const phrase = $('custom-phrase').value.trim(); if (!phrase) return; if (!voice.phrases.includes(phrase)) voice.phrases.push(phrase); updateTemplates(voice.recognizer?.listTemplates() || []); $('calibration-phrase').value = phrase; $('custom-phrase').value = ''; $('calibration-status').textContent = 'Ora registra uno o più esempi di questa frase.'; });
+$('remove-samples')?.addEventListener('click', () => { if (!setupRecognizer()) return; const label = $('calibration-phrase').value; voice.recognizer.listTemplates().filter(t => t.label === label).forEach(t => voice.recognizer.deleteTemplate(t.id)); $('calibration-status').textContent = 'Esempi della frase eliminati.'; });
+$('calibration-phrase')?.addEventListener('change', () => { $('remove-samples').disabled = !voice.recognizer?.listTemplates().some(t => t.label === $('calibration-phrase').value); });
+$('add-phrase-form')?.addEventListener('submit', event => { event.preventDefault(); const phrase = $('custom-phrase').value.trim(); if (!phrase) return; if (!voice.phrases.includes(phrase)) voice.phrases.push(phrase); updateTemplates(voice.recognizer?.listTemplates() || []); $('calibration-phrase').value = phrase; $('custom-phrase').value = ''; $('calibration-status').textContent = 'Ora registra uno o più esempi di questa frase.'; });
 document.addEventListener('keydown', event => { if (event.key === 'Escape') closeSidebar(); if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLowerCase() === 'n') { event.preventDefault(); $('new-chat').click(); } });
 window.addEventListener('pagehide', () => { saveChats(); voice.recognizer?.destroy(); voice.synth.stop(); worker?.terminate(); }); document.addEventListener('visibilitychange', () => { if (document.hidden && (voice.live || voice.recording || voice.speaking)) stopVoice(); });
 renderHistory(); renderConversation();

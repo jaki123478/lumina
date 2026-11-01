@@ -17,12 +17,13 @@
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW:', err));
+        if ('caches' in window) caches.keys().then(ks => ks.forEach(k => caches.delete(k)));
+        navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => r.unregister())).catch(() => {});
       });
     }
   </script>
   <script src="./voice-recognizer.js?v=2" defer></script>
-  <script type="module" src="./app.js?v=16"></script>
+  <script type="module" src="./app.js?v=21"></script>
 </head>
 <body>
   <div class="mobile-scrim" id="mobile-scrim" hidden></div>
@@ -53,6 +54,7 @@
         <select id="model-selector" class="model-select" aria-label="Seleziona motore neurale">
           <option value="auto" selected>Lumina · assistita locale</option>
           <option value="lumina-coder">💻 Lumina Coder (Python & Tech)</option>
+          <option value="lumina-image">🎨 Lumina Image (Generatore Locale)</option>
           <option value="lumina-next">Lumina Next · sperimentale</option>
           <option value="lumina-2.75m">⚡ Lumina Nano (2.75M Locale)</option>
           <option value="lumina-50k">Lumina Mini (50K, nel browser)</option>
@@ -70,7 +72,7 @@
         <p class="welcome-description">Scrivi a Lumina, allega un’immagine o attiva la voce live.</p>
         <div class="suggestions" aria-label="Messaggi da provare">
           <button class="suggestion" data-prompt="Aiutami a scrivere e verificare del codice."><span class="suggestion-symbol">⌘</span><strong>Coding</strong><span>Scrivi e verifica codice</span></button>
-          <button class="suggestion" data-prompt="Analizza l’immagine allegata."><span class="icon suggestion-symbol" data-icon="spark"></span><strong>Immagini</strong><span>Analizza un allegato</span></button>
+          <button class="suggestion" data-prompt="Genera un'immagine di un castello medievale sulla collina"><span class="icon suggestion-symbol" data-icon="spark"></span><strong>Genera Immagine</strong><span>Arte neurale 100% offline</span></button>
           <button class="suggestion" data-prompt="Cerca sul web informazioni aggiornate."><span class="icon suggestion-symbol" data-icon="book"></span><strong>Ricerca online</strong><span>Informazioni aggiornate</span></button>
           <button class="suggestion" data-prompt="__VOICE__"><span class="suggestion-symbol">◉</span><strong>Voce live</strong><span>Parla con Lumina</span></button>
         </div>

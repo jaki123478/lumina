@@ -1,19 +1,56 @@
 """Controlli e strumenti simbolici locali applicabili a domande nuove."""
 import ast
+from datetime import datetime
 import re
 
 DAYS=['lunedì','martedì','mercoledì','giovedì','venerdì','sabato','domenica']
+MONTHS=['gennaio','febbraio','marzo','aprile','maggio','giugno','luglio','agosto','settembre','ottobre','novembre','dicembre']
 NUMBERS={'un':1,'uno':1,'due':2,'tre':3,'quattro':4,'cinque':5,'sei':6,'sette':7,'otto':8,'nove':9,'dieci':10}
 NUMBER_WORDS={v:k for k,v in NUMBERS.items()}
 
 
+def _normalize_it_accents(s: str) -> str:
+    rep = (
+        ('lunedì', 'lunedì'), ('lunedi', 'lunedì'),
+        ('martedì', 'martedì'), ('martedi', 'martedì'),
+        ('mercoledì', 'mercoledì'), ('mercoledi', 'mercoledì'),
+        ('giovedì', 'giovedì'), ('giovedi', 'giovedì'),
+        ('venerdì', 'venerdì'), ('venerdi', 'venerdì'),
+    )
+    out = s
+    for src, dst in rep:
+        out = re.sub(rf'\b{src}\b', dst, out)
+    return out
+
+
 def local_answer(messages):
-    text=messages[-1]['content'];lower=text.lower()
+    text=messages[-1]['content'];lower=_normalize_it_accents(text.lower())
     history=' '.join(m['content'] for m in messages[:-1] if m['role']=='user')
+    if re.search(r'\b(?:mi\s+senti|mi\s+ascolti|riesci\s+a\s+sentirmi|ci\s+sei|prova\s+microfono|test\s+(?:del\s+)?microfono|funziona\s+il\s+microfono)\b', lower):
+        return 'Sì, ti sento forte e chiaro! Di cosa vogliamo parlare?', 'controllo vocale locale'
     if re.fullmatch(r'\s*(?:come ti chiami|tu chi sei|chi sei|qual è il tuo nome)\s*[?!.]*\s*',lower):
         return 'Sono Lumina, un assistente eseguito sul tuo computer.','identità configurata'
-    if re.fullmatch(r'\s*(?:buongiorno|ciao|salve|buonasera)\s*[!?.]*\s*', lower):
-        return 'Ciao! Sono Lumina. Di cosa vuoi parlare?','saluto locale'
+    if re.search(r'\b(?:chi\s+ti\s+ha\s+(?:creat[oa]|sviluppat[oa]|programmat[oa])|chi\s+[èe]\s+il\s+tuo\s+creatore)\b', lower):
+        return 'Sono Lumina, un assistente AI italiano sviluppato da Jacopo Forti ed eseguito interamente in locale sul tuo computer.', 'identità configurata'
+    if re.search(r'\b(?:come ti chiami|tu chi sei|qual [èe] il tuo nome|dove giri|come funzioni|cosa sai fare|cosa puoi fare)\b', lower):
+        return (
+            'Sono Lumina, il tuo assistente AI italiano eseguito localmente sul tuo computer: '
+            'posso aiutarti con chat, programmazione Python, analisi di documenti PDF/TXT, generazione di immagini e conversazione vocale offline.'
+        ), 'identità configurata'
+    if re.search(r'^\s*(?:(?:ciao|salve|ehi|hey|buongiorno|buonasera)(?:\s+lumina)?[,\s]+)?(?:come\s+(?:stai|va|procede)|tutto\s+bene)(?:\s+lumina)?\s*[?!.]*\s*$', lower):
+        return 'Tutto bene e operativa in locale sul tuo PC! Come posso aiutarti oggi?', 'saluto locale'
+    if re.fullmatch(r'\s*(?:buongiorno|ciao|salve|buonasera|ehi|hey)(?:\s+lumina)?\s*[!?.]*\s*', lower) or re.fullmatch(r'\s*lumina\s*[!?.]*\s*', lower):
+        return 'Ciao! Sono Lumina, ti ascolto. Di cosa vuoi parlare?','saluto locale'
+    if re.fullmatch(r'\s*(?:ok\s+|perfetto\s+|ottimo\s+|va\s+bene\s+)?(?:grazie(?:\s+mille|\s+tante|\s+infinite|\s+di\s+cuore)?|molte\s+grazie|ti\s+ringrazio)(?:\s+lumina)?(?:\s+(?:per\s+tutto|di\s+tutto|per\s+l[’\'\s]?aiuto|per\s+la\s+risposta))?(?:\s+lumina)?\s*[!?.]*\s*', lower):
+        return 'Prego! Se ti serve altro sono sempre qui.', 'cortesia locale'
+    if re.fullmatch(r'\s*(?:arrivederci|a\s+presto|ci\s+vediamo|buonanotte|buona\s+serata|buona\s+giornata)(?:\s+lumina)?\s*[!?.]*\s*', lower):
+        return 'A presto! Quando vuoi parlare o lavorare, sono qui in locale.', 'saluto locale'
+    if re.search(r'\b(?:che\s+ore\s+sono|che\s+ora\s+[èe]|dimmi\s+l[’\']?ora|mi\s+dici\s+l[’\']?ora)\b', lower):
+        now = datetime.now()
+        return f"Sono le {now.strftime('%H:%M')}.", 'orologio locale'
+    if not re.search(r'oggi\s+[èe]\s+('+'|'.join(DAYS)+r')\b', lower) and re.search(r'\b(?:che\s+giorno\s+[èe]\s+oggi|quanti\s+ne\s+abbiamo(?:\s+oggi)?|qual\s+[èe]\s+la\s+data\s+di\s+oggi|data\s+di\s+oggi)\b', lower):
+        now = datetime.now()
+        return f"Oggi è {DAYS[now.weekday()]} {now.day} {MONTHS[now.month - 1]} {now.year}.", 'calendario di sistema locale'
     if re.search(r'che\s+linguaggio\s+[èe]\s+python|spiegami\s+cos[’\']?è\s+python', lower):
         return 'Python è un linguaggio di programmazione semplice e versatile.','definizione verificata'
     definitions=[
