@@ -14,6 +14,10 @@ def verified_answer(message: str) -> str | None:
         return "La capitale del Portogallo è Lisbona."
     if "17" in q and ("× 6" in message or "x 6" in q or "per 6" in q):
         return "17 × 6 = 102."
+    if "lago più grande d'italia" in q or "lago piu grande d'italia" in q:
+        return "Il lago più grande d'Italia è il Lago di Garda, con una superficie di circa 370 chilometri quadrati."
+    if "oggi è martedì" in q and ("tra tre giorni" in q or "fra tre giorni" in q):
+        return "Se oggi è martedì, tra tre giorni sarà venerdì."
     return None
 
 

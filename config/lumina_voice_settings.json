@@ -1,5 +1,5 @@
 {
-  "length_scale": 1.1,
+  "length_scale": 1.0,
   "volume": 0.88,
   "noise_scale": 0.22,
   "noise_w_scale": 0.35

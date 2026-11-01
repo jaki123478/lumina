@@ -115,6 +115,7 @@ def train(
     lr: float = 4e-4,
     use_checkpointing: bool = True,
     seed: int = 42,
+    config_path: str = "",
 ):
     random.seed(seed)
     torch.manual_seed(seed)
@@ -149,14 +150,38 @@ def train(
 
     # 2. Inizializza o riprendi Modello Lumina-Next
     config = dict(DEFAULT_CONFIG_135M)
+    if config_path:
+        with open(config_path, "r", encoding="utf-8") as f:
+            config.update(json.load(f))
+        print(f"[*] Configurazione architettura: {config_path}")
     config["max_position_embeddings"] = max(8192, seq_len)
     init_dir = Path(os.environ.get("LUMINA_INIT_CHECKPOINT", ""))
     if (out_dir / "pytorch_model.bin").exists():
         print(f"[*] Ripresa dell'addestramento dal checkpoint esistente in '{out_dir}'...")
         model = LuminaNextForCausalLM.from_pretrained(out_dir).to(device=device, dtype=dtype)
     elif init_dir and (init_dir / "pytorch_model.bin").exists():
-        print(f"[*] Inizializzazione dal checkpoint base '{init_dir}'...")
-        model = LuminaNextForCausalLM.from_pretrained(init_dir).to(device=device, dtype=dtype)
+        print(f"[*] Inizializzazione dal checkpoint base compatibile '{init_dir}'...")
+        model = LuminaNextForCausalLM(config).to(device=device, dtype=dtype)
+        base = torch.load(init_dir / "pytorch_model.bin", map_location="cpu")
+        base_state = base.get("state_dict", base)
+        current = model.state_dict()
+        compatible = {}
+        for k, target in current.items():
+            source = base_state.get(k)
+            if source is None or source.ndim != target.ndim:
+                continue
+            # Trasferimento parziale sicuro: copia solo la regione sovrapposta
+            # quando la nuova architettura è più larga o profonda.
+            if source.shape == target.shape:
+                compatible[k] = source
+            elif source.ndim in (1, 2):
+                merged = target.detach().cpu().clone()
+                slices = tuple(slice(0, min(a, b)) for a, b in zip(target.shape, source.shape))
+                merged[slices] = source[slices]
+                compatible[k] = merged
+        current.update(compatible)
+        model.load_state_dict(current, strict=False)
+        print(f"[+] Trasferiti {len(compatible)} tensori compatibili o parziali; i layer nuovi restano inizializzati per il candidato.")
     else:
         model = LuminaNextForCausalLM(config).to(device=device, dtype=dtype)
     
@@ -226,7 +251,8 @@ def train(
     torch.save({"state_dict": model.state_dict(), "steps": cum_steps, "config": config, "loss_history": loss_history}, versioned_ckpt)
     print(f"[+] Pesi, configurazione e checkpoint versionato salvati in '{versioned_ckpt}'!")
 
-    hf_dir = Path(os.environ.get("LUMINA_EXPORT_DIR", "hf_export_lumina_next"))
+    default_export = "hf_export_lumina_next" if out_dir.name == "checkpoints_lumina_next" else f"exports_{out_dir.name}"
+    hf_dir = Path(os.environ.get("LUMINA_EXPORT_DIR", default_export))
     hf_dir.mkdir(parents=True, exist_ok=True)
     model.save_pretrained(hf_dir)
     try:
@@ -278,6 +304,7 @@ if __name__ == "__main__":
     parser.add_argument("--lr", type=float, default=4e-4, help="Learning rate")
     parser.add_argument("--grad-accum", type=int, default=8, help="Step di accumulo gradiente")
     parser.add_argument("--seed", type=int, default=42, help="Seed riproducibile")
+    parser.add_argument("--config", default="", help="JSON architettura candidato")
     args = parser.parse_args()
 
-    train(seq_len=args.seq_len, steps=args.steps, batch_size=args.batch_size, lr=args.lr, grad_accum_steps=args.grad_accum, seed=args.seed)
+    train(seq_len=args.seq_len, steps=args.steps, batch_size=args.batch_size, lr=args.lr, grad_accum_steps=args.grad_accum, seed=args.seed, config_path=args.config)

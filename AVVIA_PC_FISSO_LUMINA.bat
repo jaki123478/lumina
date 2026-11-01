@@ -1,7 +1,15 @@
 @echo off
 setlocal
-cd /d "%~dp0"
+set "PROJECT=%~dp0"
+if exist "%~dp0requirements.txt" goto project_ready
+if exist "%~dp0ai lumina\requirements.txt" set "PROJECT=%~dp0ai lumina"
+:project_ready
+cd /d "%PROJECT%"
 title Lumina - PC fisso
+echo ================================================
+echo          AVVIO LUMINA - PC FISSO
+echo ================================================
+echo Cartella progetto: %PROJECT%
 
 where python >nul 2>nul
 if errorlevel 1 (
@@ -22,17 +30,10 @@ echo Avvio il server locale di Lumina...
 start "Lumina Server" /min cmd /c "cd /d "%~dp0" && .venv\Scripts\python.exe serve.py --port 8000"
 timeout /t 5 /nobreak >nul
 
-where cloudflared >nul 2>nul
-if errorlevel 1 (
-  echo Server avviato su http://127.0.0.1:8000
-  echo cloudflared non trovato: installarlo per ottenere un link pubblico.
-  start http://127.0.0.1:8000
-  pause
-  exit /b 0
-)
-
-echo Avvio il link HTTPS pubblico...
-cloudflared tunnel --url http://127.0.0.1:8000
+echo Server locale avviato su http://127.0.0.1:8000
+echo Nessun browser o tunnel viene avviato.
+echo Per il test locale lascia questa finestra aperta.
+pause
 exit /b 0
 
 :error

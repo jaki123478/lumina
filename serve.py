@@ -617,6 +617,18 @@ class Handler(SimpleHTTPRequestHandler):
                             backend = 'gemma-verified-retrieval'
 
                 if not reply_text:
+                    # Controlli locali verificati prima della generazione libera:
+                    # evitano errori su calendario, aritmetica e fatti elementari.
+                    try:
+                        from lumina_answer_checks import local_answer
+                        _checked_answer, _checked_backend = local_answer([{"role": "user", "content": user_msg}])
+                        if _checked_answer:
+                            reply_text = _checked_answer
+                            backend = "lumina-verified-check"
+                    except Exception as _check_error:
+                        print(f"[API] Controllo locale non disponibile: {_check_error}")
+
+                if not reply_text:
                     # Risposte deterministiche per richieste coding elementari e non ambigue.
                     # Evitano che un checkpoint sperimentale inventi una funzione diversa.
                     low_msg = user_msg.lower()

@@ -21,11 +21,14 @@ BG = "#090D17"; SIDE = "#0E1526"; CARD = "#151F35"; HOVER = "#202D4A"
 USER = "#3B5BDB"; ACCENT = "#6C8CFF"; TEXT = "#E6EAF2"; MUTED = "#8A94A8"
 OK = "#4ADE80"; ERR = "#F87171"
 DATA_FILE = Path.home() / ".lumina" / "sessions.json"
-API = "http://127.0.0.1:8000/v1/chat/completions"
+API_ENDPOINTS = (
+    "http://127.0.0.1:8000/v1/chat/completions",
+    "http://127.0.0.1:7020/api/chat",
+)
 ROOT_DIR = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parents[1]))
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
-MODES = ["Generale", "Codice", "Ricerca web", "Traduttore", "Riassunto"]
+MODES = ["Generale", "Lumina Next", "Codice", "Immagini", "Genera immagine", "Documenti", "Ricerca web", "Traduttore", "Riassunto"]
 
 def load_sessions():
     try: return json.loads(DATA_FILE.read_text(encoding="utf-8"))
@@ -54,16 +57,55 @@ def save_sessions(data):
         fallback.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
 
 class LuminaBackend:
+    @staticmethod
+    def _read_attachment(path):
+        """Legge localmente gli allegati testuali senza inviarli online."""
+        if not path:
+            return ""
+        p = Path(path)
+        try:
+            suffix = p.suffix.lower()
+            if suffix in {".txt", ".md", ".csv", ".json", ".py", ".html", ".css", ".js"}:
+                return p.read_text(encoding="utf-8", errors="replace")[:50000]
+            if suffix == ".pdf":
+                from pypdf import PdfReader
+                return "\n".join((page.extract_text() or "") for page in PdfReader(str(p)).pages)[:50000]
+            if suffix == ".docx":
+                from docx import Document
+                return "\n".join(par.text for par in Document(str(p)).paragraphs)[:50000]
+        except Exception:
+            return ""
+        return ""
+
     def stream(self, messages, mode, attachment=None):
+        base_rules = "Segui esattamente l'ultima richiesta dell'utente. Rispondi solo a ciò che viene chiesto, senza cambiare argomento, inventare fatti o aggiungere attività non richieste. Se la richiesta è ambigua, fai una sola domanda di chiarimento. Mantieni la risposta breve e ordinata."
         system = {
-            "Generale": "Rispondi in italiano naturale e preciso.",
-            "Codice": "Sei un assistente di coding professionale. Spiega e verifica il codice.",
-            "Ricerca web": "Cerca fonti attuali, cita i collegamenti e distingui fatti verificati da risultati da controllare.",
-            "Traduttore": "Traduci con accuratezza mantenendo tono e formattazione.",
-            "Riassunto": "Riassumi in modo fedele e ordinato, senza inventare dati.",
+            "Generale": base_rules + " Rispondi in italiano naturale e preciso.",
+            "Lumina Next": base_rules + " Sei Lumina Next, assistente locale. Segnala i limiti quando non sei sicura.",
+            "Codice": base_rules + " Sei un assistente di coding professionale. Spiega e verifica il codice.",
+            "Immagini": base_rules + " Analizza l'immagine allegata solo per ciò che è effettivamente disponibile. Se il motore non può vedere i pixel, dichiaralo chiaramente.",
+            "Genera immagine": base_rules + " Prepara un prompt chiaro per il generatore immagini locale.",
+            "Documenti": base_rules + " Analizza il documento allegato con attenzione. Usa solo il contenuto disponibile e distingui ciò che è verificato.",
+            "Ricerca web": base_rules + " Cerca fonti attuali, cita i collegamenti e distingui fatti verificati da risultati da controllare.",
+            "Traduttore": base_rules + " Traduci con accuratezza mantenendo tono e formattazione.",
+            "Riassunto": base_rules + " Riassumi in modo fedele e ordinato, senza inventare dati.",
         }[mode]
-        payload = {"model": "lumina-coder" if mode == "Codice" else "lumina-assisted",
-                   "messages": [{"role":"system","content":system}] + messages,
+        context_messages = list(messages)
+        attachment_text = self._read_attachment(attachment)
+        if attachment_text:
+            context_messages.append({"role": "user", "content": "Contenuto dell'allegato locale:\n" + attachment_text})
+        elif attachment and Path(attachment).suffix.lower() in {".png", ".jpg", ".jpeg", ".webp", ".gif", ".bmp"}:
+            # Il motore testuale non riceve l'immagine online: forniamo solo
+            # metadati verificabili e chiediamo di non inventare una descrizione.
+            try:
+                from PIL import Image
+                with Image.open(attachment) as image:
+                    image_info = f"Immagine locale allegata: {Path(attachment).name}; formato {image.format}; dimensioni {image.width}x{image.height}. I pixel non sono disponibili al motore testuale."
+            except Exception:
+                image_info = f"Immagine locale allegata: {Path(attachment).name}. I pixel non sono disponibili al motore testuale."
+            context_messages.append({"role": "user", "content": image_info + " Descrivi solo ciò che puoi verificare."})
+        payload = {"model": "lumina-next" if mode == "Lumina Next" else ("lumina-coder" if mode == "Codice" else "lumina-assisted"),
+                   "messages": [{"role":"system","content":system}] + context_messages,
                    "max_tokens": 700,
                    "offline": mode != "Ricerca web",
                    "web": mode == "Ricerca web",
@@ -73,6 +115,14 @@ class LuminaBackend:
         # altrimenti una frase come "mi senti?" può ricevere una risposta
         # casuale mentre il motore sta caricando.
         last = str(messages[-1].get("content", "")).strip().lower() if messages else ""
+        if mode == "Genera immagine":
+            from lumina_image_gen import generate_image
+            try:
+                output = generate_image(last)
+                yield f"Immagine generata localmente e salvata in: {output}"
+            except Exception as exc:
+                yield f"Generazione immagini non disponibile: {exc}"
+            return
         if re.search(r"\b(mi senti|mi ascolti|ci sei)\b", last):
             answer = "Sì, ti sento. Puoi parlare: sono in ascolto."
             for word in answer.split(" "): yield word + " "
@@ -81,18 +131,24 @@ class LuminaBackend:
             answer = "Ciao! Sono Lumina. Come posso aiutarti?"
             for word in answer.split(" "): yield word + " "
             return
-        req = urllib.request.Request(API, data=json.dumps(payload).encode(),
-                                     headers={"Content-Type":"application/json"})
-        try:
-            # L'API opzionale non deve bloccare la chat locale: se il servizio
-            # non è attivo, passa rapidamente al modello già installato sul PC.
-            with urllib.request.urlopen(req, timeout=3) as res:
-                data = json.loads(res.read().decode("utf-8"))
-            answer = data.get("choices", [{}])[0].get("message", {}).get("content", "")
-        except Exception:
+        answer = ""
+        for endpoint in API_ENDPOINTS:
+            try:
+                body = payload if endpoint.endswith("/v1/chat/completions") else {
+                    "messages": payload["messages"], "max_tokens": payload["max_tokens"]
+                }
+                req = urllib.request.Request(endpoint, data=json.dumps(body).encode(),
+                                              headers={"Content-Type":"application/json"})
+                with urllib.request.urlopen(req, timeout=4) as res:
+                    data = json.loads(res.read().decode("utf-8"))
+                answer = data.get("choices", [{}])[0].get("message", {}).get("content", "") or data.get("reply", "")
+                if answer: break
+            except Exception:
+                continue
+        if not answer:
             # Fallback per l'eseguibile avviato da solo: non richiede il server API.
             from lumina_general import generate
-            local_messages = [{"role":"system","content":system}] + messages
+            local_messages = [{"role":"system","content":system}] + context_messages
             answer, _meta = generate(local_messages, max_tokens=160)
         if not answer: answer = "Lumina non ha restituito una risposta valida."
         for word in answer.split(" "):
@@ -107,10 +163,13 @@ class LuminaApp(ctk.CTk):
         # minimizzata; una geometria esplicita è più stabile per l'utente.
         self.state("normal")
         self.grid_columnconfigure(1, weight=1); self.grid_rowconfigure(0, weight=1)
-        self.sessions = load_sessions(); self.current = None; self.busy = False
+        self.sessions = load_sessions(); self.current = None; self.busy = False; self.cancel_event = threading.Event()
         self.q = queue.Queue(); self.stream_text = ""; self.stream_label = None
         self.bubbles = []; self.attachment = None; self._orb_phase = 0; self.voice_enabled = False
         self.voice_panel = None; self.voice_speaking = False; self.voice_listening = False
+        # Precarica la voce in background: la prima risposta non deve aspettare
+        # l'inizializzazione del modello Piper.
+        threading.Thread(target=self._prewarm_voice, daemon=True).start()
         self._build_sidebar(); self._build_main()
         # Avvia sempre su una composizione pulita; le conversazioni precedenti
         # restano nella sidebar e si possono riaprire senza sporcare il primo
@@ -120,7 +179,9 @@ class LuminaApp(ctk.CTk):
         # Il focus immediato può essere sovrascritto dal terminale su Windows;
         # ripeterlo dopo il primo ciclo dell'event loop rende l'avvio affidabile.
         self.after(250, self._bring_to_front)
-        self.after(40, self._poll); self.bind("<Configure>", self._resize)
+        self.after(40, self._poll); self.after(700, self._refresh_health); self.bind("<Configure>", self._resize)
+        self.bind("<Escape>", lambda _event: self.send() if self.busy else None)
+        self.bind("<Control-n>", lambda _event: (self.new_chat(), "break")[1])
 
     def _bring_to_front(self):
         try:
@@ -149,9 +210,10 @@ class LuminaApp(ctk.CTk):
         self.session_list=ctk.CTkScrollableFrame(side,fg_color="transparent",label_text="  CHAT RECENTI",label_text_color=MUTED,label_fg_color="transparent",label_font=("Segoe UI",11,"bold"),scrollbar_button_color=HOVER)
         self.session_list.grid(row=4,column=0,padx=12,sticky="nsew")
         ctk.CTkButton(side,text="⌫  Elimina chat",height=34,corner_radius=8,fg_color="transparent",hover_color=HOVER,text_color=MUTED,anchor="w",command=self.delete_chat).grid(row=5,column=0,padx=16,pady=(8,2),sticky="ew")
-        ctk.CTkButton(side,text="⚙  Impostazioni",height=34,corner_radius=8,fg_color="transparent",hover_color=HOVER,text_color=MUTED,anchor="w",command=self.open_settings).grid(row=6,column=0,padx=16,pady=(0,16),sticky="ew")
+        ctk.CTkButton(side,text="⇩  Esporta chat",height=34,corner_radius=8,fg_color="transparent",hover_color=HOVER,text_color=MUTED,anchor="w",command=self.export_chat).grid(row=6,column=0,padx=16,pady=(0,2),sticky="ew")
+        ctk.CTkButton(side,text="⚙  Impostazioni",height=34,corner_radius=8,fg_color="transparent",hover_color=HOVER,text_color=MUTED,anchor="w",command=self.open_settings).grid(row=7,column=0,padx=16,pady=(0,16),sticky="ew")
         profile=ctk.CTkFrame(side,fg_color="#131C30",corner_radius=14,border_width=1,border_color="#202D4A")
-        profile.grid(row=7,column=0,padx=14,pady=(0,16),sticky="ew")
+        profile.grid(row=8,column=0,padx=14,pady=(0,16),sticky="ew")
         ctk.CTkLabel(profile,text="J",width=34,height=34,corner_radius=17,fg_color=ACCENT,text_color=BG,font=("Segoe UI",16,"bold")).grid(row=0,column=0,padx=(12,9),pady=11)
         info=ctk.CTkFrame(profile,fg_color="transparent"); info.grid(row=0,column=1,sticky="w",pady=9)
         ctk.CTkLabel(info,text="Utente locale",font=("Segoe UI",12,"bold"),text_color=TEXT).pack(anchor="w")
@@ -176,7 +238,7 @@ class LuminaApp(ctk.CTk):
         ctk.CTkLabel(self.hero, text="Che cosa vuoi fare?", font=("Segoe UI", 30, "bold"), text_color=TEXT).grid(row=1,column=0,pady=(0,8))
         ctk.CTkLabel(self.hero, text="Scrivi a Lumina, lavora sul codice, allega un’immagine o parla.", font=("Segoe UI", 14), text_color="#A8B4CC").grid(row=2,column=0,pady=(0,26))
         quick=ctk.CTkFrame(self.hero, fg_color="transparent"); quick.grid(row=3,column=0)
-        actions=(("⌘", "Coding", "Scrivi e verifica codice", "Aiutami a scrivere e verificare del codice"), ("▧", "Immagini", "Analizza un allegato", "Analizza questa immagine"), ("⌁", "Ricerca online", "Informazioni aggiornate", "Cerca sul web informazioni aggiornate"), ("◉", "Voce live", "Parla con Lumina", "__VOICE__"))
+        actions=(("⌘", "Coding", "Scrivi e verifica codice", "Aiutami a scrivere e verificare del codice"), ("▧", "Immagini", "Analizza un allegato", "Analizza questa immagine"), ("✦", "Crea immagine", "Generazione locale", "__IMAGE_GEN__"), ("⌁", "Ricerca online", "Informazioni aggiornate", "Cerca sul web informazioni aggiornate"), ("◉", "Voce live", "Parla con Lumina", "__VOICE__"))
         for i,(icon,title,sub,query) in enumerate(actions):
             card=ctk.CTkFrame(quick,fg_color=CARD,corner_radius=13,border_width=1,border_color="#263657",width=188,height=78); card.grid(row=0,column=i,padx=5); card.grid_propagate(False)
             icon_label=ctk.CTkLabel(card,text=icon,font=("Segoe UI",18,"bold"),text_color=ACCENT); icon_label.grid(row=0,column=0,rowspan=2,padx=(12,8),pady=10)
@@ -208,7 +270,7 @@ class LuminaApp(ctk.CTk):
             ctk.CTkLabel(self.hero,text="Che cosa vuoi fare?",font=("Segoe UI",30,"bold"),text_color=TEXT).grid(row=1,column=0,pady=(0,8))
             ctk.CTkLabel(self.hero,text="Scrivi a Lumina, lavora sul codice, allega un’immagine o parla.",font=("Segoe UI",14),text_color="#A8B4CC").grid(row=2,column=0,pady=(0,26))
             quick=ctk.CTkFrame(self.hero,fg_color="transparent"); quick.grid(row=3,column=0)
-            actions=(("⌘","Coding","Scrivi e verifica codice","Aiutami a scrivere e verificare del codice"),("▧","Immagini","Analizza un allegato","Analizza questa immagine"),("⌁","Ricerca online","Informazioni aggiornate","Cerca sul web informazioni aggiornate"),("◉","Voce live","Parla con Lumina","__VOICE__"))
+            actions=(("⌘","Coding","Scrivi e verifica codice","Aiutami a scrivere e verificare del codice"),("▧","Immagini","Analizza un allegato","Analizza questa immagine"),("✦","Crea immagine","Generazione locale","__IMAGE_GEN__"),("⌁","Ricerca online","Informazioni aggiornate","Cerca sul web informazioni aggiornate"),("◉","Voce live","Parla con Lumina","__VOICE__"))
             for i,(icon,title,sub,query) in enumerate(actions):
                 card=ctk.CTkFrame(quick,fg_color=CARD,corner_radius=13,border_width=1,border_color="#263657",width=188,height=78); card.grid(row=0,column=i,padx=5); card.grid_propagate(False)
                 icon_label=ctk.CTkLabel(card,text=icon,font=("Segoe UI",18,"bold"),text_color=ACCENT); icon_label.grid(row=0,column=0,rowspan=2,padx=(12,8),pady=10)
@@ -240,15 +302,79 @@ class LuminaApp(ctk.CTk):
         ctk.CTkLabel(col,text="Tu" if user else "Lumina",font=("Segoe UI",11,"bold"),text_color=MUTED).pack(anchor="e" if user else "w",padx=6)
         bubble=ctk.CTkFrame(col,fg_color=USER if user else CARD,corner_radius=16,border_width=1,border_color="#4B6DE0" if user else "#202C49"); bubble.pack(anchor="e" if user else "w")
         lbl=ctk.CTkLabel(bubble,text=text,justify="left",anchor="w",font=("Segoe UI",15),text_color=TEXT,wraplength=max(300,int(self.chat.winfo_width()*.62))); lbl.pack(padx=18,pady=13); self.bubbles.append(lbl)
-        if not user: ctk.CTkButton(col,text="Copia",width=54,height=23,corner_radius=6,fg_color="transparent",hover_color=HOVER,text_color=MUTED,font=("Segoe UI",11),command=lambda:self._copy(lbl)).pack(anchor="w",pady=(2,0))
+        if not user:
+            actions = ctk.CTkFrame(col, fg_color="transparent")
+            actions.pack(anchor="w", pady=(2,0))
+            ctk.CTkButton(actions,text="Copia",width=54,height=23,corner_radius=6,fg_color="transparent",hover_color=HOVER,text_color=MUTED,font=("Segoe UI",11),command=lambda:self._copy(lbl)).pack(side="left")
+            ctk.CTkButton(actions,text="Rigenera",width=66,height=23,corner_radius=6,fg_color="transparent",hover_color=HOVER,text_color=MUTED,font=("Segoe UI",10),command=lambda:self._regenerate(lbl)).pack(side="left", padx=2)
+            ctk.CTkButton(actions,text="Utile",width=54,height=23,corner_radius=6,fg_color="transparent",hover_color="#1D4732",text_color="#91D8AD",font=("Segoe UI",10),command=lambda:self._feedback(lbl,True)).pack(side="left", padx=3)
+            ctk.CTkButton(actions,text="Da rivedere",width=76,height=23,corner_radius=6,fg_color="transparent",hover_color="#4A2930",text_color="#E6A5AE",font=("Segoe UI",10),command=lambda:self._feedback(lbl,False)).pack(side="left")
         self._scroll(); return lbl
     def _copy(self,lbl): self.clipboard_clear(); self.clipboard_append(lbl.cget("text")); self.set_status("Copiato negli appunti")
+    def _regenerate(self, _lbl):
+        """Ripete l'ultima richiesta usando la modalità corrente."""
+        if self.busy:
+            self.set_status("Attendi la risposta in corso", ACCENT)
+            return
+        messages = self.sessions.get(self.current, {}).get("messages", [])
+        last_user = next((m.get("content", "") for m in reversed(messages) if m.get("role") == "user"), "")
+        if not last_user:
+            self.set_status("Nessuna richiesta da rigenerare", ACCENT)
+            return
+        self.entry.delete("1.0", "end")
+        self.entry.insert("1.0", last_user)
+        self.entry.configure(text_color=TEXT)
+        self.send()
+    def export_chat(self):
+        if not self.current or not self.sessions.get(self.current, {}).get("messages"):
+            self.set_status("Nessuna chat da esportare", ACCENT)
+            return
+        target = filedialog.asksaveasfilename(title="Esporta conversazione", defaultextension=".md", filetypes=[("Markdown", "*.md"), ("Testo", "*.txt")])
+        if not target:
+            return
+        lines = ["# " + self.sessions[self.current].get("title", "Conversazione Lumina"), ""]
+        for item in self.sessions[self.current]["messages"]:
+            lines.extend(["**Tu:**" if item.get("role") == "user" else "**Lumina:**", item.get("content", ""), ""])
+        Path(target).write_text("\n".join(lines), encoding="utf-8")
+        self.set_status("Conversazione esportata", OK)
+    def _feedback(self, lbl, approved):
+        messages = self.sessions.get(self.current, {}).get("messages", [])
+        user_text = next((m.get("content", "") for m in reversed(messages) if m.get("role") == "user"), "")
+        record = {"user": user_text, "assistant": lbl.cget("text"), "approved": approved, "topic": self.mode.get()}
+        # Il feedback deve restare disponibile anche quando il server locale
+        # non è avviato: il file viene poi raccolto dal motore al successivo avvio.
+        try:
+            feedback_file = DATA_FILE.parent / "feedback.jsonl"
+            feedback_file.parent.mkdir(parents=True, exist_ok=True)
+            with feedback_file.open("a", encoding="utf-8") as stream:
+                stream.write(json.dumps(record, ensure_ascii=False) + "\n")
+        except OSError:
+            pass
+        try:
+            payload = json.dumps(record).encode()
+            req = urllib.request.Request("http://127.0.0.1:7020/api/feedback", data=payload, headers={"Content-Type":"application/json"})
+            urllib.request.urlopen(req, timeout=2).read()
+        except Exception:
+            pass
+        self.set_status("Feedback salvato localmente" if approved else "Segnalazione salvata localmente", OK if approved else ACCENT)
     def _resize(self,e=None):
         for b in self.bubbles:
             try:b.configure(wraplength=max(300,int(self.chat.winfo_width()*.68)))
             except Exception:pass
     def _scroll(self): self.update_idletasks(); self.chat._parent_canvas.yview_moveto(1.0)
     def set_status(self,t,color=OK): self.status.configure(text="●  "+t,text_color=color)
+    def _refresh_health(self):
+        """Aggiorna lo stato del motore senza bloccare la finestra."""
+        def check():
+            try:
+                with urllib.request.urlopen("http://127.0.0.1:7020/api/status", timeout=1.5) as res:
+                    data = json.loads(res.read().decode("utf-8"))
+                provider = str(data.get("provider", "locale"))
+                self.after(0, lambda: self.set_status("Motore locale pronto · " + provider, OK))
+            except Exception:
+                self.after(0, lambda: self.set_status("Modalità autonoma locale", ACCENT))
+        threading.Thread(target=check, daemon=True).start()
+        self.after(5000, self._refresh_health)
     def _mode_changed(self, mode):
         self.set_status("Modalità "+mode+" attiva", ACCENT)
     def _workspace_changed(self, name):
@@ -256,6 +382,7 @@ class LuminaApp(ctk.CTk):
             self.mode.set("Codice")
             self.set_status("Area Coding pronta", ACCENT)
         elif name == "Documenti":
+            self.mode.set("Documenti")
             self.set_status("Allega un documento dal pulsante +", ACCENT)
         else:
             self.mode.set("Generale")
@@ -267,18 +394,30 @@ class LuminaApp(ctk.CTk):
         if self.entry.get("1.0","end").strip() == "Scrivi a Lumina…":
             self.entry.delete("1.0","end"); self.entry.configure(text_color=TEXT)
     def send(self):
+        if self.busy:
+            self.cancel_event.set()
+            self.set_status("Generazione interrotta", ACCENT)
+            return
         text=self.entry.get("1.0","end").strip()
         if not text or text == "Scrivi a Lumina…" or self.busy:return
         self.entry.delete("1.0","end"); sess=self.sessions[self.current]
         if hasattr(self,"hero") and self.hero.winfo_exists(): self.hero.destroy()
         if not sess["messages"]: sess["title"]=text[:32]+("…" if len(text)>32 else ""); self.title_lbl.configure(text=sess["title"])
         sess["messages"].append({"role":"user","content":text}); self.add_bubble("user",text)
-        self.stream_text=""; self.stream_label=self.add_bubble("assistant","▍"); self.busy=True; self.send_btn.configure(state="disabled"); self.set_status("Lumina sta scrivendo…",ACCENT); self.refresh_sessions()
+        self.stream_text=""; self.stream_label=self.add_bubble("assistant","▍"); self.busy=True; self.cancel_event.clear(); self.send_btn.configure(state="normal", text="Ferma"); self.set_status("Lumina sta scrivendo…",ACCENT); self.refresh_sessions()
         threading.Thread(target=self._worker,args=(list(sess["messages"]),self.mode.get(),self.attachment),daemon=True).start(); self.attachment=None
 
     def _quick(self, label):
         if label == "__VOICE__":
             self.voice_input(); return
+        if label == "__IMAGE_GEN__":
+            self.mode.set("Genera immagine")
+            self.entry.delete("1.0", "end")
+            self.entry.insert("1.0", "Crea un'immagine di ")
+            self.entry.configure(text_color=TEXT)
+            self.entry.focus()
+            self.set_status("Modalità Genera immagine pronta", ACCENT)
+            return
         self.entry.insert("1.0", {"✦  Spiegami un concetto":"Spiegami un concetto in modo semplice", "⌘  Aiutami col codice":"Aiutami a scrivere e verificare del codice", "◌  Cerca sul web":"Cerca sul web informazioni aggiornate"}.get(label, "")); self.entry.focus()
 
     def _draw_orb(self, phase):
@@ -290,7 +429,9 @@ class LuminaApp(ctk.CTk):
         self.after(120, lambda:self._draw_orb((phase+1)%8))
     def _worker(self,hist,mode,attachment):
         try:
-            for t in LuminaBackend().stream(hist,mode,attachment):self.q.put(("tok",t))
+            for t in LuminaBackend().stream(hist,mode,attachment):
+                if self.cancel_event.is_set(): break
+                self.q.put(("tok",t))
             self.q.put(("done",None))
         except Exception as e:self.q.put(("err",str(e)))
     def _poll(self):
@@ -311,10 +452,16 @@ class LuminaApp(ctk.CTk):
         self.sessions[self.current]["messages"].append({"role":"assistant","content":self.stream_text}); save_sessions(self.sessions)
         if self.voice_enabled and not error:
             threading.Thread(target=self._speak, args=(self.stream_text,), daemon=True).start()
-        self.busy=False; self.stream_label=None; self.send_btn.configure(state="normal"); self.entry.focus(); self._scroll()
+        self.busy=False; self.stream_label=None; self.send_btn.configure(state="normal", text="Invia  ➤"); self.entry.focus(); self._scroll()
     def attach_file(self):
-        p=filedialog.askopenfilename(title="Allega un file",filetypes=[("Immagini","*.png *.jpg *.jpeg *.webp"),("Tutti i file","*.*")])
-        if p:self.attachment=p; self.set_status("Allegato: "+Path(p).name,ACCENT)
+        p=filedialog.askopenfilename(title="Allega un file",filetypes=[("Documenti","*.txt *.md *.pdf *.docx *.csv"),("Immagini","*.png *.jpg *.jpeg *.webp"),("Tutti i file","*.*")])
+        if p:
+            self.attachment=p
+            if Path(p).suffix.lower() in {".png", ".jpg", ".jpeg", ".webp", ".gif", ".bmp"}:
+                self.mode.set("Immagini")
+                self.set_status("Immagine pronta: invia per analizzarla localmente", ACCENT)
+            else:
+                self.set_status("Allegato: "+Path(p).name,ACCENT)
     def voice_input(self):
         self.voice_enabled = not self.voice_enabled
         self.voice_listening = self.voice_enabled
@@ -326,6 +473,15 @@ class LuminaApp(ctk.CTk):
         self._show_voice_panel()
         self.set_status("Ascolto… parla ora", ACCENT)
         threading.Thread(target=self._listen, daemon=True).start()
+
+    def _prewarm_voice(self):
+        try:
+            import sys
+            sys.path.insert(0, str(ROOT_DIR))
+            from lumina_voice_neural import load_voice
+            load_voice()
+        except Exception:
+            pass
 
     def _show_voice_panel(self):
         if self.voice_panel and self.voice_panel.winfo_exists(): return
@@ -360,6 +516,15 @@ class LuminaApp(ctk.CTk):
             model_path = ROOT_DIR / "voices" / "vosk-it"
             if not model_path.exists(): raise FileNotFoundError("modello italiano per il microfono non trovato")
             rec = KaldiRecognizer(Model(str(model_path)), 16000)
+            # Migliora il risultato finale: Vosk restituisce anche i confini
+            # delle parole e non chiude la frase mentre l'utente sta ancora
+            # articolando l'ultima parola.
+            try:
+                rec.SetWords(True)
+                rec.SetPartialWords(True)
+                rec.SetMaxAlternatives(3)
+            except AttributeError:
+                pass
             self.after(0, lambda: self.voice_status.configure(text="Registrazione in corso…", text_color=ACCENT) if self.voice_panel and self.voice_panel.winfo_exists() else None)
             # Acquisizione a blocchi: non tronca la frase a 6 secondi e
             # termina automaticamente dopo un breve silenzio.
@@ -367,7 +532,18 @@ class LuminaApp(ctk.CTk):
             started = False
             last_voice = time_module.monotonic()
             def callback(indata, frames, _time, status):
-                audio.put(bytes(indata))
+                # Pre-enfasi leggera per il microfono integrato: riduce il
+                # ronzio costante e rende le consonanti più leggibili per Vosk.
+                try:
+                    import numpy as np
+                    samples = np.frombuffer(indata, dtype=np.int16).astype(np.float32)
+                    samples -= samples.mean()
+                    rms = float(np.sqrt(np.mean(samples * samples)) + 1.0)
+                    gain = min(2.0, max(1.0, 900.0 / rms))
+                    samples = np.clip(samples * gain, -32768, 32767).astype(np.int16)
+                    audio.put(samples.tobytes())
+                except Exception:
+                    audio.put(bytes(indata))
             with sd.RawInputStream(samplerate=16000, blocksize=1600, dtype="int16", channels=1, callback=callback):
                 deadline = time_module.monotonic() + 12.0
                 while time_module.monotonic() < deadline:
@@ -380,7 +556,14 @@ class LuminaApp(ctk.CTk):
                         self.after(0, lambda p=partial: self.voice_transcript.configure(text="Tu: "+p) if self.voice_panel and self.voice_panel.winfo_exists() else None)
                     elif started and time_module.monotonic() - last_voice > 0.9:
                         break
-            result = json.loads(rec.FinalResult()).get("text", "").strip()
+            final_data = json.loads(rec.FinalResult())
+            alternatives = final_data.get("alternatives") or []
+            if alternatives:
+                # Prefer the hypothesis with the highest acoustic confidence.
+                best = max(alternatives, key=lambda item: float(item.get("confidence", 0.0)))
+                result = str(best.get("text", "")).strip()
+            else:
+                result = str(final_data.get("text", "")).strip()
             if not result:
                 def no_voice():
                     if self.voice_panel and self.voice_panel.winfo_exists():
@@ -389,7 +572,7 @@ class LuminaApp(ctk.CTk):
                         self.after(900, lambda: self.voice_status.configure(text="Ascolto…", text_color=ACCENT) if self.voice_panel and self.voice_panel.winfo_exists() else None)
                 self.after(0, no_voice)
                 if self.voice_enabled:
-                    threading.Timer(1.2, self._listen).start()
+                    threading.Timer(0.45, self._listen).start()
                 return
             def deliver_voice():
                 if self.voice_panel and self.voice_panel.winfo_exists(): self.voice_status.configure(text="Lumina sta rispondendo…", text_color=ACCENT)
@@ -423,7 +606,7 @@ class LuminaApp(ctk.CTk):
                 self.after(0, lambda: self.voice_status.configure(text="Parla quando vuoi…", text_color=OK))
                 # Lascia spegnere l'audio degli altoparlanti prima di
                 # riaprire il microfono, evitando che Lumina si riascolti.
-                threading.Timer(1.0, self._listen).start()
+                threading.Timer(0.35, self._listen).start()
         except Exception as exc:
             self.voice_speaking = False
             self.after(0, lambda: (self.set_status("Voce non disponibile: "+str(exc), ERR), self.voice_status.configure(text="Errore voce", text_color=ERR) if self.voice_panel and self.voice_panel.winfo_exists() else None))

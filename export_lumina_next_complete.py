@@ -145,14 +145,21 @@ def main():
     shutil.copy("modeling_lumina_next.py", hf_dir / "modeling_lumina_next.py")
     shutil.copy("rope_yarn.py", hf_dir / "rope_yarn.py")
 
-    # 4. Esporta GGUF
-    latest_pt = list(ckpt_dir.glob("checkpoint_step*.pt"))
-    if latest_pt:
-        latest_ckpt = max(latest_pt, key=lambda p: int(p.stem.replace("checkpoint_step", "").replace("_safe_backup", "")))
+    # 4. Esporta GGUF dallo stesso checkpoint consolidato Step 8000
+    step8000_ckpt = ckpt_dir / "checkpoint_step8000.pt"
+    if step8000_ckpt.exists():
+        latest_ckpt = step8000_ckpt
         print(f"[*] Checkpoint per GGUF: {latest_ckpt}")
         export_gguf(latest_ckpt, Path("lumina_next_135m.gguf"))
+        latest_pt = [latest_ckpt]
     else:
-        latest_ckpt = ckpt_dir / "pytorch_model.bin"
+        latest_pt = list(ckpt_dir.glob("checkpoint_step*.pt"))
+        if latest_pt:
+            latest_ckpt = max(latest_pt, key=lambda p: int(p.stem.replace("checkpoint_step", "").replace("_safe_backup", "")))
+            print(f"[*] Checkpoint per GGUF: {latest_ckpt}")
+            export_gguf(latest_ckpt, Path("lumina_next_135m.gguf"))
+        else:
+            latest_ckpt = ckpt_dir / "pytorch_model.bin"
 
     # 5. Distribuisci su Syncthing (lenovo_releases/) per AMD e Intel
     print(f"\n[*] Distribuzione file di rilascio su Syncthing -> {syncthing_releases}...")

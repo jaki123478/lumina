@@ -47,3 +47,7 @@ dist*/
 odysseus/
 odysseus_rebuilt/
 exports_*/
+*.wav
+cloudflare_tunnel*.log
+data/*.log
+data/autonomy/
