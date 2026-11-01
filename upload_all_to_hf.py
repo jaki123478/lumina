@@ -41,6 +41,18 @@ def upload_lumina_next_model(api: HfApi):
             if (lora_src / fname).exists():
                 shutil.copy2(lora_src / fname, lora_dst / fname)
 
+    img_ckpt = Path("checkpoints_lumina_image/lumina_image_v1.pt")
+    if img_ckpt.exists():
+        img_dst = folder / "lumina_image_v1"
+        img_dst.mkdir(exist_ok=True)
+        shutil.copy2(img_ckpt, img_dst / "lumina_image_v1.pt")
+        for pyf in ("lumina_image_experimental.py", "lumina_image_gen.py"):
+            if Path(pyf).exists():
+                shutil.copy2(pyf, img_dst / pyf)
+        grid_png = Path("checkpoints_lumina_image/samples/griglia_12_categorie_cfg14.png")
+        if grid_png.exists():
+            shutil.copy2(grid_png, img_dst / "griglia_12_categorie_cfg14.png")
+
     print(f"[*] Caricamento cartella {folder} -> {repo_id}...")
     api.upload_folder(
         folder_path=str(folder),

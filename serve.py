@@ -300,6 +300,15 @@ class Handler(SimpleHTTPRequestHandler):
                         "permission": [],
                         "root": "lumina-next",
                         "parent": None
+                    },
+                    {
+                        "id": "lumina-image",
+                        "object": "model",
+                        "created": 1793000000,
+                        "owned_by": "lumina",
+                        "permission": [],
+                        "root": "lumina-image",
+                        "parent": None
                     }
                 ]
             }
@@ -876,6 +885,34 @@ class Handler(SimpleHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(body)
                 return
+
+        # 3. Generazione immagini nativa offline (/api/generate_image e /v1/images/generations)
+        if self.path in ("/api/generate_image", "/v1/images/generations"):
+            try:
+                import base64
+                from lumina_image_gen import generate_image
+                data = json.loads(raw_body) if raw_body else {}
+                prompt_txt = str(data.get("prompt", "")).strip() or "un paesaggio naturale luminoso"
+                out_path = generate_image(prompt_txt)
+                b64 = base64.b64encode(Path(out_path).read_bytes()).decode("ascii")
+                resp = {
+                    "status": "ok",
+                    "created": int(time.time()),
+                    "path": out_path,
+                    "image_b64": b64,
+                    "data": [{"b64_json": b64, "revised_prompt": prompt_txt}],
+                }
+                code = 200
+            except Exception as e:
+                resp = {"status": "error", "message": str(e)}
+                code = 500
+            body = json.dumps(resp, ensure_ascii=False).encode("utf-8")
+            self.send_response(code)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+            return
 
         self.send_response(404)
         self.end_headers()

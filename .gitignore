@@ -49,5 +49,8 @@ odysseus_rebuilt/
 exports_*/
 *.wav
 cloudflare_tunnel*.log
+live_training.log
+.pytest_tmp/
+/audio_neurale/immagini_generate/
 data/*.log
 data/autonomy/

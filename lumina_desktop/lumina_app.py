@@ -114,12 +114,19 @@ class LuminaBackend:
         # Risposte di controllo della voce: non devono passare dal modello,
         # altrimenti una frase come "mi senti?" può ricevere una risposta
         # casuale mentre il motore sta caricando.
-        last = str(messages[-1].get("content", "")).strip().lower() if messages else ""
-        if mode == "Genera immagine":
+        last_raw = str(messages[-1].get("content", "")).strip() if messages else ""
+        last = last_raw.lower()
+        img_cmd = re.match(
+            r"^(?:per favore\s+)?(?:genera|crea|disegna|dipingi)\s+(?:un['\u2019]?\s*immagine|una\s+foto|un\s+disegno)(?:\s+(?:di|con|che\s+mostra|su))?\s*(.*)$",
+            last_raw,
+            flags=re.IGNORECASE,
+        )
+        if mode == "Genera immagine" or img_cmd:
             from lumina_image_gen import generate_image
+            img_prompt = img_cmd.group(1).strip() if (img_cmd and img_cmd.group(1).strip()) else last_raw
             try:
-                output = generate_image(last)
-                yield f"Immagine generata localmente e salvata in: {output}"
+                output = generate_image(img_prompt)
+                yield f"Immagine generata localmente da Lumina Image e salvata in:\n{output}"
             except Exception as exc:
                 yield f"Generazione immagini non disponibile: {exc}"
             return
@@ -303,6 +310,7 @@ class LuminaApp(ctk.CTk):
         bubble=ctk.CTkFrame(col,fg_color=USER if user else CARD,corner_radius=16,border_width=1,border_color="#4B6DE0" if user else "#202C49"); bubble.pack(anchor="e" if user else "w")
         lbl=ctk.CTkLabel(bubble,text=text,justify="left",anchor="w",font=("Segoe UI",15),text_color=TEXT,wraplength=max(300,int(self.chat.winfo_width()*.62))); lbl.pack(padx=18,pady=13); self.bubbles.append(lbl)
         if not user:
+            self._maybe_attach_image_preview(bubble, text)
             actions = ctk.CTkFrame(col, fg_color="transparent")
             actions.pack(anchor="w", pady=(2,0))
             ctk.CTkButton(actions,text="Copia",width=54,height=23,corner_radius=6,fg_color="transparent",hover_color=HOVER,text_color=MUTED,font=("Segoe UI",11),command=lambda:self._copy(lbl)).pack(side="left")
@@ -445,10 +453,30 @@ class LuminaApp(ctk.CTk):
         except queue.Empty:pass
         if changed and self.stream_label:self.stream_label.configure(text=self.stream_text+" ▍"); self._scroll()
         self.after(40,self._poll)
+    def _maybe_attach_image_preview(self, bubble_frame, text):
+        try:
+            m = re.search(r"([A-Za-z]:[\\/][^\r\n\"'<>|]+?\.(?:png|jpg|jpeg|webp))", str(text), flags=re.IGNORECASE)
+            if not m:
+                return
+            img_path = Path(m.group(1).strip())
+            if not img_path.exists():
+                return
+            from PIL import Image
+            with Image.open(img_path) as raw_im:
+                im = raw_im.convert("RGB").copy()
+            ctk_img = ctk.CTkImage(light_image=im, dark_image=im, size=(288, 288))
+            if not hasattr(self, "_img_refs"):
+                self._img_refs = []
+            self._img_refs.append(ctk_img)
+            ctk.CTkLabel(bubble_frame, text="", image=ctk_img).pack(padx=16, pady=(0, 14))
+        except Exception:
+            pass
     def _finish(self,error=None):
         if error:self.stream_text="Errore: "+error; self.set_status("Errore di collegamento",ERR)
         else:self.set_status("Lumina locale pronta")
-        if self.stream_label:self.stream_label.configure(text=self.stream_text)
+        if self.stream_label:
+            self.stream_label.configure(text=self.stream_text)
+            self._maybe_attach_image_preview(self.stream_label.master, self.stream_text)
         self.sessions[self.current]["messages"].append({"role":"assistant","content":self.stream_text}); save_sessions(self.sessions)
         if self.voice_enabled and not error:
             threading.Thread(target=self._speak, args=(self.stream_text,), daemon=True).start()

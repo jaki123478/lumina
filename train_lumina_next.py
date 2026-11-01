@@ -30,10 +30,10 @@ if sys.platform == "win32":
 from modeling_lumina_next import LuminaNextForCausalLM, DEFAULT_CONFIG_135M
 
 
-def load_dataset_tokens(tokenizer: ByteLevelBPETokenizer, dataset_path: str = "data/lumina_train_dataset_v3_cot.jsonl", max_samples: int = 50000) -> list[torch.Tensor]:
-    """Carica i dati di coding e conversazione tokenizzati in tensori ID."""
-    print("[*] Caricamento e tokenizzazione del dataset con BPE (32k vocab)...")
-    tokenized_samples = []
+def load_dataset_tokens(tokenizer: ByteLevelBPETokenizer, dataset_path: str = "data/distilled_dialogues_clean.jsonl", max_samples: int = 50000) -> list[tuple[torch.Tensor, torch.Tensor]]:
+    """Carica i dialoghi con loss-masking (-100 sul prompt utente + EOS finale = 1)."""
+    print("[*] Caricamento e tokenizzazione del dataset con BPE (32k vocab, SFT loss-masked)...")
+    tokenized_samples: list[tuple[torch.Tensor, torch.Tensor]] = []
 
     ds_file = Path(dataset_path)
     if not ds_file.exists():
@@ -49,10 +49,10 @@ def load_dataset_tokens(tokenizer: ByteLevelBPETokenizer, dataset_path: str = "d
         paths = [Path(extra)]
         print("[*] Modalità supervisionata: uso esclusivo degli esempi verificati")
     else:
-        paths = [Path("data/lumina_coding_curriculum.jsonl"), ds_file]
+        paths = [Path("data/lumina_gemma_approved.jsonl"), Path("data/gemma_coding_clean.jsonl"), Path("data/lumina_focus_corrections.jsonl"), Path("data/lumina_coding_curriculum.jsonl"), Path("data/lumina_micro_alignment.jsonl"), ds_file]
         if extra:
             paths.insert(0, Path(extra))
-    extra_samples = []
+    extra_samples: list[tuple[torch.Tensor, torch.Tensor]] = []
     for path in paths:
         if not path.exists():
             continue
@@ -64,14 +64,23 @@ def load_dataset_tokens(tokenizer: ByteLevelBPETokenizer, dataset_path: str = "d
                     d = eval(line) if not line.strip().startswith("{") else json.loads(line)
                     u = d.get("user", "").strip()
                     a = d.get("assistant", "").strip()
+                    if (not u or not a) and isinstance(d.get("messages"), list):
+                        for m in d["messages"]:
+                            if m.get("role") == "user" and not u:
+                                u = str(m.get("content", "")).strip()
+                            elif m.get("role") == "assistant" and not a:
+                                a = str(m.get("content", "")).strip()
                     if u and a:
-                        text = f"<|im_start|>user\n{u}<|im_end|>\n<|im_start|>assistant\n{a}<|im_end|>"
-                        ids = tokenizer.encode(text).ids
-                        if len(ids) >= 8:
-                            sample = torch.tensor(ids, dtype=torch.long)
-                            tokenized_samples.append(sample)
+                        prefix_ids = tokenizer.encode(f"<|im_start|>user\n{u}<|im_end|>\n<|im_start|>assistant\n").ids
+                        ans_ids = tokenizer.encode(f"{a}<|im_end|>").ids + [1]
+                        if len(prefix_ids) >= 4 and len(ans_ids) >= 2:
+                            full_ids = prefix_ids + ans_ids
+                            x_t = torch.tensor(full_ids[:-1], dtype=torch.long)
+                            y_t = torch.tensor(([-100] * (len(prefix_ids) - 1)) + ans_ids, dtype=torch.long)
+                            pair = (x_t, y_t)
+                            tokenized_samples.append(pair)
                             if extra and path == Path(extra):
-                                extra_samples.append(sample)
+                                extra_samples.append(pair)
                             if len(tokenized_samples) >= max_samples:
                                 break
                 except Exception:
@@ -81,30 +90,26 @@ def load_dataset_tokens(tokenizer: ByteLevelBPETokenizer, dataset_path: str = "d
     if extra_samples and repeat > 1:
         tokenized_samples.extend(extra_samples * (repeat - 1))
         print(f"[*] Curriculum extra sovracampionato: {len(extra_samples)} esempi x{repeat}")
-    print(f"[+] Caricati {len(tokenized_samples):,} campioni tokenizzati con successo.")
+    print(f"[+] Caricati {len(tokenized_samples):,} dialoghi SFT con mascheramento prompt.")
     return tokenized_samples
 
 
-def get_batch(samples: list[torch.Tensor], seq_len: int, batch_size: int, device: torch.device):
-    """Estrae un batch di sequenze concatenate di lunghezza seq_len esatta."""
-    batch_x = []
-    batch_y = []
+def get_batch(samples: list[tuple[torch.Tensor, torch.Tensor]], seq_len: int, batch_size: int, device: torch.device):
+    """Costruisce un batch isolato per singolo dialogo (zero contaminazione tra esempi)."""
+    picked = [random.choice(samples) for _ in range(batch_size)]
+    max_len = min(seq_len, max(len(px) for px, _ in picked))
+    max_len = max(8, ((max_len + 7) // 8) * 8)
+    max_len = min(seq_len, max_len)
 
-    for _ in range(batch_size):
-        # Concatena campioni fino a raggiungere seq_len + 1
-        seq = []
-        while len(seq) < seq_len + 1:
-            sample = random.choice(samples)
-            seq.extend(sample.tolist())
-        
-        seq = seq[:seq_len + 1]
-        t = torch.tensor(seq, dtype=torch.long)
-        batch_x.append(t[:-1])
-        batch_y.append(t[1:])
+    batch_x = torch.zeros((batch_size, max_len), dtype=torch.long)
+    batch_y = torch.full((batch_size, max_len), -100, dtype=torch.long)
 
-    x = torch.stack(batch_x).to(device)
-    y = torch.stack(batch_y).to(device)
-    return x, y
+    for i, (px, py) in enumerate(picked):
+        L = min(max_len, len(px))
+        batch_x[i, :L] = px[:L]
+        batch_y[i, :L] = py[:L]
+
+    return batch_x.to(device), batch_y.to(device)
 
 
 def train(
@@ -195,7 +200,7 @@ def train(
     dataset = load_dataset_tokens(tokenizer)
     if not dataset:
         print("[!] Nessun dato trovato in data/*.jsonl. Creazione campioni base...")
-        dataset = [torch.randint(0, 32000, (seq_len + 1,)) for _ in range(20)]
+        dataset = [(torch.randint(2, 32000, (64,)), torch.randint(2, 32000, (64,))) for _ in range(20)]
 
     # 4. Ottimizzatore
     optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=0.01, betas=(0.9, 0.95))
@@ -213,7 +218,10 @@ def train(
 
         with torch.autocast(device_type=device.type, dtype=dtype):
             logits = model(x)
-            loss = F.cross_entropy(logits.view(-1, config["vocab_size"]), y.view(-1))
+            if (y != -100).any():
+                loss = F.cross_entropy(logits.view(-1, config["vocab_size"]), y.view(-1), ignore_index=-100)
+            else:
+                loss = logits.sum() * 0.0
             loss = loss / grad_accum_steps
 
         loss.backward()
